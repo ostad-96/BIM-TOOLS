@@ -172,7 +172,8 @@ body {
 
 <script src="../../shared/js/acc-utils.js"></script>
 <script src="../../shared/js/acc-storage.js"></script>
-<script src="../../shared/js/acc-storage-indexeddb.js"></script>
+<script src="../../shared/js/acc-storage-indexeddb.js?v=3"></script>
+<script src="../../shared/js/acc-auth.js"></script>
 <script src="../../shared/js/acc-ui.js"></script>
 <script src="js/meeting-templates.js"></script>
 <script src="js/meeting-store.js"></script>
@@ -213,9 +214,20 @@ function statusCls(key) { return 'pv-item-status pv-item-status-' + (key || 'off
 
 async function init() {
     await ACC.StorageManager.init(new ACC.IndexedDBProvider('acc-platform'));
+    await ACC.Auth.init();
+    var user = await ACC.Auth.requireAuth('../../login.html');
+    if (!user) return;
+
     if (!instanceId) { document.getElementById('loadingMsg').textContent = 'Keine Instanz-ID angegeben.'; return; }
     var data = await ACC.MeetingStore.getInstanceFull(instanceId);
     if (!data) { document.getElementById('loadingMsg').textContent = 'Besprechung nicht gefunden.'; return; }
+
+    if (!ACC.Auth.canAccessSeries(user, data.series.id)) {
+        document.getElementById('loadingMsg').textContent = 'Kein Zugriff auf diese Serie.';
+        return;
+    }
+
+    ACC.Auth.logActivity(user.id, user.name, 'view', 'instance', instanceId, data.series.code + ' #' + data.instance.number, '');
     render(data);
 }
 

@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Administration — ACC</title>
+<link rel="stylesheet" href="../../shared/css/acc-variables.css">
+<link rel="stylesheet" href="../../shared/css/acc-base.css">
+<link rel="stylesheet" href="../../shared/css/acc-components.css">
+<link rel="stylesheet" href="css/admin.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+</head>
+<body style="opacity:0">
+
+<div class="admin-layout">
+
+    <!-- Sidebar -->
+    <nav class="admin-sidebar">
+        <div class="admin-sidebar-header">
+            <div class="admin-sidebar-logo">
+                <img src="../../shared/assets/emch-berger-logo.gif" alt="Logo">
+            </div>
+            <div class="admin-sidebar-title">Administration</div>
+            <div class="admin-sidebar-subtitle">ACC Platform</div>
+        </div>
+        <div class="admin-nav">
+            <a class="admin-nav-item active" href="index.html">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+                <span>Dashboard</span>
+            </a>
+            <a class="admin-nav-item" href="users.html">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+                <span>Benutzer</span>
+            </a>
+            <a class="admin-nav-item" href="activity.html">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                <span>Aktivitäten</span>
+            </a>
+            <a class="admin-nav-item" href="access.html">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+                <span>Zugriff</span>
+            </a>
+        </div>
+        <div class="admin-sidebar-footer">
+            <a class="admin-back-link" href="../../index.html">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline points="15 18 9 12 15 6"/></svg>
+                Zur Startseite
+            </a>
+        </div>
+    </nav>
+
+    <!-- Main -->
+    <main class="admin-main">
+        <div class="admin-header">
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+                <div>
+                    <div class="admin-header-title">Dashboard</div>
+                    <div class="admin-header-desc">Systemübersicht und Aktivitäten</div>
+                </div>
+                <div id="adminUser" style="font-size:12px;color:var(--acc-text-muted);"></div>
+            </div>
+        </div>
+
+        <div class="admin-content">
+            <!-- Summary cards -->
+            <div class="admin-summary-grid" id="summaryCards"></div>
+
+            <!-- Charts -->
+            <div class="admin-charts-grid">
+                <div class="chart-card">
+                    <div class="chart-card-title">Aktivitätstrend (letzte 14 Tage)</div>
+                    <div class="chart-canvas-wrap"><canvas id="activityChart"></canvas></div>
+                </div>
+                <div class="chart-card">
+                    <div class="chart-card-title">Aktionen</div>
+                    <div class="chart-canvas-wrap"><canvas id="actionChart"></canvas></div>
+                </div>
+            </div>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+                <!-- Top users -->
+                <div class="chart-card">
+                    <div class="chart-card-title">Aktivste Benutzer</div>
+                    <div class="chart-canvas-wrap"><canvas id="topUsersChart"></canvas></div>
+                </div>
+
+                <!-- Recent activity -->
+                <div class="activity-feed">
+                    <div class="activity-feed-header">
+                        <span>Letzte Aktivitäten</span>
+                        <a href="activity.html" style="font-size:11px;font-weight:500;">Alle anzeigen &rarr;</a>
+                    </div>
+                    <div id="recentFeed" style="max-height:260px;overflow-y:auto;"></div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script src="../../shared/js/acc-utils.js"></script>
+<script src="../../shared/js/acc-storage.js"></script>
+<script src="../../shared/js/acc-storage-indexeddb.js?v=3"></script>
+<script src="../../shared/js/acc-auth.js"></script>
+<script src="../../shared/js/acc-ui.js"></script>
+<script>
+var currentUser = null;
+
+async function init() {
+    await ACC.StorageManager.init(new ACC.IndexedDBProvider('acc-platform'));
+    await ACC.Auth.init();
+    currentUser = await ACC.Auth.requireAuth('../../login.html');
+    if (!currentUser) return;
+    if (!ACC.Auth.canAccessAdmin(currentUser)) {
+        window.location.href = '../../index.html';
+        return;
+    }
+    document.body.style.opacity = '1';
+    document.getElementById('adminUser').textContent = currentUser.name || currentUser.username;
+
+    await loadDashboard();
+}
+
+async function loadDashboard() {
+    var users = await ACC.Auth.getAllUsers();
+    var logs = await ACC.Auth.getActivityLogs();
+    var series = await ACC.StorageManager.getAll('meetingSeries');
+    var instances = await ACC.StorageManager.getAll('meetingInstances');
+
+    var activeUsers = users.filter(function(u) { return u.status === 'active'; }).length;
+
+    // Summary cards
+    document.getElementById('summaryCards').innerHTML =
+        summaryCard('Benutzer', users.length, activeUsers + ' aktiv', '#7c3aed', 'var(--acc-role-admin-bg)',
+            '<svg viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>') +
+        summaryCard('Serien', series.length, '', 'var(--acc-primary)', 'var(--acc-primary-10)',
+            '<svg viewBox="0 0 24 24" fill="none" stroke="var(--acc-primary)" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>') +
+        summaryCard('Sitzungen', instances.length, '', 'var(--acc-info)', 'var(--acc-info-light)',
+            '<svg viewBox="0 0 24 24" fill="none" stroke="var(--acc-info)" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>') +
+        summaryCard('Protokolleinträge', logs.length, '', 'var(--acc-success)', 'var(--acc-success-light)',
+            '<svg viewBox="0 0 24 24" fill="none" stroke="var(--acc-success)" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>');
+
+    // Charts
+    buildActivityChart(logs);
+    buildActionChart(logs);
+    buildTopUsersChart(logs);
+
+    // Recent feed
+    var recent = logs.sort(function(a,b) { return a.timestamp > b.timestamp ? -1 : 1; }).slice(0, 15);
+    renderFeed(recent);
+}
+
+function summaryCard(label, value, sub, color, bg, icon) {
+    return '<div class="summary-card">' +
+        '<div class="summary-card-icon" style="background:' + bg + '">' + icon + '</div>' +
+        '<div class="summary-card-label">' + label + '</div>' +
+        '<div class="summary-card-value" style="color:' + color + '">' + value + '</div>' +
+        (sub ? '<div class="summary-card-sub">' + sub + '</div>' : '') +
+    '</div>';
+}
+
+function buildActivityChart(logs) {
+    var days = [];
+    var counts = [];
+    for (var i = 13; i >= 0; i--) {
+        var d = new Date(); d.setDate(d.getDate() - i);
+        var key = d.toISOString().slice(0,10);
+        days.push(d.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' }));
+        counts.push(logs.filter(function(l) { return l.timestamp && l.timestamp.slice(0,10) === key; }).length);
+    }
+    new Chart(document.getElementById('activityChart'), {
+        type: 'line',
+        data: {
+            labels: days,
+            datasets: [{ label: 'Aktivitäten', data: counts,
+                borderColor: '#003B4D', backgroundColor: 'rgba(0,59,77,0.08)',
+                fill: true, tension: 0.4, pointRadius: 3, pointBackgroundColor: '#003B4D' }]
+        },
+        options: { responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
+    });
+}
+
+function buildActionChart(logs) {
+    var actionMap = {};
+    logs.forEach(function(l) {
+        var a = l.action || 'other';
+        actionMap[a] = (actionMap[a] || 0) + 1;
+    });
+    var labels = Object.keys(actionMap);
+    var data = labels.map(function(k) { return actionMap[k]; });
+    var colors = ['#003B4D','#7c3aed','#2563eb','#059669','#d97706','#dc2626','#6b7280','#ec4899'];
+    new Chart(document.getElementById('actionChart'), {
+        type: 'doughnut',
+        data: {
+            labels: labels.map(function(l) { return actionLabel(l); }),
+            datasets: [{ data: data, backgroundColor: colors.slice(0, labels.length), borderWidth: 0 }]
+        },
+        options: { responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { position: 'right', labels: { boxWidth: 10, font: { size: 11 } } } } }
+    });
+}
+
+function buildTopUsersChart(logs) {
+    var userMap = {};
+    logs.forEach(function(l) {
+        var name = l.userName || 'Unbekannt';
+        userMap[name] = (userMap[name] || 0) + 1;
+    });
+    var sorted = Object.keys(userMap).sort(function(a,b) { return userMap[b] - userMap[a]; }).slice(0, 8);
+    new Chart(document.getElementById('topUsersChart'), {
+        type: 'bar',
+        data: {
+            labels: sorted,
+            datasets: [{ label: 'Aktivitäten', data: sorted.map(function(k) { return userMap[k]; }),
+                backgroundColor: '#003B4D', borderRadius: 4, barThickness: 20 }]
+        },
+        options: { responsive: true, maintainAspectRatio: false, indexAxis: 'y',
+            plugins: { legend: { display: false } },
+            scales: { x: { beginAtZero: true, ticks: { stepSize: 1 } } } }
+    });
+}
+
+function renderFeed(logs) {
+    var wrap = document.getElementById('recentFeed');
+    if (logs.length === 0) { wrap.innerHTML = '<div style="padding:20px;text-align:center;color:var(--acc-text-muted);font-size:12px;">Keine Aktivitäten</div>'; return; }
+    var html = '';
+    logs.forEach(function(l) {
+        var initials = (l.userName || '?').split(' ').map(function(w){return w[0];}).join('').toUpperCase().slice(0,2);
+        var bgColor = actionColor(l.action);
+        html += '<div class="activity-item">' +
+            '<div class="activity-avatar" style="background:' + bgColor + '">' + initials + '</div>' +
+            '<div class="activity-text">' +
+                '<strong>' + ACC.Utils.escapeHtml(l.userName || 'System') + '</strong> ' +
+                actionLabel(l.action) +
+                (l.resourceName ? ' — <em>' + ACC.Utils.escapeHtml(l.resourceName) + '</em>' : '') +
+                '<div class="activity-time">' + timeAgo(l.timestamp) + '</div>' +
+            '</div>' +
+        '</div>';
+    });
+    wrap.innerHTML = html;
+}
+
+function actionLabel(a) {
+    var map = { login:'Anmeldung', logout:'Abmeldung', view:'Ansicht', create:'Erstellt', update:'Aktualisiert', delete:'Gelöscht' };
+    return map[a] || a;
+}
+function actionColor(a) {
+    var map = { login:'#059669', logout:'#6b7280', view:'#2563eb', create:'#7c3aed', update:'#d97706', delete:'#dc2626' };
+    return map[a] || '#003B4D';
+}
+function timeAgo(ts) {
+    if (!ts) return '';
+    var diff = Math.floor((Date.now() - new Date(ts).getTime()) / 1000);
+    if (diff < 60) return 'gerade eben';
+    if (diff < 3600) return Math.floor(diff/60) + ' Min.';
+    if (diff < 86400) return Math.floor(diff/3600) + ' Std.';
+    return Math.floor(diff/86400) + ' Tage';
+}
+
+init();
+</script>
+</body>
+</html>

@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aktivitäten — ACC Admin</title>
+<link rel="stylesheet" href="../../shared/css/acc-variables.css">
+<link rel="stylesheet" href="../../shared/css/acc-base.css">
+<link rel="stylesheet" href="../../shared/css/acc-components.css">
+<link rel="stylesheet" href="css/admin.css">
+</head>
+<body style="opacity:0">
+
+<div class="admin-layout">
+    <nav class="admin-sidebar">
+        <div class="admin-sidebar-header">
+            <div class="admin-sidebar-logo"><img src="../../shared/assets/emch-berger-logo.gif" alt="Logo"></div>
+            <div class="admin-sidebar-title">Administration</div>
+            <div class="admin-sidebar-subtitle">ACC Platform</div>
+        </div>
+        <div class="admin-nav">
+            <a class="admin-nav-item" href="index.html">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+                <span>Dashboard</span>
+            </a>
+            <a class="admin-nav-item" href="users.html">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+                <span>Benutzer</span>
+            </a>
+            <a class="admin-nav-item active" href="activity.html">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                <span>Aktivitäten</span>
+            </a>
+            <a class="admin-nav-item" href="access.html">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+                <span>Zugriff</span>
+            </a>
+        </div>
+        <div class="admin-sidebar-footer">
+            <a class="admin-back-link" href="../../index.html">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline points="15 18 9 12 15 6"/></svg>
+                Zur Startseite
+            </a>
+        </div>
+    </nav>
+
+    <main class="admin-main">
+        <div class="admin-header">
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+                <div>
+                    <div class="admin-header-title">Aktivitätsprotokoll</div>
+                    <div class="admin-header-desc">Alle Benutzeraktivitäten im System</div>
+                </div>
+                <button class="export-btn" onclick="exportCSV()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                    CSV Export
+                </button>
+            </div>
+        </div>
+
+        <div class="admin-content">
+            <div class="user-table-wrap">
+                <div class="log-filters">
+                    <input type="text" id="searchInput" class="acc-input" style="width:200px;" placeholder="Suchen..." oninput="renderLogs()">
+                    <select id="actionFilter" class="acc-select" style="width:150px;" onchange="renderLogs()">
+                        <option value="">Alle Aktionen</option>
+                        <option value="login">Anmeldung</option>
+                        <option value="logout">Abmeldung</option>
+                        <option value="view">Ansicht</option>
+                        <option value="create">Erstellt</option>
+                        <option value="update">Aktualisiert</option>
+                        <option value="delete">Gelöscht</option>
+                    </select>
+                    <select id="userFilter" class="acc-select" style="width:180px;" onchange="renderLogs()">
+                        <option value="">Alle Benutzer</option>
+                    </select>
+                    <input type="date" id="dateFrom" class="acc-input" style="width:150px;" onchange="renderLogs()">
+                    <span style="font-size:11px;color:var(--acc-text-muted);">bis</span>
+                    <input type="date" id="dateTo" class="acc-input" style="width:150px;" onchange="renderLogs()">
+                    <span id="logCount" style="font-size:11px;color:var(--acc-text-muted);margin-left:auto;"></span>
+                </div>
+                <div id="logsTable" style="max-height:calc(100vh - 280px);overflow-y:auto;"></div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script src="../../shared/js/acc-utils.js"></script>
+<script src="../../shared/js/acc-storage.js"></script>
+<script src="../../shared/js/acc-storage-indexeddb.js?v=3"></script>
+<script src="../../shared/js/acc-auth.js"></script>
+<script src="../../shared/js/acc-ui.js"></script>
+<script>
+var currentUser = null;
+var allLogs = [];
+
+async function init() {
+    await ACC.StorageManager.init(new ACC.IndexedDBProvider('acc-platform'));
+    await ACC.Auth.init();
+    currentUser = await ACC.Auth.requireAuth('../../login.html');
+    if (!currentUser) return;
+    if (!ACC.Auth.canAccessAdmin(currentUser)) { window.location.href = '../../index.html'; return; }
+    document.body.style.opacity = '1';
+
+    // Populate user filter
+    var users = await ACC.Auth.getAllUsers();
+    var sel = document.getElementById('userFilter');
+    users.forEach(function(u) {
+        sel.innerHTML += '<option value="' + u.id + '">' + ACC.Utils.escapeHtml(u.name || u.username) + '</option>';
+    });
+
+    await loadLogs();
+}
+
+async function loadLogs() {
+    allLogs = await ACC.Auth.getActivityLogs();
+    allLogs.sort(function(a,b) { return a.timestamp > b.timestamp ? -1 : 1; });
+    renderLogs();
+}
+
+function getFiltered() {
+    var search = (document.getElementById('searchInput').value || '').toLowerCase();
+    var action = document.getElementById('actionFilter').value;
+    var userId = document.getElementById('userFilter').value;
+    var from = document.getElementById('dateFrom').value;
+    var to = document.getElementById('dateTo').value;
+
+    return allLogs.filter(function(l) {
+        if (action && l.action !== action) return false;
+        if (userId && l.userId !== userId) return false;
+        if (from && l.timestamp && l.timestamp.slice(0,10) < from) return false;
+        if (to && l.timestamp && l.timestamp.slice(0,10) > to) return false;
+        if (search) {
+            var h = (l.userName + ' ' + l.action + ' ' + l.resourceName + ' ' + l.details + ' ' + l.resourceType).toLowerCase();
+            if (h.indexOf(search) === -1) return false;
+        }
+        return true;
+    });
+}
+
+function renderLogs() {
+    var filtered = getFiltered();
+    document.getElementById('logCount').textContent = filtered.length + ' von ' + allLogs.length + ' Einträge';
+
+    var html = '<table class="acc-table acc-table-compact"><thead><tr>' +
+        '<th style="width:160px;">Zeitstempel</th>' +
+        '<th>Benutzer</th>' +
+        '<th style="width:110px;">Aktion</th>' +
+        '<th>Ressource</th>' +
+        '<th>Details</th>' +
+        '</tr></thead><tbody>';
+
+    if (filtered.length === 0) {
+        html += '<tr><td colspan="5" style="text-align:center;color:var(--acc-text-muted);padding:30px;">Keine Einträge gefunden</td></tr>';
+    }
+
+    var limit = Math.min(filtered.length, 500);
+    for (var i = 0; i < limit; i++) {
+        var l = filtered[i];
+        var actionCls = 'acc-badge ';
+        if (l.action === 'login' || l.action === 'create') actionCls += 'acc-badge-aktiv';
+        else if (l.action === 'delete') actionCls += 'acc-badge-entwurf';
+        else if (l.action === 'update') actionCls += 'acc-badge-in_bearbeitung';
+        else actionCls += 'acc-badge-type';
+
+        html += '<tr>' +
+            '<td style="font-size:11px;color:var(--acc-text-muted);white-space:nowrap;">' + (l.timestamp ? ACC.Utils.formatDateTime(l.timestamp) : '—') + '</td>' +
+            '<td><strong>' + ACC.Utils.escapeHtml(l.userName || '—') + '</strong></td>' +
+            '<td><span class="' + actionCls + '">' + actionLabel(l.action) + '</span></td>' +
+            '<td>' + ACC.Utils.escapeHtml(l.resourceName || '—') + '<span style="font-size:10px;color:var(--acc-text-muted);margin-left:4px;">' + ACC.Utils.escapeHtml(l.resourceType || '') + '</span></td>' +
+            '<td style="font-size:11px;color:var(--acc-text-muted);">' + ACC.Utils.escapeHtml(l.details || '') + '</td>' +
+        '</tr>';
+    }
+    if (filtered.length > 500) {
+        html += '<tr><td colspan="5" style="text-align:center;color:var(--acc-text-muted);padding:12px;font-size:11px;">Zeige 500 von ' + filtered.length + ' Einträgen</td></tr>';
+    }
+
+    html += '</tbody></table>';
+    document.getElementById('logsTable').innerHTML = html;
+}
+
+function actionLabel(a) {
+    var map = { login:'Anmeldung', logout:'Abmeldung', view:'Ansicht', create:'Erstellt', update:'Aktualisiert', delete:'Gelöscht' };
+    return map[a] || a;
+}
+
+function exportCSV() {
+    var filtered = getFiltered();
+    var csv = 'Zeitstempel;Benutzer;Aktion;Ressourcentyp;Ressource;Details\n';
+    filtered.forEach(function(l) {
+        csv += [
+            l.timestamp || '', l.userName || '', l.action || '',
+            l.resourceType || '', l.resourceName || '', l.details || ''
+        ].map(function(v) { return '"' + String(v).replace(/"/g, '""') + '"'; }).join(';') + '\n';
+    });
+
+    var blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = 'aktivitaetsprotokoll_' + ACC.Utils.today() + '.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+    ACC.UI.success('CSV exportiert');
+}
+
+init();
+</script>
+</body>
+</html>

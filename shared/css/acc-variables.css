@@ -69,6 +69,14 @@
     --acc-priority-niedrig: #059669;
     --acc-priority-niedrig-bg: #d1fae5;
 
+    /* Roles */
+    --acc-role-admin: #7c3aed;
+    --acc-role-admin-bg: #ede9fe;
+    --acc-role-editor: #2563eb;
+    --acc-role-editor-bg: #dbeafe;
+    --acc-role-viewer: #6b7280;
+    --acc-role-viewer-bg: #f3f4f6;
+
     /* Typography */
     --acc-font: 'Inter', 'Segoe UI', Arial, sans-serif;
     --acc-font-mono: 'Consolas', 'Courier New', monospace;

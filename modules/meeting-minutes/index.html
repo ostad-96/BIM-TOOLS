@@ -9,7 +9,7 @@
 <link rel="stylesheet" href="../../shared/css/acc-components.css">
 <link rel="stylesheet" href="css/meeting-minutes.css">
 </head>
-<body class="entering">
+<body class="entering" style="opacity:0">
 
 <div class="page-transition"><div class="slide"></div><div class="slide-accent"></div></div>
 
@@ -48,16 +48,29 @@
 
 <script src="../../shared/js/acc-utils.js"></script>
 <script src="../../shared/js/acc-storage.js"></script>
-<script src="../../shared/js/acc-storage-indexeddb.js"></script>
+<script src="../../shared/js/acc-storage-indexeddb.js?v=3"></script>
+<script src="../../shared/js/acc-auth.js"></script>
 <script src="../../shared/js/acc-ui.js"></script>
 <script src="js/meeting-templates.js"></script>
 <script src="js/meeting-store.js"></script>
 <script>
 var allSeries = [];
 var seriesStats = {};
+var currentUser = null;
 
 async function init() {
     await ACC.StorageManager.init(new ACC.IndexedDBProvider('acc-platform'));
+    await ACC.Auth.init();
+    currentUser = await ACC.Auth.requireAuth('../../login.html');
+    if (!currentUser) return;
+    document.body.style.opacity = '1';
+
+    // Hide create controls for viewers
+    if (!ACC.Auth.canEdit(currentUser)) {
+        var topbarRight = document.querySelector('.acc-topbar .acc-flex-center');
+        if (topbarRight) topbarRight.style.display = 'none';
+    }
+
     populateDropdowns();
     await loadSeries();
 
@@ -91,6 +104,8 @@ function getFiltered() {
     var search = document.getElementById('searchInput').value.toLowerCase();
     var typeFilter = document.getElementById('filterType').value;
     return allSeries.filter(function(s) {
+        // RBAC: filter by series access
+        if (!ACC.Auth.canAccessSeries(currentUser, s.id)) return false;
         if (typeFilter && s.type !== typeFilter) return false;
         if (search) {
             var haystack = (s.title + ' ' + s.code + ' ' + s.description).toLowerCase();
@@ -147,7 +162,9 @@ function renderList() {
         }
         html += '</td>';
         html += '<td style="text-align:right;">';
-        html += '<button class="acc-btn-icon acc-btn-sm" onclick="event.stopPropagation(); deleteSeries(\'' + s.id + '\')" title="Löschen">&times;</button>';
+        if (ACC.Auth.canEditSeriesSettings(currentUser)) {
+            html += '<button class="acc-btn-icon acc-btn-sm" onclick="event.stopPropagation(); deleteSeries(\'' + s.id + '\')" title="Löschen">&times;</button>';
+        }
         html += '</td>';
         html += '</tr>';
     });

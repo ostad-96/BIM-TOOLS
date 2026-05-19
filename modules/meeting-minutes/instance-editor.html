@@ -9,7 +9,7 @@
 <link rel="stylesheet" href="../../shared/css/acc-components.css">
 <link rel="stylesheet" href="css/meeting-minutes.css">
 </head>
-<body class="entering">
+<body class="entering" style="opacity:0">
 
 <div class="page-transition"><div class="slide"></div><div class="slide-accent"></div></div>
 
@@ -136,7 +136,8 @@
 
 <script src="../../shared/js/acc-utils.js"></script>
 <script src="../../shared/js/acc-storage.js"></script>
-<script src="../../shared/js/acc-storage-indexeddb.js"></script>
+<script src="../../shared/js/acc-storage-indexeddb.js?v=3"></script>
+<script src="../../shared/js/acc-auth.js"></script>
 <script src="../../shared/js/acc-ui.js"></script>
 <script src="js/meeting-templates.js"></script>
 <script src="js/meeting-store.js"></script>
@@ -151,11 +152,21 @@ var allUpdates = [];
 var allAttachments = [];
 var activeCategoryId = null;
 var autoSaveTimer = null;
+var currentUser = null;
 
 async function init() {
     await ACC.StorageManager.init(new ACC.IndexedDBProvider('acc-platform'));
+    await ACC.Auth.init();
+    currentUser = await ACC.Auth.requireAuth('../../login.html');
+    if (!currentUser) return;
+    document.body.style.opacity = '1';
 
     if (!seriesId || !instanceId) { ACC.UI.error('Fehlende Parameter'); return; }
+    if (!ACC.Auth.canAccessSeries(currentUser, seriesId)) {
+        ACC.UI.error('Kein Zugriff auf diese Serie');
+        setTimeout(function() { window.location.href = 'index.html'; }, 1500);
+        return;
+    }
 
     var full = await ACC.MeetingStore.getInstanceFull(instanceId);
     if (!full) { ACC.UI.error('Sitzung nicht gefunden'); return; }
@@ -175,6 +186,24 @@ async function init() {
 
     if (series.topicCategoryDefs.length > 0) {
         selectCategory(series.topicCategoryDefs[0].id);
+    }
+
+    // Viewer read-only mode: disable all editing controls
+    if (!ACC.Auth.canEdit(currentUser)) {
+        document.querySelectorAll('input, select, textarea, [contenteditable]').forEach(function(el) {
+            el.disabled = true;
+            el.removeAttribute('contenteditable');
+        });
+        document.querySelectorAll('.acc-btn-primary, .acc-btn-danger, .acc-btn-icon, .rt-toolbar').forEach(function(el) {
+            el.style.display = 'none';
+        });
+    }
+
+    // Replace user selector with logged-in user identity
+    var userSelWrap = document.querySelector('.user-selector');
+    if (userSelWrap) {
+        userSelWrap.innerHTML = '<span style="font-size:12px;color:var(--acc-text-secondary);">Angemeldet als:</span> ' +
+            '<strong style="font-size:12px;">' + ACC.Utils.escapeHtml(currentUser.name || currentUser.username) + '</strong>';
     }
 }
 

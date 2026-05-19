@@ -84,11 +84,44 @@
 }
 .module-arrow svg { width: 15px; height: 15px; }
 .module-item.disabled .module-arrow { display: none; }
+
+/* User indicator */
+.user-indicator {
+    position: fixed; top: 16px; right: 24px; z-index: 100;
+    display: flex; align-items: center; gap: 10px;
+}
+.user-pill {
+    display: flex; align-items: center; gap: 8px;
+    padding: 6px 14px 6px 10px;
+    background: var(--acc-white); border: 1px solid var(--acc-border);
+    border-radius: var(--acc-radius-full); box-shadow: var(--acc-shadow-sm);
+    font-size: 12px; font-weight: 500; color: var(--acc-text);
+}
+.user-avatar {
+    width: 26px; height: 26px; border-radius: 50%;
+    background: var(--acc-primary); color: var(--acc-white);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700;
+}
+.user-role-dot {
+    display: inline-block; width: 7px; height: 7px; border-radius: 50%;
+    margin-left: 2px;
+}
+.user-logout-btn {
+    width: 30px; height: 30px; border-radius: 50%;
+    border: 1px solid var(--acc-border); background: var(--acc-white);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; transition: all 0.15s; box-shadow: var(--acc-shadow-sm);
+}
+.user-logout-btn:hover { background: var(--acc-danger-light); border-color: var(--acc-danger); }
+.user-logout-btn svg { width: 14px; height: 14px; }
 </style>
 </head>
-<body class="entering">
+<body class="entering" style="opacity:0">
 
 <div class="page-transition"><div class="slide"></div><div class="slide-accent"></div></div>
+
+<div id="userIndicator" class="user-indicator" style="display:none"></div>
 
 <div class="hub-banner">
     <canvas id="c"></canvas>
@@ -168,6 +201,22 @@
             </div>
             <span class="module-status soon">Bald</span>
         </div>
+
+        <div class="module-item" id="adminModule" style="display:none" onclick="ACC.Utils.navigateTo('modules/admin/index.html')">
+            <div class="module-icon-wrap" style="background:var(--acc-role-admin-bg)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 15c-4 0-7 2-7 4v1h14v-1c0-2-3-4-7-4z"/><circle cx="12" cy="8" r="4"/><path d="M20 8v4m2-2h-4"/>
+                </svg>
+            </div>
+            <div class="module-text">
+                <div class="module-label">Administration</div>
+                <div class="module-desc">Benutzer, Zugriffsrechte und Aktivitätsprotokolle verwalten</div>
+            </div>
+            <span class="module-status" style="color:var(--acc-role-admin);background:var(--acc-role-admin-bg)">Admin</span>
+            <div class="module-arrow">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+            </div>
+        </div>
     </div>
 </main>
 
@@ -177,7 +226,58 @@
 </footer>
 
 <script src="shared/js/acc-utils.js"></script>
+<script src="shared/js/acc-storage.js"></script>
+<script src="shared/js/acc-storage-indexeddb.js?v=3"></script>
+<script src="shared/js/acc-auth.js"></script>
 <script>
+// ── Auth gate ──
+(function() {
+    var db = new ACC.IndexedDBProvider('acc-platform');
+    ACC.StorageManager.init(db).then(function() {
+        return ACC.Auth.init();
+    }).then(function() {
+        return ACC.Auth.getCurrentUser();
+    }).then(function(user) {
+        if (!user || user.status !== 'active') {
+            window.location.href = 'login.html';
+            return;
+        }
+        // Show page
+        document.body.style.opacity = '1';
+
+        // Build user indicator
+        var initials = (user.name || user.username || '?').split(' ').map(function(w){return w[0];}).join('').toUpperCase().slice(0,2);
+        var roleColor = user.role === 'admin' ? 'var(--acc-role-admin)' : user.role === 'editor' ? 'var(--acc-role-editor)' : 'var(--acc-role-viewer)';
+        var ind = document.getElementById('userIndicator');
+        ind.innerHTML =
+            '<div class="user-pill">' +
+                '<div class="user-avatar">' + initials + '</div>' +
+                '<span>' + ACC.Utils.escapeHtml(user.name || user.username) + '</span>' +
+                '<span class="user-role-dot" style="background:' + roleColor + '" title="' + ACC.Auth.getRoleLabel(user.role) + '"></span>' +
+            '</div>' +
+            '<button class="user-logout-btn" onclick="doLogout()" title="Abmelden">' +
+                '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
+                    '<path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>' +
+                '</svg>' +
+            '</button>';
+        ind.style.display = 'flex';
+
+        // Show admin module if admin
+        if (ACC.Auth.canAccessAdmin(user)) {
+            document.getElementById('adminModule').style.display = 'flex';
+        }
+
+        // Log view
+        ACC.Auth.logActivity(user.id, user.name, 'view', 'system', null, 'Hub', '');
+    });
+})();
+
+function doLogout() {
+    ACC.Auth.logout().then(function() {
+        window.location.href = 'login.html';
+    });
+}
+
 var canvas = document.getElementById('c');
 var ctx = canvas.getContext('2d');
 var banner = canvas.parentElement;

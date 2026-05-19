@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Benutzer — ACC Admin</title>
+<link rel="stylesheet" href="../../shared/css/acc-variables.css">
+<link rel="stylesheet" href="../../shared/css/acc-base.css">
+<link rel="stylesheet" href="../../shared/css/acc-components.css">
+<link rel="stylesheet" href="css/admin.css">
+</head>
+<body style="opacity:0">
+
+<div class="admin-layout">
+    <nav class="admin-sidebar">
+        <div class="admin-sidebar-header">
+            <div class="admin-sidebar-logo"><img src="../../shared/assets/emch-berger-logo.gif" alt="Logo"></div>
+            <div class="admin-sidebar-title">Administration</div>
+            <div class="admin-sidebar-subtitle">ACC Platform</div>
+        </div>
+        <div class="admin-nav">
+            <a class="admin-nav-item" href="index.html">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+                <span>Dashboard</span>
+            </a>
+            <a class="admin-nav-item active" href="users.html">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+                <span>Benutzer</span>
+            </a>
+            <a class="admin-nav-item" href="activity.html">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                <span>Aktivitäten</span>
+            </a>
+            <a class="admin-nav-item" href="access.html">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+                <span>Zugriff</span>
+            </a>
+        </div>
+        <div class="admin-sidebar-footer">
+            <a class="admin-back-link" href="../../index.html">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline points="15 18 9 12 15 6"/></svg>
+                Zur Startseite
+            </a>
+        </div>
+    </nav>
+
+    <main class="admin-main">
+        <div class="admin-header">
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+                <div>
+                    <div class="admin-header-title">Benutzerverwaltung</div>
+                    <div class="admin-header-desc">Benutzer erstellen, bearbeiten und verwalten</div>
+                </div>
+                <button class="acc-btn acc-btn-primary" onclick="showAddModal()">+ Neuer Benutzer</button>
+            </div>
+        </div>
+
+        <div class="admin-content">
+            <div class="user-table-wrap">
+                <div class="user-table-toolbar">
+                    <input type="text" id="searchInput" class="acc-input" style="width:240px;" placeholder="Benutzer suchen..." oninput="renderUsers()">
+                    <select id="roleFilter" class="acc-select" style="width:160px;" onchange="renderUsers()">
+                        <option value="">Alle Rollen</option>
+                        <option value="admin">Administrator</option>
+                        <option value="editor">Bearbeiter</option>
+                        <option value="viewer">Betrachter</option>
+                    </select>
+                </div>
+                <div id="usersTable"></div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- Add/Edit Modal -->
+<div class="acc-modal-overlay" id="userModal">
+    <div class="acc-modal" style="max-width:480px;">
+        <div class="acc-modal-header">
+            <h3 id="modalTitle">Neuer Benutzer</h3>
+            <button class="acc-btn-icon" onclick="closeModal()">&times;</button>
+        </div>
+        <div class="acc-modal-body">
+            <input type="hidden" id="mUserId">
+            <div class="acc-form-group">
+                <label class="acc-form-label">Name *</label>
+                <input type="text" id="mName" class="acc-input" placeholder="Vollständiger Name">
+            </div>
+            <div class="acc-form-group">
+                <label class="acc-form-label">Benutzername *</label>
+                <input type="text" id="mUsername" class="acc-input" placeholder="Anmeldename">
+            </div>
+            <div class="acc-form-group" id="passwordGroup">
+                <label class="acc-form-label">Passwort *</label>
+                <input type="password" id="mPassword" class="acc-input" placeholder="Passwort">
+            </div>
+            <div class="acc-form-group">
+                <label class="acc-form-label">E-Mail</label>
+                <input type="email" id="mEmail" class="acc-input" placeholder="E-Mail-Adresse">
+            </div>
+            <div class="acc-form-group">
+                <label class="acc-form-label">Firma</label>
+                <input type="text" id="mCompany" class="acc-input" placeholder="Firma">
+            </div>
+            <div class="acc-form-group">
+                <label class="acc-form-label">Rolle *</label>
+                <select id="mRole" class="acc-select">
+                    <option value="viewer">Betrachter</option>
+                    <option value="editor">Bearbeiter</option>
+                    <option value="admin">Administrator</option>
+                </select>
+            </div>
+        </div>
+        <div class="acc-modal-footer">
+            <button class="acc-btn acc-btn-secondary" onclick="closeModal()">Abbrechen</button>
+            <button class="acc-btn acc-btn-primary" onclick="saveUser()">Speichern</button>
+        </div>
+    </div>
+</div>
+
+<!-- Password Change Modal -->
+<div class="acc-modal-overlay" id="pwModal">
+    <div class="acc-modal" style="max-width:400px;">
+        <div class="acc-modal-header">
+            <h3>Passwort ändern</h3>
+            <button class="acc-btn-icon" onclick="closePwModal()">&times;</button>
+        </div>
+        <div class="acc-modal-body">
+            <input type="hidden" id="pwUserId">
+            <div class="acc-form-group">
+                <label class="acc-form-label">Neues Passwort</label>
+                <input type="password" id="pwNew" class="acc-input" placeholder="Neues Passwort">
+            </div>
+        </div>
+        <div class="acc-modal-footer">
+            <button class="acc-btn acc-btn-secondary" onclick="closePwModal()">Abbrechen</button>
+            <button class="acc-btn acc-btn-primary" onclick="changePassword()">Ändern</button>
+        </div>
+    </div>
+</div>
+
+<script src="../../shared/js/acc-utils.js"></script>
+<script src="../../shared/js/acc-storage.js"></script>
+<script src="../../shared/js/acc-storage-indexeddb.js?v=3"></script>
+<script src="../../shared/js/acc-auth.js"></script>
+<script src="../../shared/js/acc-ui.js"></script>
+<script>
+var currentUser = null;
+var allUsers = [];
+
+async function init() {
+    await ACC.StorageManager.init(new ACC.IndexedDBProvider('acc-platform'));
+    await ACC.Auth.init();
+    currentUser = await ACC.Auth.requireAuth('../../login.html');
+    if (!currentUser) return;
+    if (!ACC.Auth.canAccessAdmin(currentUser)) { window.location.href = '../../index.html'; return; }
+    document.body.style.opacity = '1';
+    await loadUsers();
+}
+
+async function loadUsers() {
+    allUsers = await ACC.Auth.getAllUsers();
+    renderUsers();
+}
+
+function renderUsers() {
+    var search = (document.getElementById('searchInput').value || '').toLowerCase();
+    var roleFilter = document.getElementById('roleFilter').value;
+    var filtered = allUsers.filter(function(u) {
+        if (roleFilter && u.role !== roleFilter) return false;
+        if (search) {
+            var h = (u.name + ' ' + u.username + ' ' + u.email + ' ' + u.company).toLowerCase();
+            if (h.indexOf(search) === -1) return false;
+        }
+        return true;
+    });
+
+    var html = '<table class="acc-table"><thead><tr>' +
+        '<th>Name</th><th>Benutzername</th><th>E-Mail</th><th>Firma</th>' +
+        '<th>Rolle</th><th>Status</th><th>Letzte Aktivität</th><th style="width:120px;"></th>' +
+        '</tr></thead><tbody>';
+
+    if (filtered.length === 0) {
+        html += '<tr><td colspan="8" style="text-align:center;color:var(--acc-text-muted);padding:30px;">Keine Benutzer gefunden</td></tr>';
+    }
+
+    filtered.forEach(function(u) {
+        var roleClass = 'role-badge role-badge-' + u.role;
+        var statusDot = u.status === 'active' ? 'status-dot-active' : 'status-dot-inactive';
+        html += '<tr>' +
+            '<td><strong>' + ACC.Utils.escapeHtml(u.name || '—') + '</strong></td>' +
+            '<td>' + ACC.Utils.escapeHtml(u.username) + '</td>' +
+            '<td>' + ACC.Utils.escapeHtml(u.email || '—') + '</td>' +
+            '<td>' + ACC.Utils.escapeHtml(u.company || '—') + '</td>' +
+            '<td><span class="' + roleClass + '">' + ACC.Auth.getRoleLabel(u.role) + '</span></td>' +
+            '<td><span class="status-dot ' + statusDot + '"></span>' + (u.status === 'active' ? 'Aktiv' : 'Inaktiv') + '</td>' +
+            '<td style="font-size:11px;color:var(--acc-text-muted);">' + (u.lastActivity ? ACC.Utils.formatDateTime(u.lastActivity) : '—') + '</td>' +
+            '<td style="text-align:right;">' +
+                '<button class="acc-btn-icon acc-btn-sm" onclick="editUser(\'' + u.id + '\')" title="Bearbeiten" style="margin-right:4px;">&#9998;</button>' +
+                '<button class="acc-btn-icon acc-btn-sm" onclick="showPwModal(\'' + u.id + '\')" title="Passwort ändern" style="margin-right:4px;">&#128273;</button>' +
+                (u.status === 'active'
+                    ? '<button class="acc-btn-icon acc-btn-sm" onclick="toggleStatus(\'' + u.id + '\', false)" title="Deaktivieren">&#10006;</button>'
+                    : '<button class="acc-btn-icon acc-btn-sm" onclick="toggleStatus(\'' + u.id + '\', true)" title="Aktivieren" style="color:var(--acc-success);">&#10004;</button>') +
+            '</td></tr>';
+    });
+
+    html += '</tbody></table>';
+    document.getElementById('usersTable').innerHTML = html;
+}
+
+function showAddModal() {
+    document.getElementById('modalTitle').textContent = 'Neuer Benutzer';
+    document.getElementById('mUserId').value = '';
+    document.getElementById('mName').value = '';
+    document.getElementById('mUsername').value = '';
+    document.getElementById('mPassword').value = '';
+    document.getElementById('mEmail').value = '';
+    document.getElementById('mCompany').value = '';
+    document.getElementById('mRole').value = 'viewer';
+    document.getElementById('passwordGroup').style.display = 'block';
+    document.getElementById('mUsername').disabled = false;
+    document.getElementById('userModal').classList.add('active');
+}
+
+function editUser(id) {
+    var u = allUsers.find(function(x) { return x.id === id; });
+    if (!u) return;
+    document.getElementById('modalTitle').textContent = 'Benutzer bearbeiten';
+    document.getElementById('mUserId').value = u.id;
+    document.getElementById('mName').value = u.name || '';
+    document.getElementById('mUsername').value = u.username;
+    document.getElementById('mPassword').value = '';
+    document.getElementById('mEmail').value = u.email || '';
+    document.getElementById('mCompany').value = u.company || '';
+    document.getElementById('mRole').value = u.role;
+    document.getElementById('passwordGroup').style.display = 'none';
+    document.getElementById('mUsername').disabled = true;
+    document.getElementById('userModal').classList.add('active');
+}
+
+function closeModal() { document.getElementById('userModal').classList.remove('active'); }
+
+async function saveUser() {
+    var id = document.getElementById('mUserId').value;
+    var name = document.getElementById('mName').value.trim();
+    var username = document.getElementById('mUsername').value.trim();
+    var password = document.getElementById('mPassword').value;
+    var email = document.getElementById('mEmail').value.trim();
+    var company = document.getElementById('mCompany').value.trim();
+    var role = document.getElementById('mRole').value;
+
+    if (!name || !username) { ACC.UI.error('Name und Benutzername sind Pflichtfelder.'); return; }
+
+    try {
+        if (id) {
+            // Edit existing
+            var user = allUsers.find(function(x) { return x.id === id; });
+            if (!user) return;
+            user.name = name;
+            user.email = email;
+            user.company = company;
+            user.role = role;
+            await ACC.Auth.updateUser(user);
+            ACC.Auth.logActivity(currentUser.id, currentUser.name, 'update', 'user', user.id, user.name, 'Benutzer bearbeitet');
+            ACC.UI.success('Benutzer aktualisiert');
+        } else {
+            // Create new
+            if (!password) { ACC.UI.error('Passwort ist ein Pflichtfeld.'); return; }
+            var newUser = await ACC.Auth.createUser({
+                name: name, username: username, password: password,
+                email: email, company: company, role: role
+            });
+            ACC.Auth.logActivity(currentUser.id, currentUser.name, 'create', 'user', newUser.id, newUser.name, 'Benutzer erstellt');
+            ACC.UI.success('Benutzer erstellt');
+        }
+        closeModal();
+        await loadUsers();
+    } catch (e) {
+        ACC.UI.error(e.message || 'Fehler beim Speichern');
+    }
+}
+
+function showPwModal(id) {
+    document.getElementById('pwUserId').value = id;
+    document.getElementById('pwNew').value = '';
+    document.getElementById('pwModal').classList.add('active');
+}
+function closePwModal() { document.getElementById('pwModal').classList.remove('active'); }
+
+async function changePassword() {
+    var id = document.getElementById('pwUserId').value;
+    var pw = document.getElementById('pwNew').value;
+    if (!pw) { ACC.UI.error('Bitte neues Passwort eingeben.'); return; }
+    try {
+        await ACC.Auth.changePassword(id, pw);
+        var u = allUsers.find(function(x) { return x.id === id; });
+        ACC.Auth.logActivity(currentUser.id, currentUser.name, 'update', 'user', id, u ? u.name : '', 'Passwort geändert');
+        ACC.UI.success('Passwort geändert');
+        closePwModal();
+    } catch (e) { ACC.UI.error(e.message); }
+}
+
+async function toggleStatus(id, activate) {
+    try {
+        if (activate) {
+            await ACC.Auth.activateUser(id);
+        } else {
+            // Prevent deactivating self
+            if (id === currentUser.id) { ACC.UI.error('Sie können Ihr eigenes Konto nicht deaktivieren.'); return; }
+            await ACC.Auth.deactivateUser(id);
+        }
+        var u = allUsers.find(function(x) { return x.id === id; });
+        ACC.Auth.logActivity(currentUser.id, currentUser.name, 'update', 'user', id, u ? u.name : '', activate ? 'Aktiviert' : 'Deaktiviert');
+        ACC.UI.success(activate ? 'Benutzer aktiviert' : 'Benutzer deaktiviert');
+        await loadUsers();
+    } catch (e) { ACC.UI.error(e.message); }
+}
+
+init();
+</script>
+</body>
+</html>

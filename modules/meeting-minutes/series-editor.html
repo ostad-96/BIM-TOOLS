@@ -9,7 +9,7 @@
 <link rel="stylesheet" href="../../shared/css/acc-components.css">
 <link rel="stylesheet" href="css/meeting-minutes.css">
 </head>
-<body class="entering">
+<body class="entering" style="opacity:0">
 
 <div class="page-transition"><div class="slide"></div><div class="slide-accent"></div></div>
 
@@ -118,7 +118,8 @@
 
 <script src="../../shared/js/acc-utils.js"></script>
 <script src="../../shared/js/acc-storage.js"></script>
-<script src="../../shared/js/acc-storage-indexeddb.js"></script>
+<script src="../../shared/js/acc-storage-indexeddb.js?v=3"></script>
+<script src="../../shared/js/acc-auth.js"></script>
 <script src="../../shared/js/acc-ui.js"></script>
 <script src="js/meeting-templates.js"></script>
 <script src="js/meeting-store.js"></script>
@@ -127,14 +128,43 @@ var seriesId = ACC.Utils.getUrlParam('id');
 var series = null;
 var instances = [];
 var autoSaveTimer = null;
+var currentUser = null;
 
 async function init() {
     await ACC.StorageManager.init(new ACC.IndexedDBProvider('acc-platform'));
+    await ACC.Auth.init();
+    currentUser = await ACC.Auth.requireAuth('../../login.html');
+    if (!currentUser) return;
+    document.body.style.opacity = '1';
+
     populateTypeDropdown();
 
     if (!seriesId) { ACC.UI.error('Keine Serien-ID angegeben'); return; }
+    if (!ACC.Auth.canAccessSeries(currentUser, seriesId)) {
+        ACC.UI.error('Kein Zugriff auf diese Serie');
+        setTimeout(function() { window.location.href = 'index.html'; }, 1500);
+        return;
+    }
     series = await ACC.MeetingStore.getSeriesById(seriesId);
     if (!series) { ACC.UI.error('Serie nicht gefunden'); return; }
+
+    // Restrict editors/viewers from settings
+    if (!ACC.Auth.canEditSeriesSettings(currentUser)) {
+        // Hide settings tab, show only instances
+        var settingsTab = document.querySelector('[data-tab="settings"]');
+        if (settingsTab) settingsTab.style.display = 'none';
+        switchTab('instances');
+        // Hide delete and save buttons
+        var footerDanger = document.querySelector('.acc-btn-danger');
+        if (footerDanger) footerDanger.style.display = 'none';
+        var footerSave = document.querySelector('.editor-footer .acc-btn-primary');
+        if (footerSave) footerSave.style.display = 'none';
+    }
+    // Viewers can't create instances
+    if (!ACC.Auth.canEdit(currentUser)) {
+        var newBtn = document.querySelector('.acc-topbar .acc-btn-primary');
+        if (newBtn) newBtn.style.display = 'none';
+    }
 
     loadFormData();
     renderCategories();

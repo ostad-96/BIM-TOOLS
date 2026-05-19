@@ -3,7 +3,7 @@ var ACC = ACC || {};
 ACC.IndexedDBProvider = function(dbName) {
     this.dbName = dbName;
     this.db = null;
-    this.version = 2;
+    this.version = 3;
 };
 
 ACC.IndexedDBProvider.prototype = Object.create(ACC.StorageProvider.prototype);
@@ -13,8 +13,24 @@ ACC.IndexedDBProvider.prototype.open = function() {
     return new Promise(function(resolve, reject) {
         var request = indexedDB.open(self.dbName, self.version);
 
+        request.onblocked = function() {
+            // Another tab has the old version open — force close it
+            console.warn('IndexedDB upgrade blocked. Close other ACC tabs and reload.');
+            // Try to proceed anyway after a brief wait
+            setTimeout(function() {
+                if (!self.db) {
+                    // Delete and recreate as last resort
+                    var delReq = indexedDB.deleteDatabase(self.dbName);
+                    delReq.onsuccess = function() { window.location.reload(); };
+                }
+            }, 1500);
+        };
+
         request.onupgradeneeded = function(event) {
             var db = event.target.result;
+
+            // Close old connections that block the upgrade
+            db.onversionchange = function() { db.close(); };
 
             // Delete v1 stores if upgrading
             var oldStores = ['meetings', 'attendees', 'agendaItems', 'actionItems', 'decisions', 'meetingTemplates'];
@@ -68,15 +84,51 @@ ACC.IndexedDBProvider.prototype.open = function() {
                 db.createObjectStore('seriesTemplates', { keyPath: 'id' });
             }
 
-            // userProfiles
+            // userProfiles — v3: add username, role, status indexes
             if (!db.objectStoreNames.contains('userProfiles')) {
                 var profiles = db.createObjectStore('userProfiles', { keyPath: 'id' });
                 profiles.createIndex('isDefault', 'isDefault', { unique: false });
+                profiles.createIndex('username', 'username', { unique: true });
+                profiles.createIndex('role', 'role', { unique: false });
+                profiles.createIndex('status', 'status', { unique: false });
+            } else {
+                // Upgrade existing store with new indexes
+                var profileStore = event.target.transaction.objectStore('userProfiles');
+                if (!profileStore.indexNames.contains('username')) {
+                    profileStore.createIndex('username', 'username', { unique: true });
+                }
+                if (!profileStore.indexNames.contains('role')) {
+                    profileStore.createIndex('role', 'role', { unique: false });
+                }
+                if (!profileStore.indexNames.contains('status')) {
+                    profileStore.createIndex('status', 'status', { unique: false });
+                }
+            }
+
+            // activityLogs (v3)
+            if (!db.objectStoreNames.contains('activityLogs')) {
+                var logs = db.createObjectStore('activityLogs', { keyPath: 'id' });
+                logs.createIndex('userId', 'userId', { unique: false });
+                logs.createIndex('action', 'action', { unique: false });
+                logs.createIndex('resourceType', 'resourceType', { unique: false });
+                logs.createIndex('timestamp', 'timestamp', { unique: false });
+            }
+
+            // sessions (v3)
+            if (!db.objectStoreNames.contains('sessions')) {
+                var sessions = db.createObjectStore('sessions', { keyPath: 'id' });
+                sessions.createIndex('userId', 'userId', { unique: false });
             }
         };
 
         request.onsuccess = function(event) {
             self.db = event.target.result;
+            // If another tab opens a newer version, close this connection
+            self.db.onversionchange = function() {
+                self.db.close();
+                self.db = null;
+                window.location.reload();
+            };
             resolve();
         };
 
