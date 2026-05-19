@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Serie bearbeiten — ACC</title>
+<link rel="stylesheet" href="../../shared/css/acc-variables.css">
+<link rel="stylesheet" href="../../shared/css/acc-base.css">
+<link rel="stylesheet" href="../../shared/css/acc-components.css">
+<link rel="stylesheet" href="css/meeting-minutes.css">
+</head>
+<body class="entering">
+
+<div class="page-transition"><div class="slide"></div><div class="slide-accent"></div></div>
+
+<div class="acc-topbar">
+    <div class="acc-topbar-left">
+        <button class="acc-btn-icon" onclick="goBack()" title="Zurück">&#8592;</button>
+        <div>
+            <div class="acc-topbar-title" id="topbarTitle">Neue Serie</div>
+            <div class="acc-topbar-subtitle" id="topbarSubtitle">Besprechungsserie &middot; ACC</div>
+        </div>
+    </div>
+    <div class="acc-flex-center acc-gap-2">
+        <span id="autoSaveLabel" class="acc-text-xs acc-text-muted"></span>
+        <button class="acc-btn acc-btn-primary acc-btn-sm" onclick="createNewInstance()">+ Neue Sitzung</button>
+    </div>
+</div>
+
+<div class="mm-tabs">
+    <button class="mm-tab active" data-tab="settings" onclick="switchTab('settings')">Einstellungen</button>
+    <button class="mm-tab" data-tab="instances" onclick="switchTab('instances')">Instanzen</button>
+</div>
+
+<div style="padding: 16px 24px 100px 24px; max-width: 960px; margin: 0 auto;">
+
+    <!-- SETTINGS TAB -->
+    <div class="mm-tab-panel active" id="tab-settings">
+
+        <!-- Kopfdaten -->
+        <div class="acc-card editor-section">
+            <div class="editor-section-header">
+                <span class="editor-section-title">Kopfdaten</span>
+            </div>
+            <div class="editor-section-body">
+                <div class="acc-form-row">
+                    <label class="acc-form-label">Seriencode</label>
+                    <input type="text" id="fCode" class="acc-input" style="max-width:240px;" placeholder="z.B. B3|SSW-VE02-AP" onchange="autoSave()">
+                </div>
+                <div class="acc-form-row">
+                    <label class="acc-form-label">Titel</label>
+                    <input type="text" id="fTitle" class="acc-input" placeholder="Serienstitel eingeben..." onchange="autoSave()">
+                </div>
+                <div class="acc-form-row">
+                    <label class="acc-form-label">Typ</label>
+                    <select id="fType" class="acc-select" style="max-width:240px;" onchange="autoSave()"></select>
+                </div>
+                <div class="acc-form-row">
+                    <label class="acc-form-label">Beschreibung</label>
+                    <textarea id="fDescription" class="acc-textarea" rows="2" placeholder="Beschreibung der Besprechungsserie..." onchange="autoSave()"></textarea>
+                </div>
+                <div class="acc-form-row">
+                    <label class="acc-form-label">Standard-Ort</label>
+                    <input type="text" id="fLocation" class="acc-input" placeholder="Standard-Besprechungsort..." onchange="autoSave()">
+                </div>
+            </div>
+        </div>
+
+        <!-- Themenkategorien -->
+        <div class="acc-card editor-section">
+            <div class="editor-section-header">
+                <span class="editor-section-title">Themenkategorien</span>
+                <button class="acc-btn acc-btn-sm acc-btn-primary" onclick="addCategory()">+ Kategorie</button>
+            </div>
+            <div class="editor-section-body" id="categoriesWrap"></div>
+        </div>
+
+        <!-- Benutzerdefinierte Felder -->
+        <div class="acc-card editor-section">
+            <div class="editor-section-header">
+                <span class="editor-section-title">Benutzerdefinierte Felder</span>
+                <button class="acc-btn acc-btn-sm acc-btn-primary" onclick="addCustomField()">+ Feld</button>
+            </div>
+            <div class="editor-section-body" id="customFieldsWrap"></div>
+        </div>
+
+        <!-- Statusoptionen -->
+        <div class="acc-card editor-section">
+            <div class="editor-section-header">
+                <span class="editor-section-title">Statusoptionen</span>
+                <button class="acc-btn acc-btn-sm acc-btn-primary" onclick="addStatusOption()">+ Status</button>
+            </div>
+            <div class="editor-section-body" id="statusOptionsWrap"></div>
+        </div>
+
+        <!-- Standard-Teilnehmer -->
+        <div class="acc-card editor-section">
+            <div class="editor-section-header">
+                <span class="editor-section-title">Standard-Teilnehmer</span>
+                <button class="acc-btn acc-btn-sm acc-btn-primary" onclick="addDefaultParticipant()">+ Teilnehmer</button>
+            </div>
+            <div class="editor-section-body" id="defaultParticipantsWrap"></div>
+        </div>
+    </div>
+
+    <!-- INSTANCES TAB -->
+    <div class="mm-tab-panel" id="tab-instances">
+        <div id="instancesWrap" style="margin-top:16px;"></div>
+    </div>
+</div>
+
+<div class="editor-footer">
+    <button class="acc-btn acc-btn-secondary" onclick="goBack()">Zurück</button>
+    <div class="editor-footer-spacer"></div>
+    <button class="acc-btn acc-btn-danger" onclick="deleteSeries()">Serie löschen</button>
+    <button class="acc-btn acc-btn-primary" onclick="saveSeries()">Speichern</button>
+</div>
+
+<script src="../../shared/js/acc-utils.js"></script>
+<script src="../../shared/js/acc-storage.js"></script>
+<script src="../../shared/js/acc-storage-indexeddb.js"></script>
+<script src="../../shared/js/acc-ui.js"></script>
+<script src="js/meeting-templates.js"></script>
+<script src="js/meeting-store.js"></script>
+<script>
+var seriesId = ACC.Utils.getUrlParam('id');
+var series = null;
+var instances = [];
+var autoSaveTimer = null;
+
+async function init() {
+    await ACC.StorageManager.init(new ACC.IndexedDBProvider('acc-platform'));
+    populateTypeDropdown();
+
+    if (!seriesId) { ACC.UI.error('Keine Serien-ID angegeben'); return; }
+    series = await ACC.MeetingStore.getSeriesById(seriesId);
+    if (!series) { ACC.UI.error('Serie nicht gefunden'); return; }
+
+    loadFormData();
+    renderCategories();
+    renderCustomFields();
+    renderStatusOptions();
+    renderDefaultParticipants();
+    await loadInstances();
+}
+
+function populateTypeDropdown() {
+    var sel = document.getElementById('fType');
+    var types = ACC.Utils.MEETING_TYPES;
+    for (var key in types) {
+        sel.innerHTML += '<option value="' + key + '">' + ACC.Utils.escapeHtml(types[key]) + '</option>';
+    }
+}
+
+function loadFormData() {
+    document.getElementById('fCode').value = series.code || '';
+    document.getElementById('fTitle').value = series.title || '';
+    document.getElementById('fType').value = series.type || 'custom';
+    document.getElementById('fDescription').value = series.description || '';
+    document.getElementById('fLocation').value = series.defaultLocation || '';
+    updateTopbar();
+}
+
+function updateTopbar() {
+    var title = document.getElementById('fTitle').value || 'Neue Serie';
+    var code = document.getElementById('fCode').value;
+    document.getElementById('topbarTitle').textContent = title;
+    document.getElementById('topbarSubtitle').textContent = (code ? code + ' · ' : '') + 'Besprechungsserie · ACC';
+}
+
+function collectFields() {
+    series.code = document.getElementById('fCode').value;
+    series.title = document.getElementById('fTitle').value;
+    series.type = document.getElementById('fType').value;
+    series.description = document.getElementById('fDescription').value;
+    series.defaultLocation = document.getElementById('fLocation').value;
+}
+
+function autoSave() {
+    updateTopbar();
+    clearTimeout(autoSaveTimer);
+    autoSaveTimer = setTimeout(async function() {
+        collectFields();
+        await ACC.MeetingStore.updateSeries(series);
+        showSaved();
+    }, 1000);
+}
+
+function showSaved() {
+    document.getElementById('autoSaveLabel').textContent = 'Gespeichert ' + new Date().toLocaleTimeString('de-DE', { hour:'2-digit', minute:'2-digit' });
+}
+
+async function saveSeries() {
+    collectFields();
+    await ACC.MeetingStore.updateSeries(series);
+    ACC.UI.success('Serie gespeichert');
+    showSaved();
+}
+
+// ── TABS ──
+function switchTab(tab) {
+    document.querySelectorAll('.mm-tab').forEach(function(t) { t.classList.toggle('active', t.getAttribute('data-tab') === tab); });
+    document.querySelectorAll('.mm-tab-panel').forEach(function(p) { p.classList.toggle('active', p.id === 'tab-' + tab); });
+}
+
+// ── CATEGORIES ──
+function renderCategories() {
+    var wrap = document.getElementById('categoriesWrap');
+    var cats = series.topicCategoryDefs || [];
+    if (cats.length === 0) {
+        wrap.innerHTML = '<div class="acc-text-sm acc-text-muted">Keine Kategorien definiert.</div>';
+        return;
+    }
+    cats.sort(function(a, b) { return a.sortOrder - b.sortOrder; });
+    var html = '';
+    cats.forEach(function(cat, i) {
+        html += '<div class="config-list-item">';
+        html += '<input type="text" class="acc-input acc-input-sm" style="width:60px;" value="' + ACC.Utils.escapeHtml(cat.code) + '" onchange="updateCategory(' + i + ', \'code\', this.value)">';
+        html += '<input type="text" class="acc-input acc-input-sm" style="flex:1;" value="' + ACC.Utils.escapeHtml(cat.label) + '" placeholder="Kategorie-Name" onchange="updateCategory(' + i + ', \'label\', this.value)">';
+        html += '<button class="acc-btn-icon acc-btn-sm" onclick="removeCategory(' + i + ')" title="Entfernen">&times;</button>';
+        html += '</div>';
+    });
+    wrap.innerHTML = html;
+}
+
+function addCategory() {
+    var cats = series.topicCategoryDefs;
+    var code = String(cats.length + 1).padStart(2, '0');
+    cats.push({ id: ACC.Utils.uuid(), code: code, label: '', sortOrder: cats.length + 1 });
+    renderCategories();
+    autoSave();
+}
+
+function updateCategory(idx, field, value) {
+    series.topicCategoryDefs[idx][field] = value;
+    autoSave();
+}
+
+function removeCategory(idx) {
+    series.topicCategoryDefs.splice(idx, 1);
+    series.topicCategoryDefs.forEach(function(c, i) { c.sortOrder = i + 1; });
+    renderCategories();
+    autoSave();
+}
+
+// ── CUSTOM FIELDS ──
+function renderCustomFields() {
+    var wrap = document.getElementById('customFieldsWrap');
+    var fields = series.customFieldDefs || [];
+    if (fields.length === 0) {
+        wrap.innerHTML = '<div class="acc-text-sm acc-text-muted">Keine benutzerdefinierten Felder.</div>';
+        return;
+    }
+    var html = '';
+    fields.forEach(function(f, i) {
+        html += '<div class="config-list-item">';
+        html += '<input type="text" class="acc-input acc-input-sm" style="flex:1;" value="' + ACC.Utils.escapeHtml(f.label) + '" placeholder="Feldname" onchange="updateCustomField(' + i + ', \'label\', this.value)">';
+        html += '<select class="acc-select acc-input-sm" style="width:100px;" onchange="updateCustomField(' + i + ', \'type\', this.value)">';
+        ['text', 'date', 'number', 'select'].forEach(function(t) {
+            html += '<option value="' + t + '"' + (f.type === t ? ' selected' : '') + '>' + t.charAt(0).toUpperCase() + t.slice(1) + '</option>';
+        });
+        html += '</select>';
+        html += '<button class="acc-btn-icon acc-btn-sm" onclick="removeCustomField(' + i + ')" title="Entfernen">&times;</button>';
+        html += '</div>';
+    });
+    wrap.innerHTML = html;
+}
+
+function addCustomField() {
+    series.customFieldDefs.push({ id: ACC.Utils.uuid(), label: '', type: 'text', options: null });
+    renderCustomFields();
+    autoSave();
+}
+
+function updateCustomField(idx, field, value) {
+    series.customFieldDefs[idx][field] = value;
+    autoSave();
+}
+
+function removeCustomField(idx) {
+    series.customFieldDefs.splice(idx, 1);
+    renderCustomFields();
+    autoSave();
+}
+
+// ── STATUS OPTIONS ──
+function renderStatusOptions() {
+    var wrap = document.getElementById('statusOptionsWrap');
+    var opts = series.statusOptions || [];
+    if (opts.length === 0) {
+        wrap.innerHTML = '<div class="acc-text-sm acc-text-muted">Keine Statusoptionen definiert.</div>';
+        return;
+    }
+    var html = '';
+    opts.forEach(function(o, i) {
+        html += '<div class="config-list-item">';
+        html += '<input type="text" class="acc-input acc-input-sm" style="width:120px;" value="' + ACC.Utils.escapeHtml(o.key) + '" placeholder="Schlüssel" onchange="updateStatusOpt(' + i + ', \'key\', this.value)">';
+        html += '<input type="text" class="acc-input acc-input-sm" style="flex:1;" value="' + ACC.Utils.escapeHtml(o.label) + '" placeholder="Anzeige-Name" onchange="updateStatusOpt(' + i + ', \'label\', this.value)">';
+        html += '<button class="acc-btn-icon acc-btn-sm" onclick="removeStatusOpt(' + i + ')" title="Entfernen">&times;</button>';
+        html += '</div>';
+    });
+    wrap.innerHTML = html;
+}
+
+function addStatusOption() {
+    series.statusOptions.push({ key: '', label: '' });
+    renderStatusOptions();
+    autoSave();
+}
+
+function updateStatusOpt(idx, field, value) {
+    series.statusOptions[idx][field] = value;
+    autoSave();
+}
+
+function removeStatusOpt(idx) {
+    series.statusOptions.splice(idx, 1);
+    renderStatusOptions();
+    autoSave();
+}
+
+// ── DEFAULT PARTICIPANTS ──
+function renderDefaultParticipants() {
+    var wrap = document.getElementById('defaultParticipantsWrap');
+    var parts = series.defaultParticipants || [];
+    if (parts.length === 0) {
+        wrap.innerHTML = '<div class="acc-text-sm acc-text-muted">Keine Standard-Teilnehmer definiert.</div>';
+        return;
+    }
+    var roleOptions = ACC.Utils.ATTENDEE_ROLES.map(function(r) {
+        return '<option value="' + ACC.Utils.escapeHtml(r) + '">' + ACC.Utils.escapeHtml(r) + '</option>';
+    }).join('');
+
+    var html = '';
+    parts.forEach(function(p, i) {
+        html += '<div class="config-list-item">';
+        html += '<input type="text" class="acc-input acc-input-sm" style="flex:1;" value="' + ACC.Utils.escapeHtml(p.name) + '" placeholder="Name" onchange="updateDefPart(' + i + ', \'name\', this.value)">';
+        html += '<input type="text" class="acc-input acc-input-sm" style="flex:1;" value="' + ACC.Utils.escapeHtml(p.company) + '" placeholder="Firma" onchange="updateDefPart(' + i + ', \'company\', this.value)">';
+        html += '<select class="acc-select acc-input-sm" style="width:160px;" onchange="updateDefPart(' + i + ', \'role\', this.value)"><option value="">Rolle...</option>' + roleOptions + '</select>';
+        html += '<select class="acc-select acc-input-sm" style="width:120px;" onchange="updateDefPart(' + i + ', \'participantType\', this.value)">';
+        html += '<option value="organisator"' + (p.participantType === 'organisator' ? ' selected' : '') + '>Organisator</option>';
+        html += '<option value="eingeladene"' + (p.participantType === 'eingeladene' ? ' selected' : '') + '>Eingeladene</option>';
+        html += '</select>';
+        html += '<button class="acc-btn-icon acc-btn-sm" onclick="removeDefPart(' + i + ')" title="Entfernen">&times;</button>';
+        html += '</div>';
+    });
+    wrap.innerHTML = html;
+
+    parts.forEach(function(p, i) {
+        var row = wrap.querySelectorAll('.config-list-item')[i];
+        if (row && p.role) {
+            var roleSel = row.querySelectorAll('select')[0];
+            if (roleSel) roleSel.value = p.role;
+        }
+    });
+}
+
+function addDefaultParticipant() {
+    series.defaultParticipants.push({ name: '', company: '', role: '', email: '', participantType: 'eingeladene' });
+    renderDefaultParticipants();
+    autoSave();
+}
+
+function updateDefPart(idx, field, value) {
+    series.defaultParticipants[idx][field] = value;
+    autoSave();
+}
+
+function removeDefPart(idx) {
+    series.defaultParticipants.splice(idx, 1);
+    renderDefaultParticipants();
+    autoSave();
+}
+
+// ── INSTANCES ──
+async function loadInstances() {
+    instances = await ACC.MeetingStore.getInstancesForSeries(seriesId);
+    renderInstances();
+}
+
+function renderInstances() {
+    var wrap = document.getElementById('instancesWrap');
+    if (instances.length === 0) {
+        wrap.innerHTML = ACC.UI.renderEmptyState(
+            'Noch keine Sitzungen',
+            'Erstellen Sie die erste Sitzung dieser Serie.',
+            'Neue Sitzung erstellen',
+            'createNewInstance()'
+        );
+        return;
+    }
+
+    var html = '<table class="acc-table acc-table-hover">';
+    html += '<thead><tr><th style="width:60px;">Nr.</th><th style="width:120px;">Datum</th><th>Ort</th><th style="width:100px;">Status</th><th style="width:160px;">Erstellt von</th><th style="width:60px;"></th></tr></thead><tbody>';
+
+    instances.forEach(function(inst) {
+        html += '<tr onclick="openInstance(\'' + inst.id + '\')">';
+        html += '<td><strong>' + inst.instanceNumber + '</strong></td>';
+        html += '<td>' + ACC.Utils.formatDate(inst.date) + '</td>';
+        html += '<td>' + ACC.Utils.escapeHtml(inst.location || '—') + '</td>';
+        html += '<td>' + ACC.UI.renderInstanceStatusBadge(inst.status) + '</td>';
+        html += '<td class="acc-text-xs acc-text-muted">' + ACC.Utils.escapeHtml(inst.createdBy || '—') + '</td>';
+        html += '<td style="text-align:right;">';
+        html += '<button class="acc-btn-icon acc-btn-sm" onclick="event.stopPropagation(); deleteInstance(\'' + inst.id + '\')" title="Löschen">&times;</button>';
+        html += '</td></tr>';
+    });
+    html += '</tbody></table>';
+    wrap.innerHTML = html;
+}
+
+function openInstance(id) {
+    ACC.Utils.navigateTo('instance-editor.html?seriesId=' + seriesId + '&instanceId=' + id);
+}
+
+async function createNewInstance() {
+    var instance = await ACC.MeetingStore.createInstance(seriesId, {});
+    ACC.UI.success('Sitzung #' + instance.instanceNumber + ' erstellt');
+    ACC.Utils.navigateTo('instance-editor.html?seriesId=' + seriesId + '&instanceId=' + instance.id);
+}
+
+async function deleteInstance(id) {
+    var confirmed = await ACC.UI.confirmDelete('Möchten Sie diese Sitzung wirklich löschen?');
+    if (!confirmed) return;
+    await ACC.MeetingStore.deleteInstance(id);
+    ACC.UI.success('Sitzung gelöscht');
+    await loadInstances();
+}
+
+// ── NAV ──
+function goBack() { ACC.Utils.navigateTo('index.html'); }
+
+async function deleteSeries() {
+    var confirmed = await ACC.UI.confirmDelete('Möchten Sie diese Serie und alle zugehörigen Daten wirklich löschen?');
+    if (!confirmed) return;
+    await ACC.MeetingStore.deleteSeries(seriesId);
+    ACC.UI.success('Serie gelöscht');
+    ACC.Utils.navigateTo('index.html');
+}
+
+init();
+</script>
+</body>
+</html>

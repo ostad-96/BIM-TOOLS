@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sitzung bearbeiten — ACC</title>
+<link rel="stylesheet" href="../../shared/css/acc-variables.css">
+<link rel="stylesheet" href="../../shared/css/acc-base.css">
+<link rel="stylesheet" href="../../shared/css/acc-components.css">
+<link rel="stylesheet" href="css/meeting-minutes.css">
+</head>
+<body class="entering">
+
+<div class="page-transition"><div class="slide"></div><div class="slide-accent"></div></div>
+
+<div class="acc-topbar">
+    <div class="acc-topbar-left">
+        <button class="acc-btn-icon" onclick="goBack()" title="Zurück">&#8592;</button>
+        <div>
+            <div class="acc-topbar-title" id="topbarTitle">Sitzung</div>
+            <div class="acc-topbar-subtitle" id="topbarSubtitle">Besprechungsprotokoll &middot; ACC</div>
+        </div>
+    </div>
+    <div class="acc-flex-center acc-gap-2">
+        <div class="user-selector">
+            <span>Benutzer:</span>
+            <select id="userSelect" class="acc-select acc-input-sm" style="width:200px;" onchange="switchUser(this.value)">
+                <option value="">— Kein Benutzer —</option>
+            </select>
+            <button class="acc-btn-icon acc-btn-sm" onclick="addNewUser()" title="Neuen Benutzer anlegen">+</button>
+        </div>
+        <span id="autoSaveLabel" class="acc-text-xs acc-text-muted"></span>
+    </div>
+</div>
+
+<div class="mm-tabs">
+    <button class="mm-tab active" data-tab="meta" onclick="switchTab('meta')">Kopfdaten &amp; Teilnehmer</button>
+    <button class="mm-tab" data-tab="discussion" onclick="switchTab('discussion')">Besprechungsdiskussion</button>
+    <button class="mm-tab" data-tab="overview" onclick="switchTab('overview')">Übersicht</button>
+</div>
+
+<div style="padding: 0 0 100px 0;">
+
+    <!-- TAB: META -->
+    <div class="mm-tab-panel active" id="tab-meta">
+        <div style="padding:16px 24px; max-width:960px; margin:0 auto;">
+
+            <div class="acc-card editor-section">
+                <div class="editor-section-header"><span class="editor-section-title">Kopfdaten</span></div>
+                <div class="editor-section-body">
+                    <div class="acc-form-row">
+                        <label class="acc-form-label">Sitzungsnummer</label>
+                        <input type="text" id="fInstanceNum" class="acc-input" style="max-width:200px;" disabled>
+                    </div>
+                    <div class="acc-form-row">
+                        <label class="acc-form-label">Datum</label>
+                        <input type="date" id="fDate" class="acc-input" style="max-width:170px;" onchange="autoSave()">
+                    </div>
+                    <div class="acc-form-row">
+                        <label class="acc-form-label">Zeit</label>
+                        <div class="acc-flex-center acc-gap-2">
+                            <input type="time" id="fTimeStart" class="acc-input" style="width:120px;" onchange="autoSave()">
+                            <span class="acc-text-muted">bis</span>
+                            <input type="time" id="fTimeEnd" class="acc-input" style="width:120px;" onchange="autoSave()">
+                        </div>
+                    </div>
+                    <div class="acc-form-row">
+                        <label class="acc-form-label">Ort</label>
+                        <input type="text" id="fLocation" class="acc-input" placeholder="Besprechungsort..." onchange="autoSave()">
+                    </div>
+                    <div class="acc-form-row">
+                        <label class="acc-form-label">Status</label>
+                        <select id="fStatus" class="acc-select" style="max-width:200px;" onchange="autoSave()">
+                            <option value="entwurf">Entwurf</option>
+                            <option value="aktiv">Aktiv</option>
+                            <option value="abgeschlossen">Abgeschlossen</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Organisatoren -->
+            <div class="acc-card editor-section">
+                <div class="editor-section-header">
+                    <span class="editor-section-title">Organisatoren</span>
+                    <button class="acc-btn acc-btn-sm acc-btn-primary" onclick="addParticipant('organisator')">+ Organisator</button>
+                </div>
+                <div class="editor-section-body" id="organizersWrap"></div>
+            </div>
+
+            <!-- Eingeladene -->
+            <div class="acc-card editor-section">
+                <div class="editor-section-header">
+                    <span class="editor-section-title">Eingeladene</span>
+                    <button class="acc-btn acc-btn-sm acc-btn-primary" onclick="addParticipant('eingeladene')">+ Eingeladene/r</button>
+                </div>
+                <div class="editor-section-body" id="inviteesWrap"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB: DISCUSSION -->
+    <div class="mm-tab-panel" id="tab-discussion">
+        <div class="discussion-layout">
+            <div class="category-nav" id="categoryNav"></div>
+            <div class="discussion-content" id="discussionContent">
+                <div class="acc-text-sm acc-text-muted" style="padding:40px; text-align:center;">Wählen Sie eine Kategorie aus der linken Navigation.</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB: OVERVIEW -->
+    <div class="mm-tab-panel" id="tab-overview">
+        <div style="padding:16px 24px; max-width:960px; margin:0 auto;">
+            <div class="acc-card editor-section">
+                <div class="editor-section-header"><span class="editor-section-title">Zusammenfassung</span></div>
+                <div class="editor-section-body">
+                    <textarea id="fSummary" class="acc-textarea" rows="6" placeholder="Besprechungsübersicht / Zusammenfassung..." onchange="autoSave()"></textarea>
+                </div>
+            </div>
+            <div class="acc-card editor-section">
+                <div class="editor-section-header"><span class="editor-section-title">Statistik</span></div>
+                <div class="editor-section-body" id="statsWrap"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="editor-footer">
+    <button class="acc-btn acc-btn-secondary" onclick="goBack()">Zurück</button>
+    <div class="editor-footer-spacer"></div>
+    <button class="acc-btn acc-btn-secondary" onclick="openPrintView()">Druckansicht</button>
+    <button class="acc-btn acc-btn-secondary" onclick="createNextInstance()">Neue Sitzung</button>
+    <button class="acc-btn acc-btn-primary" onclick="saveInstance()">Speichern</button>
+</div>
+
+<script src="../../shared/js/acc-utils.js"></script>
+<script src="../../shared/js/acc-storage.js"></script>
+<script src="../../shared/js/acc-storage-indexeddb.js"></script>
+<script src="../../shared/js/acc-ui.js"></script>
+<script src="js/meeting-templates.js"></script>
+<script src="js/meeting-store.js"></script>
+<script>
+var seriesId = ACC.Utils.getUrlParam('seriesId');
+var instanceId = ACC.Utils.getUrlParam('instanceId');
+var series = null;
+var instance = null;
+var participants = [];
+var allItems = [];
+var allUpdates = [];
+var allAttachments = [];
+var activeCategoryId = null;
+var autoSaveTimer = null;
+
+async function init() {
+    await ACC.StorageManager.init(new ACC.IndexedDBProvider('acc-platform'));
+
+    if (!seriesId || !instanceId) { ACC.UI.error('Fehlende Parameter'); return; }
+
+    var full = await ACC.MeetingStore.getInstanceFull(instanceId);
+    if (!full) { ACC.UI.error('Sitzung nicht gefunden'); return; }
+
+    series = full.series;
+    instance = full.instance;
+    participants = full.participants;
+    allItems = full.discussionItems;
+    allUpdates = full.updates;
+    allAttachments = full.attachments;
+
+    await loadUserProfiles();
+    loadFormData();
+    renderParticipants();
+    renderCategoryNav();
+    renderStats();
+
+    if (series.topicCategoryDefs.length > 0) {
+        selectCategory(series.topicCategoryDefs[0].id);
+    }
+}
+
+// ── USER PROFILES ──
+async function loadUserProfiles() {
+    var profiles = await ACC.MeetingStore.getAllUserProfiles();
+    var sel = document.getElementById('userSelect');
+    sel.innerHTML = '<option value="">— Kein Benutzer —</option>';
+    profiles.forEach(function(p) {
+        sel.innerHTML += '<option value="' + p.id + '">' + ACC.Utils.escapeHtml(ACC.Utils.formatAuthor(p.name, p.company)) + '</option>';
+    });
+    var current = await ACC.MeetingStore.getCurrentUser();
+    if (current) sel.value = current.id;
+}
+
+async function switchUser(profileId) {
+    if (profileId) {
+        await ACC.MeetingStore.setCurrentUser(profileId);
+    }
+}
+
+async function addNewUser() {
+    var result = await ACC.UI.modal({
+        title: 'Neuen Benutzer anlegen',
+        body: '<div class="acc-form-row"><label class="acc-form-label">Name</label><input type="text" id="newUserName" class="acc-input" placeholder="Vorname Nachname"></div>' +
+              '<div class="acc-form-row"><label class="acc-form-label">Firma</label><input type="text" id="newUserCompany" class="acc-input" placeholder="Firmenname"></div>',
+        buttons: [
+            { label: 'Abbrechen', action: 'cancel', cls: 'acc-btn-secondary' },
+            { label: 'Anlegen', action: 'create', cls: 'acc-btn-primary' }
+        ]
+    });
+    if (result !== 'create') return;
+    var name = document.getElementById('newUserName').value.trim();
+    var company = document.getElementById('newUserCompany').value.trim();
+    if (!name) return;
+    var profile = await ACC.MeetingStore.createUserProfile({ name: name, company: company, isDefault: true });
+    await ACC.MeetingStore.setCurrentUser(profile.id);
+    await loadUserProfiles();
+    ACC.UI.success('Benutzer angelegt');
+}
+
+// ── FORM DATA ──
+function loadFormData() {
+    document.getElementById('fInstanceNum').value = 'Besprechung ' + instance.instanceNumber;
+    document.getElementById('fDate').value = instance.date || '';
+    document.getElementById('fTimeStart').value = instance.timeStart || '';
+    document.getElementById('fTimeEnd').value = instance.timeEnd || '';
+    document.getElementById('fLocation').value = instance.location || '';
+    document.getElementById('fStatus').value = instance.status || 'entwurf';
+    document.getElementById('fSummary').value = instance.summary || '';
+    updateTopbar();
+}
+
+function updateTopbar() {
+    document.getElementById('topbarTitle').textContent = 'Besprechung ' + instance.instanceNumber + ': ' + (series.title || '');
+    document.getElementById('topbarSubtitle').textContent = (series.code ? series.code + ' · ' : '') + 'Sitzungsprotokoll · ACC';
+}
+
+function collectFields() {
+    instance.date = document.getElementById('fDate').value;
+    instance.timeStart = document.getElementById('fTimeStart').value;
+    instance.timeEnd = document.getElementById('fTimeEnd').value;
+    instance.location = document.getElementById('fLocation').value;
+    instance.status = document.getElementById('fStatus').value;
+    instance.summary = document.getElementById('fSummary').value;
+}
+
+function autoSave() {
+    clearTimeout(autoSaveTimer);
+    autoSaveTimer = setTimeout(async function() {
+        collectFields();
+        await ACC.MeetingStore.updateInstance(instance);
+        showSaved();
+    }, 1000);
+}
+
+function showSaved() {
+    document.getElementById('autoSaveLabel').textContent = 'Gespeichert ' + new Date().toLocaleTimeString('de-DE', { hour:'2-digit', minute:'2-digit' });
+}
+
+async function saveInstance() {
+    collectFields();
+    await ACC.MeetingStore.updateInstance(instance);
+    ACC.UI.success('Sitzung gespeichert');
+    showSaved();
+}
+
+// ── TABS ──
+function switchTab(tab) {
+    document.querySelectorAll('.mm-tab').forEach(function(t) { t.classList.toggle('active', t.getAttribute('data-tab') === tab); });
+    document.querySelectorAll('.mm-tab-panel').forEach(function(p) { p.classList.toggle('active', p.id === 'tab-' + tab); });
+}
+
+// ── PARTICIPANTS ──
+function renderParticipants() {
+    var organizers = participants.filter(function(p) { return p.participantType === 'organisator'; });
+    var invitees = participants.filter(function(p) { return p.participantType !== 'organisator'; });
+    renderParticipantGroup('organizersWrap', organizers);
+    renderParticipantGroup('inviteesWrap', invitees);
+}
+
+function renderParticipantGroup(wrapId, list) {
+    var wrap = document.getElementById(wrapId);
+    if (list.length === 0) {
+        wrap.innerHTML = '<div class="acc-text-sm acc-text-muted" style="padding:8px 0;">Keine Einträge.</div>';
+        return;
+    }
+    var html = '';
+    list.forEach(function(p) {
+        html += '<div class="participant-row" data-id="' + p.id + '">';
+        html += '<input type="text" class="acc-input acc-input-sm name-field" value="' + ACC.Utils.escapeHtml(p.name) + '" placeholder="Name" data-field="name" onchange="updateParticipant(this)">';
+        html += '<input type="text" class="acc-input acc-input-sm" value="' + ACC.Utils.escapeHtml(p.company) + '" placeholder="Firma" data-field="company" onchange="updateParticipant(this)">';
+        html += '<input type="text" class="acc-input acc-input-sm" value="' + ACC.Utils.escapeHtml(p.role) + '" placeholder="Rolle" data-field="role" onchange="updateParticipant(this)" style="width:140px;">';
+        if (p.participantType !== 'organisator') {
+            html += '<label class="acc-checkbox-label" style="flex-shrink:0;"><input type="checkbox" ' + (p.present ? 'checked' : '') + ' data-field="present" onchange="updateParticipant(this)"> Anw.</label>';
+        }
+        html += '<button class="acc-btn-icon acc-btn-sm" onclick="removeParticipant(\'' + p.id + '\')" title="Entfernen">&times;</button>';
+        html += '</div>';
+    });
+    wrap.innerHTML = html;
+}
+
+async function addParticipant(type) {
+    var p = await ACC.MeetingStore.createParticipant(instanceId, seriesId, { participantType: type });
+    participants.push(p);
+    renderParticipants();
+}
+
+async function updateParticipant(el) {
+    var row = el.closest('.participant-row');
+    var id = row.getAttribute('data-id');
+    var field = el.getAttribute('data-field');
+    var p = participants.find(function(x) { return x.id === id; });
+    if (!p) return;
+    p[field] = field === 'present' ? el.checked : el.value;
+    await ACC.MeetingStore.updateParticipant(p);
+}
+
+async function removeParticipant(id) {
+    await ACC.MeetingStore.removeParticipant(id);
+    participants = participants.filter(function(p) { return p.id !== id; });
+    renderParticipants();
+}
+
+// ── CATEGORY NAV ──
+function renderCategoryNav() {
+    var nav = document.getElementById('categoryNav');
+    var cats = (series.topicCategoryDefs || []).slice().sort(function(a, b) { return a.sortOrder - b.sortOrder; });
+    if (cats.length === 0) {
+        nav.innerHTML = '<div class="acc-text-sm acc-text-muted" style="padding:16px;">Keine Kategorien definiert.</div>';
+        return;
+    }
+    var html = '';
+    cats.forEach(function(cat) {
+        var itemCount = allItems.filter(function(it) { return it.categoryId === cat.id; }).length;
+        var isActive = cat.id === activeCategoryId;
+        html += '<button class="category-nav-item' + (isActive ? ' active' : '') + '" onclick="selectCategory(\'' + cat.id + '\')">';
+        html += '<span class="category-nav-code">' + ACC.Utils.escapeHtml(cat.code) + '</span>';
+        html += '<span>' + ACC.Utils.escapeHtml(cat.label) + '</span>';
+        if (itemCount > 0) html += '<span class="category-item-count">' + itemCount + '</span>';
+        html += '</button>';
+    });
+    nav.innerHTML = html;
+}
+
+function selectCategory(catId) {
+    activeCategoryId = catId;
+    renderCategoryNav();
+    renderDiscussionItems();
+}
+
+// ── DISCUSSION ITEMS ──
+function getStatusLabel(key) {
+    var opt = (series.statusOptions || []).find(function(o) { return o.key === key; });
+    return opt ? opt.label : (ACC.Utils.DISCUSSION_STATUSES[key] || key);
+}
+
+function renderDiscussionItems() {
+    var wrap = document.getElementById('discussionContent');
+    var cat = (series.topicCategoryDefs || []).find(function(c) { return c.id === activeCategoryId; });
+    if (!cat) { wrap.innerHTML = ''; return; }
+
+    var items = allItems.filter(function(it) { return it.categoryId === activeCategoryId; });
+    items.sort(function(a, b) { return a.itemNumber - b.itemNumber; });
+
+    var statusOpts = '';
+    (series.statusOptions || []).forEach(function(o) {
+        statusOpts += '<option value="' + ACC.Utils.escapeHtml(o.key) + '">' + ACC.Utils.escapeHtml(o.label) + '</option>';
+    });
+
+    var html = '<div class="discussion-content-header">';
+    html += '<span class="discussion-content-title">' + ACC.Utils.escapeHtml(cat.code + ' ' + cat.label) + '</span>';
+    html += '<button class="acc-btn acc-btn-sm acc-btn-primary" onclick="addDiscussionItem()">+ Neues Thema</button>';
+    html += '</div>';
+
+    if (items.length === 0) {
+        html += '<div class="acc-text-sm acc-text-muted" style="padding:20px; text-align:center;">Keine Diskussionsthemen in dieser Kategorie.</div>';
+        wrap.innerHTML = html;
+        return;
+    }
+
+    items.forEach(function(item) {
+        var itemUpdates = allUpdates.filter(function(u) { return u.discussionItemId === item.id; });
+        var itemAttachments = allAttachments.filter(function(a) { return a.discussionItemId === item.id; });
+
+        html += '<div class="discussion-item" data-id="' + item.id + '">';
+        html += '<div class="discussion-item-header" onclick="toggleItem(this)">';
+        html += '<div class="discussion-item-number">' + item.itemNumber + '</div>';
+        html += '<div class="discussion-item-title">' + ACC.Utils.escapeHtml(item.title || '(ohne Titel)') + '</div>';
+        html += ACC.UI.renderDiscussionStatusBadge(item.status, getStatusLabel(item.status));
+        if (itemUpdates.length > 0) html += '<span class="acc-text-xs acc-text-muted" style="margin-left:4px;">(' + itemUpdates.length + ')</span>';
+        html += '<svg class="discussion-item-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>';
+        html += '</div>';
+
+        html += '<div class="discussion-item-body" onclick="event.stopPropagation()">';
+
+        // Title + Description
+        html += '<div class="acc-form-row"><label class="acc-form-label">Titel</label>';
+        html += '<input type="text" class="acc-input acc-input-sm" value="' + ACC.Utils.escapeHtml(item.title) + '" onchange="updateItemField(\'' + item.id + '\', \'title\', this.value)"></div>';
+        html += '<div class="acc-form-row"><label class="acc-form-label">Beschreibung</label>';
+        html += '<div class="rt-editor-wrap">';
+        html += '<div class="rt-toolbar">';
+        html += '<button type="button" onmousedown="event.preventDefault()" onclick="execFmt(\'bold\')" title="Fett"><b>B</b></button>';
+        html += '<button type="button" onmousedown="event.preventDefault()" onclick="execFmt(\'italic\')" title="Kursiv"><i>I</i></button>';
+        html += '<button type="button" onmousedown="event.preventDefault()" onclick="execFmt(\'underline\')" title="Unterstrichen"><u>U</u></button>';
+        html += '<span class="rt-separator"></span>';
+        html += '<button type="button" onmousedown="event.preventDefault()" onclick="execFmt(\'insertUnorderedList\')" title="Aufzählung">&bull;</button>';
+        html += '<button type="button" onmousedown="event.preventDefault()" onclick="execFmt(\'insertOrderedList\')" title="Nummerierung">1.</button>';
+        html += '</div>';
+        html += '<div class="rt-content" contenteditable="true" onblur="updateDescriptionRT(\'' + item.id + '\', this)">'
+            + (item.description || '') + '</div>';
+        html += '</div></div>';
+
+        // Status + Due date
+        var _dueSoon = '';
+        if (item.dueDate) {
+            var _daysLeft = Math.floor((new Date(item.dueDate) - new Date()) / 86400000);
+            if (_daysLeft >= 0 && _daysLeft <= 14) _dueSoon = 'color:#e53e3e; font-weight:600;';
+            else if (_daysLeft < 0) _dueSoon = 'color:#e53e3e; font-weight:600;';
+        }
+        html += '<div class="acc-flex-center acc-gap-2" style="margin-bottom:8px;">';
+        html += '<select class="acc-select acc-input-sm" style="width:150px;" onchange="updateItemField(\'' + item.id + '\', \'status\', this.value)" data-status-sel="' + item.id + '">' + statusOpts + '</select>';
+        html += '<input type="date" class="acc-input acc-input-sm" style="width:150px;' + _dueSoon + '" value="' + (item.dueDate || '') + '" onchange="updateItemField(\'' + item.id + '\', \'dueDate\', this.value)">';
+        if (item.dueDate) html += '<span class="acc-text-xs" style="margin-left:4px;' + _dueSoon + '">' + formatDateDE(item.dueDate) + '</span>';
+        html += '</div>';
+
+        // Assignees
+        html += '<div style="margin-bottom:8px;"><label class="acc-form-label" style="margin-bottom:4px;">Zugewiesen an</label>';
+        html += '<div id="assignees-' + item.id + '">';
+        (item.assignees || []).forEach(function(a, ai) {
+            html += '<div class="acc-flex-center acc-gap-2" style="margin-bottom:4px;">';
+            html += '<input type="text" class="acc-input acc-input-sm" style="flex:1;" value="' + ACC.Utils.escapeHtml(a.name) + '" placeholder="Name" onchange="updateAssignee(\'' + item.id + '\',' + ai + ',\'name\',this.value)">';
+            html += '<input type="text" class="acc-input acc-input-sm" style="flex:1;" value="' + ACC.Utils.escapeHtml(a.company) + '" placeholder="Firma" onchange="updateAssignee(\'' + item.id + '\',' + ai + ',\'company\',this.value)">';
+            html += '<button class="acc-btn-icon acc-btn-sm" onclick="removeAssignee(\'' + item.id + '\',' + ai + ')">&times;</button>';
+            html += '</div>';
+        });
+        html += '<button class="acc-btn acc-btn-sm acc-btn-ghost" onclick="addAssignee(\'' + item.id + '\')">+ Zuweisen</button>';
+        html += '</div></div>';
+
+        // Custom fields
+        if (series.customFieldDefs && series.customFieldDefs.length > 0) {
+            html += '<div style="margin-bottom:8px;"><label class="acc-form-label" style="margin-bottom:4px;">Zusatzfelder</label>';
+            series.customFieldDefs.forEach(function(fd) {
+                var val = (item.customFields || {})[fd.id] || '';
+                html += '<div class="acc-flex-center acc-gap-2" style="margin-bottom:4px;">';
+                html += '<span class="acc-text-xs acc-text-muted" style="min-width:140px;">' + ACC.Utils.escapeHtml(fd.label) + ':</span>';
+                if (fd.type === 'select' && fd.options) {
+                    html += '<select class="acc-select acc-input-sm" style="flex:1;" onchange="updateCustomFieldVal(\'' + item.id + '\',\'' + fd.id + '\',this.value)">';
+                    html += '<option value="">—</option>';
+                    fd.options.forEach(function(o) {
+                        html += '<option value="' + ACC.Utils.escapeHtml(o) + '"' + (val === o ? ' selected' : '') + '>' + ACC.Utils.escapeHtml(o) + '</option>';
+                    });
+                    html += '</select>';
+                } else {
+                    var inputType = fd.type === 'date' ? 'date' : fd.type === 'number' ? 'number' : 'text';
+                    html += '<input type="' + inputType + '" class="acc-input acc-input-sm" style="flex:1;" value="' + ACC.Utils.escapeHtml(val) + '" onchange="updateCustomFieldVal(\'' + item.id + '\',\'' + fd.id + '\',this.value)">';
+                    if (fd.type === 'date' && val) {
+                        html += '<span class="acc-text-xs acc-text-muted" style="margin-left:6px; white-space:nowrap;">' + formatDateDE(val) + '</span>';
+                    }
+                }
+                html += '</div>';
+            });
+            html += '</div>';
+        }
+
+        // Update timeline
+        html += '<div class="update-timeline">';
+        html += '<div class="update-timeline-title">Verlauf (' + itemUpdates.length + ' Einträge)</div>';
+        itemUpdates.forEach(function(u) {
+            html += '<div class="update-entry">';
+            html += '<div class="update-entry-date">' + ACC.Utils.formatDate(u.date) + '</div>';
+            html += '<div class="update-entry-text">' + ACC.Utils.escapeHtml(u.text) + '</div>';
+            html += '<div class="update-entry-meta">' + ACC.Utils.escapeHtml(u.author || '') + ' · ' + ACC.Utils.formatDateTime(u.createdAt) + '</div>';
+            html += '<button class="acc-btn-icon acc-btn-sm" style="position:absolute;right:8px;top:6px;" onclick="removeUpdate(\'' + u.id + '\',\'' + item.id + '\')" title="Entfernen">&times;</button>';
+            html += '</div>';
+        });
+        html += '<div style="margin-top:8px;">';
+        html += '<textarea id="newUpdate-' + item.id + '" class="acc-textarea acc-input-sm" rows="2" placeholder="Neuen Eintrag hinzufügen..."></textarea>';
+        html += '<button class="acc-btn acc-btn-sm acc-btn-primary" style="margin-top:4px;" onclick="addUpdate(\'' + item.id + '\')">Eintrag hinzufügen</button>';
+        html += '</div></div>';
+
+        // Attachments
+        html += '<div class="attachment-list" style="margin-top:12px;">';
+        html += '<label class="acc-form-label" style="margin-bottom:4px;">Anhänge (' + itemAttachments.length + ')</label>';
+        itemAttachments.forEach(function(att) {
+            var sizeKB = Math.round(att.size / 1024);
+            html += '<div class="attachment-item">';
+            html += '<span class="attachment-item-name" onclick="downloadAttachment(\'' + att.id + '\')">' + ACC.Utils.escapeHtml(att.fileName) + '</span>';
+            html += '<span class="attachment-item-size">' + sizeKB + ' KB</span>';
+            html += '<button class="acc-btn-icon acc-btn-sm" onclick="removeAttachment(\'' + att.id + '\',\'' + item.id + '\')" title="Entfernen">&times;</button>';
+            html += '</div>';
+        });
+        html += '<input type="file" id="fileInput-' + item.id + '" style="display:none;" onchange="handleFileUpload(\'' + item.id + '\', this)" multiple>';
+        html += '<button class="acc-btn acc-btn-sm acc-btn-ghost" onclick="document.getElementById(\'fileInput-' + item.id + '\').click()">+ Datei hochladen</button>';
+        html += '</div>';
+
+        // Delete item
+        html += '<div style="text-align:right; margin-top:12px; padding-top:8px; border-top:1px solid var(--acc-border);">';
+        html += '<button class="acc-btn acc-btn-sm acc-btn-danger" onclick="removeDiscussionItem(\'' + item.id + '\')">Thema entfernen</button>';
+        html += '</div>';
+
+        html += '</div></div>';
+    });
+
+    wrap.innerHTML = html;
+
+    // Set status select values
+    items.forEach(function(item) {
+        var sel = wrap.querySelector('[data-status-sel="' + item.id + '"]');
+        if (sel) sel.value = item.status;
+    });
+}
+
+function toggleItem(header) {
+    header.closest('.discussion-item').classList.toggle('open');
+}
+
+async function addDiscussionItem() {
+    var item = await ACC.MeetingStore.createDiscussionItem(seriesId, activeCategoryId, { instanceId: instanceId });
+    allItems.push(item);
+    renderCategoryNav();
+    renderDiscussionItems();
+}
+
+async function updateItemField(itemId, field, value) {
+    var item = allItems.find(function(it) { return it.id === itemId; });
+    if (!item) return;
+    item[field] = value;
+    await ACC.MeetingStore.updateDiscussionItem(item);
+    if (field === 'title') renderDiscussionItems();
+}
+
+async function updateAssignee(itemId, idx, field, value) {
+    var item = allItems.find(function(it) { return it.id === itemId; });
+    if (!item) return;
+    item.assignees[idx][field] = value;
+    await ACC.MeetingStore.updateDiscussionItem(item);
+}
+
+async function addAssignee(itemId) {
+    var item = allItems.find(function(it) { return it.id === itemId; });
+    if (!item) return;
+    if (!item.assignees) item.assignees = [];
+    item.assignees.push({ name: '', company: '' });
+    await ACC.MeetingStore.updateDiscussionItem(item);
+    renderDiscussionItems();
+}
+
+async function removeAssignee(itemId, idx) {
+    var item = allItems.find(function(it) { return it.id === itemId; });
+    if (!item) return;
+    item.assignees.splice(idx, 1);
+    await ACC.MeetingStore.updateDiscussionItem(item);
+    renderDiscussionItems();
+}
+
+async function updateCustomFieldVal(itemId, fieldDefId, value) {
+    var item = allItems.find(function(it) { return it.id === itemId; });
+    if (!item) return;
+    if (!item.customFields) item.customFields = {};
+    item.customFields[fieldDefId] = value;
+    await ACC.MeetingStore.updateDiscussionItem(item);
+}
+
+// ── UPDATES ──
+async function addUpdate(itemId) {
+    var textarea = document.getElementById('newUpdate-' + itemId);
+    var text = textarea.value.trim();
+    if (!text) return;
+    var update = await ACC.MeetingStore.addUpdate(itemId, instanceId, { text: text });
+    allUpdates.push(update);
+    textarea.value = '';
+    renderDiscussionItems();
+}
+
+async function removeUpdate(updateId, itemId) {
+    await ACC.MeetingStore.removeUpdate(updateId);
+    allUpdates = allUpdates.filter(function(u) { return u.id !== updateId; });
+    renderDiscussionItems();
+}
+
+// ── ATTACHMENTS ──
+async function handleFileUpload(itemId, input) {
+    var files = input.files;
+    for (var i = 0; i < files.length; i++) {
+        try {
+            var att = await ACC.MeetingStore.addAttachment(itemId, instanceId, files[i]);
+            allAttachments.push(att);
+        } catch (e) {
+            ACC.UI.error(e.message);
+        }
+    }
+    input.value = '';
+    renderDiscussionItems();
+}
+
+async function downloadAttachment(attId) {
+    await ACC.MeetingStore.downloadAttachment(attId);
+}
+
+async function removeAttachment(attId, itemId) {
+    await ACC.MeetingStore.removeAttachment(attId);
+    allAttachments = allAttachments.filter(function(a) { return a.id !== attId; });
+    renderDiscussionItems();
+}
+
+// ── REMOVE ITEM ──
+async function removeDiscussionItem(itemId) {
+    var confirmed = await ACC.UI.confirmDelete('Dieses Thema und alle zugehörigen Einträge löschen?');
+    if (!confirmed) return;
+    await ACC.MeetingStore.removeDiscussionItem(itemId);
+    allItems = allItems.filter(function(it) { return it.id !== itemId; });
+    allUpdates = allUpdates.filter(function(u) { return u.discussionItemId !== itemId; });
+    allAttachments = allAttachments.filter(function(a) { return a.discussionItemId !== itemId; });
+    renderCategoryNav();
+    renderDiscussionItems();
+}
+
+// ── STATS ──
+function renderStats() {
+    var wrap = document.getElementById('statsWrap');
+    var total = allItems.length;
+    var open = allItems.filter(function(it) { return it.status === 'offen' || it.status === 'laufend'; }).length;
+    var thisInstance = allItems.filter(function(it) { return it.createdByInstanceId === instanceId; }).length;
+    var updatesThisInstance = allUpdates.filter(function(u) { return u.instanceId === instanceId; }).length;
+
+    wrap.innerHTML =
+        '<div class="acc-flex-center acc-gap-4" style="font-size:14px;">' +
+        '<div><strong>' + total + '</strong> <span class="acc-text-muted">Themen gesamt</span></div>' +
+        '<div><strong style="color:var(--acc-status-offen);">' + open + '</strong> <span class="acc-text-muted">Offene Themen</span></div>' +
+        '<div><strong>' + thisInstance + '</strong> <span class="acc-text-muted">Neue Themen (diese Sitzung)</span></div>' +
+        '<div><strong>' + updatesThisInstance + '</strong> <span class="acc-text-muted">Einträge (diese Sitzung)</span></div>' +
+        '</div>';
+}
+
+// ── HELPERS ──
+function formatDateDE(iso) {
+    if (!iso) return '';
+    var d = new Date(iso);
+    if (isNaN(d.getTime())) return iso;
+    var months = ['Jan.','Feb.','Mär.','Apr.','Mai','Jun.','Jul.','Aug.','Sep.','Okt.','Nov.','Dez.'];
+    return d.getDate() + '. ' + months[d.getMonth()] + ' ' + d.getFullYear();
+}
+
+function execFmt(cmd) {
+    document.execCommand(cmd, false, null);
+}
+
+function updateDescriptionRT(itemId, el) {
+    var item = allItems.find(function(it) { return it.id === itemId; });
+    if (!item) return;
+    item.description = el.innerHTML;
+    ACC.MeetingStore.updateDiscussionItem(item);
+}
+
+// ── NAV ──
+function goBack() { ACC.Utils.navigateTo('series-editor.html?id=' + seriesId); }
+
+function openPrintView() {
+    window.open('meeting-view.html?seriesId=' + seriesId + '&instanceId=' + instanceId, '_blank');
+}
+
+async function createNextInstance() {
+    var confirmed = await ACC.UI.confirm('Neue Sitzung', 'Eine neue Sitzung in dieser Serie erstellen? Teilnehmer werden übernommen.');
+    if (!confirmed) return;
+    var inst = await ACC.MeetingStore.createInstance(seriesId, {});
+    ACC.UI.success('Sitzung #' + inst.instanceNumber + ' erstellt');
+    ACC.Utils.navigateTo('instance-editor.html?seriesId=' + seriesId + '&instanceId=' + inst.id);
+}
+
+init();
+</script>
+</body>
+</html>

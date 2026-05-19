@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "acc-dev",
+      "runtimeExecutable": "conda",
+      "runtimeArgs": ["run", "-n", "ifc-mcp", "python", "-m", "http.server", "8765"],
+      "port": 8765
+    }
+  ]
+}

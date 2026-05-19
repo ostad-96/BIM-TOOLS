@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Besprechungsprotokoll — ACC</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+    background: #d0d0d0; margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    font-size: 11px; line-height: 1.55; color: #333;
+}
+
+/* ── No-print toolbar ── */
+.no-print-bar {
+    position: sticky; top: 0; z-index: 200;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 24px; background: #003B4D; color: white;
+}
+.no-print-bar button {
+    background: rgba(255,255,255,0.15); color: white; border: 1px solid rgba(255,255,255,0.25);
+    padding: 7px 18px; border-radius: 6px;
+    font-size: 12px; font-weight: 600; cursor: pointer;
+}
+.no-print-bar button:hover { background: rgba(255,255,255,0.28); }
+
+/* ── Loading ── */
+.loading-msg { text-align: center; padding: 80px 20px; color: #999; font-size: 13px; }
+
+/* ── Hidden measuring container ── */
+#measureContainer {
+    position: absolute; left: -9999px; top: 0;
+    width: 680px; /* A4 content width at ~96dpi: (210mm - 36mm margins) * 3.78 */
+    visibility: hidden;
+}
+
+/* ── Paginated output ── */
+#pagesOutput { padding: 20px 0; }
+
+.a4-page {
+    width: 210mm; min-height: 297mm;
+    margin: 0 auto 24px auto;
+    background: white;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.18);
+    padding: 18mm 18mm 20mm 18mm;
+    display: flex; flex-direction: column;
+    overflow: hidden;
+    position: relative;
+}
+.a4-page:last-child { margin-bottom: 40px; }
+
+.a4-page-header {
+    display: flex; justify-content: space-between; align-items: baseline;
+    padding-bottom: 6px; border-bottom: 1px solid #bbb;
+    font-size: 10px; color: #666;
+    flex-shrink: 0; margin-bottom: 10px;
+}
+.a4-page-header-left { font-weight: 500; }
+.a4-page-header-right { text-align: right; }
+
+.a4-page-content { flex: 1; overflow: hidden; }
+
+.a4-page-footer {
+    display: flex; justify-content: space-between; align-items: baseline;
+    padding-top: 8px; border-top: 2px solid #333;
+    font-size: 9px; color: #999;
+    flex-shrink: 0; margin-top: 10px;
+}
+
+/* ── Cover header (first page only) ── */
+.cover-header {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid #bbb;
+}
+.cover-header-left { font-size: 10px; color: #666; }
+.cover-logo { height: 48px; width: auto; }
+
+/* ── Title block ── */
+.pv-main-title { font-size: 16px; font-weight: 400; color: #333; margin-bottom: 2px; }
+.pv-sub-title { font-size: 13px; font-weight: 700; color: #333; margin-bottom: 16px; }
+
+/* ── Meta ── */
+.pv-meta-row { display: flex; gap: 40px; font-size: 11px; margin-bottom: 3px; }
+.pv-meta-label { color: #666; min-width: 120px; }
+.pv-meta-value { color: #333; }
+
+/* ── Sections ── */
+.pv-section { margin-top: 22px; }
+.pv-section-heading { font-size: 13px; font-weight: 700; color: #333; margin-bottom: 10px; }
+
+/* ── Participants ── */
+.pv-participant-group { margin-bottom: 10px; }
+.pv-participant-group-title { font-size: 10px; font-weight: 600; color: #666; margin-bottom: 4px; }
+.pv-participant-list { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: 11px; }
+.pv-participant-icon { display: inline-flex; align-items: center; gap: 6px; }
+.pv-participant-icon::before {
+    content: ''; width: 7px; height: 7px;
+    border-radius: 50%; background: #ccc; flex-shrink: 0;
+}
+
+/* ── Categories ── */
+.pv-category-heading {
+    font-size: 12px; font-weight: 700; color: #333;
+    margin-top: 18px; margin-bottom: 10px;
+    padding-bottom: 3px; border-bottom: 1px solid #eee;
+}
+
+/* ── Discussion items ── */
+.pv-discussion-item { margin-bottom: 16px; }
+.pv-item-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 5px; }
+.pv-item-title { font-weight: 600; font-size: 11px; flex: 1; }
+.pv-item-status {
+    font-size: 9px; font-weight: 600; padding: 2px 8px;
+    border-radius: 3px; white-space: nowrap; margin-left: 12px;
+}
+.pv-item-status-offen { background: #e8f4fd; color: #1976D2; }
+.pv-item-status-laufend { background: #FFF3E0; color: #F57C00; }
+.pv-item-status-informationen { background: #f5f5f5; color: #666; }
+.pv-item-status-erledigt { background: #e8f5e9; color: #388E3C; }
+
+.pv-item-description { font-size: 11px; line-height: 1.55; white-space: pre-wrap; margin-bottom: 5px; }
+
+.pv-custom-fields { font-size: 10px; color: #666; margin-bottom: 5px; list-style: none; padding-left: 8px; }
+.pv-custom-fields li { margin-bottom: 1px; }
+.pv-custom-fields li::before { content: '\2022'; margin-right: 6px; color: #999; }
+
+.pv-update-block { margin-bottom: 6px; font-size: 10px; }
+.pv-update-text { line-height: 1.5; white-space: pre-wrap; }
+.pv-update-meta {
+    display: flex; gap: 24px; font-size: 9px; color: #999;
+    margin-top: 3px; padding-top: 3px; border-top: 1px solid #f0f0f0;
+}
+
+.pv-item-due { font-size: 10px; font-weight: 600; margin-top: 5px; }
+.pv-item-assignees { font-size: 10px; color: #666; margin-top: 2px; }
+.pv-item-attachments { margin-top: 6px; font-size: 10px; }
+.pv-item-attachments-title { font-weight: 600; color: #333; margin-bottom: 2px; }
+.pv-item-attachments-file { color: #666; padding-left: 12px; }
+
+/* ══════════════ PRINT ══════════════ */
+@page { size: A4 portrait; margin: 0; }
+
+@media print {
+    body { background: white; }
+    .no-print-bar { display: none !important; }
+    #pagesOutput { padding: 0; }
+    .a4-page {
+        width: 100%; min-height: auto; height: 297mm;
+        margin: 0; box-shadow: none;
+        page-break-after: always;
+        page-break-inside: avoid;
+    }
+    .a4-page:last-child { page-break-after: auto; }
+}
+</style>
+</head>
+<body>
+
+<div class="no-print-bar">
+    <span style="font-size:13px; font-weight:500;">Druckvorschau — Besprechungsprotokoll</span>
+    <div style="display:flex; gap:8px;">
+        <button onclick="window.print()">&#128424; Drucken / PDF</button>
+        <button onclick="history.back()">Zurück</button>
+    </div>
+</div>
+
+<div id="measureContainer"></div>
+<div id="pagesOutput">
+    <div class="loading-msg" id="loadingMsg">Wird geladen...</div>
+</div>
+
+<script src="../../shared/js/acc-utils.js"></script>
+<script src="../../shared/js/acc-storage.js"></script>
+<script src="../../shared/js/acc-storage-indexeddb.js"></script>
+<script src="../../shared/js/acc-ui.js"></script>
+<script src="js/meeting-templates.js"></script>
+<script src="js/meeting-store.js"></script>
+<script>
+var instanceId = ACC.Utils.getUrlParam('instanceId');
+
+// A4 content height in px: 297mm - 18mm top padding - 20mm bottom padding - ~28px header - ~30px footer ≈ ~940px
+var PAGE_CONTENT_HEIGHT = 920;
+
+function esc(s) { return ACC.Utils.escapeHtml(s || ''); }
+
+function fmtDate(iso) {
+    if (!iso) return '';
+    var d = new Date(iso);
+    var months = ['Jan.','Feb.','Mär.','Apr.','Mai','Jun.','Jul.','Aug.','Sep.','Okt.','Nov.','Dez.'];
+    return d.getDate() + '. ' + months[d.getMonth()] + ' ' + d.getFullYear();
+}
+
+function fmtDateTime(iso) {
+    if (!iso) return '';
+    var d = new Date(iso);
+    var months = ['Jan.','Feb.','Mär.','Apr.','Mai','Jun.','Jul.','Aug.','Sep.','Okt.','Nov.','Dez.'];
+    return d.getDate() + '. ' + months[d.getMonth()] + ' ' + d.getFullYear() + ' um '
+        + String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0') + ' CEST';
+}
+
+function statusLabel(statusKey, series) {
+    if (series && series.statusOptions) {
+        for (var i = 0; i < series.statusOptions.length; i++) {
+            if (series.statusOptions[i].key === statusKey) return series.statusOptions[i].label;
+        }
+    }
+    var map = { offen: 'Offen', laufend: 'Laufend', informationen: 'Informationen', erledigt: 'Erledigt' };
+    return map[statusKey] || statusKey || '';
+}
+
+function statusCls(key) { return 'pv-item-status pv-item-status-' + (key || 'offen'); }
+
+async function init() {
+    await ACC.StorageManager.init(new ACC.IndexedDBProvider('acc-platform'));
+    if (!instanceId) { document.getElementById('loadingMsg').textContent = 'Keine Instanz-ID angegeben.'; return; }
+    var data = await ACC.MeetingStore.getInstanceFull(instanceId);
+    if (!data) { document.getElementById('loadingMsg').textContent = 'Besprechung nicht gefunden.'; return; }
+    render(data);
+}
+
+function render(data) {
+    var series = data.series;
+    var inst = data.instance;
+    var participants = data.participants || [];
+    var items = data.discussionItems || [];
+    var updates = data.updates || [];
+    var attachments = data.attachments || [];
+
+    var updatesMap = {};
+    updates.forEach(function(u) {
+        if (!updatesMap[u.discussionItemId]) updatesMap[u.discussionItemId] = [];
+        updatesMap[u.discussionItemId].push(u);
+    });
+    var attachMap = {};
+    attachments.forEach(function(a) {
+        if (!attachMap[a.discussionItemId]) attachMap[a.discussionItemId] = [];
+        attachMap[a.discussionItemId].push(a);
+    });
+
+    var organisatoren = participants.filter(function(p) { return p.participantType === 'organisator'; });
+    var eingeladene = participants.filter(function(p) { return p.participantType === 'eingeladene'; });
+
+    var categories = (series.topicCategoryDefs || []).slice().sort(function(a, b) { return a.sortOrder - b.sortOrder; });
+    var itemsByCat = {};
+    items.forEach(function(it) {
+        var cid = it.categoryId || 'uncategorized';
+        if (!itemsByCat[cid]) itemsByCat[cid] = [];
+        itemsByCat[cid].push(it);
+    });
+    for (var cid in itemsByCat) {
+        itemsByCat[cid].sort(function(a, b) { return (a.itemNumber || 0) - (b.itemNumber || 0); });
+    }
+
+    var typeName = ACC.Utils.MEETING_TYPES[series.type] || series.type || '';
+    var headerCode = series.code || '';
+    var headerRight = headerCode + (typeName ? ': ' + typeName : '');
+    var footerText = 'Erstellt von ' + (inst.createdBy || 'Unbekannt') + ' mit ACC Platform am ' + fmtDateTime(inst.createdAt);
+
+    // ── Build content blocks as separate elements for pagination ──
+    var measure = document.getElementById('measureContainer');
+    measure.innerHTML = '';
+
+    // Block: cover header (first page only, logo)
+    addBlock(measure, '<div class="cover-header">'
+        + '<div class="cover-header-left">' + esc(headerCode) + '</div>'
+        + '<div><img src="../../shared/assets/emch-berger-logo.gif" alt="Emch+Berger" class="cover-logo"></div>'
+        + '</div>');
+
+    // Block: title
+    addBlock(measure, '<div class="pv-main-title">Besprechungsprotokoll</div>'
+        + '<div class="pv-sub-title">Besprechung ' + inst.instanceNumber + ': '
+        + esc(series.title || series.code || '(ohne Titel)') + '</div>');
+
+    // Block: meta
+    var metaHtml = '<div class="pv-meta-row"><span class="pv-meta-label">Datum:</span><span class="pv-meta-value">' + fmtDate(inst.date) + '</span></div>';
+    if (inst.timeStart) {
+        metaHtml += '<div class="pv-meta-row"><span class="pv-meta-label">Zeit:</span><span class="pv-meta-value">'
+            + esc(inst.timeStart) + (inst.timeEnd ? ' - ' + esc(inst.timeEnd) + ' CEST' : '') + '</span></div>';
+    }
+    if (inst.location || series.defaultLocation) {
+        metaHtml += '<div class="pv-meta-row"><span class="pv-meta-label">Besprechungsort:</span><span class="pv-meta-value">'
+            + esc(inst.location || series.defaultLocation) + '</span></div>';
+    }
+    addBlock(measure, metaHtml);
+
+    // Block: participants heading
+    addBlock(measure, '<div class="pv-section"><div class="pv-section-heading">Einladungen und Teilnahme</div></div>');
+
+    // Block: organisatoren
+    if (organisatoren.length > 0) {
+        var orgHtml = '<div class="pv-participant-group"><div class="pv-participant-group-title">Organisatoren</div><div class="pv-participant-list">';
+        organisatoren.forEach(function(p) {
+            orgHtml += '<span class="pv-participant-icon">' + esc(p.name || p.role || '—');
+            if (p.company) orgHtml += ' (' + esc(p.company) + ')';
+            orgHtml += '</span>';
+        });
+        orgHtml += '</div></div>';
+        addBlock(measure, orgHtml);
+    }
+
+    // Block: eingeladene
+    if (eingeladene.length > 0) {
+        var einHtml = '<div class="pv-participant-group"><div class="pv-participant-group-title">Eingeladene</div><div class="pv-participant-list">';
+        eingeladene.forEach(function(p) {
+            einHtml += '<span class="pv-participant-icon">' + esc(p.name || p.role || '—');
+            if (p.company) einHtml += ' (' + esc(p.company) + ')';
+            einHtml += '</span>';
+        });
+        einHtml += '</div></div>';
+        addBlock(measure, einHtml);
+    }
+
+    // Block: description
+    if (series.description) {
+        addBlock(measure, '<div class="pv-section"><div class="pv-section-heading">Beschreibung</div>'
+            + '<div style="font-size:11px; line-height:1.55; white-space:pre-wrap;">' + esc(series.description) + '</div></div>');
+    }
+
+    // Block: discussion heading
+    addBlock(measure, '<div class="pv-section"><div class="pv-section-heading">Besprechungsdiskussion</div></div>');
+
+    // Blocks: each category heading + each item is a separate block
+    categories.forEach(function(cat) {
+        addBlock(measure, '<div class="pv-category-heading">' + esc(cat.code) + ' ' + esc(cat.label) + '</div>');
+        var catItems = itemsByCat[cat.id] || [];
+        catItems.forEach(function(item) {
+            addBlock(measure, renderItem(item, series, updatesMap[item.id] || [], attachMap[item.id] || []));
+        });
+    });
+
+    var uncategorized = itemsByCat['uncategorized'] || [];
+    if (uncategorized.length > 0) {
+        addBlock(measure, '<div class="pv-category-heading">Ohne Kategorie</div>');
+        uncategorized.forEach(function(item) {
+            addBlock(measure, renderItem(item, series, updatesMap[item.id] || [], attachMap[item.id] || []));
+        });
+    }
+
+    // Block: overview
+    addBlock(measure, '<div class="pv-section"><div class="pv-section-heading">Besprechungsübersicht</div>'
+        + (inst.summary
+            ? '<div style="font-size:11px; line-height:1.55; white-space:pre-wrap;">' + esc(inst.summary) + '</div>'
+            : '<div style="font-size:11px; color:#999;">Diese Besprechung hat keine Zusammenfassung</div>')
+        + '</div>');
+
+    // ── Wait for images to load, then paginate ──
+    var imgs = measure.querySelectorAll('img');
+    var loadPromises = [];
+    for (var i = 0; i < imgs.length; i++) {
+        if (!imgs[i].complete) {
+            loadPromises.push(new Promise(function(resolve) {
+                imgs[i].onload = resolve;
+                imgs[i].onerror = resolve;
+            }));
+        }
+    }
+
+    Promise.all(loadPromises).then(function() {
+        paginate(measure, headerCode, headerRight, footerText);
+        document.title = 'Besprechung ' + inst.instanceNumber + ' — ' + (series.title || series.code || 'Protokoll');
+    });
+}
+
+function addBlock(container, html) {
+    var div = document.createElement('div');
+    div.className = 'pv-block';
+    div.innerHTML = html;
+    container.appendChild(div);
+}
+
+function paginate(measure, headerCode, headerRight, footerText) {
+    var blocks = measure.querySelectorAll('.pv-block');
+    var pages = [];
+    var currentPageBlocks = [];
+    var currentHeight = 0;
+    // First page has ~80px less space due to the cover header taking extra room
+    var firstPageReduction = 0;
+
+    for (var i = 0; i < blocks.length; i++) {
+        var blockHeight = blocks[i].offsetHeight + 4; // 4px gap between blocks
+        var maxH = PAGE_CONTENT_HEIGHT - (pages.length === 0 && currentPageBlocks.length === 0 ? firstPageReduction : 0);
+
+        if (currentHeight + blockHeight > maxH && currentPageBlocks.length > 0) {
+            pages.push(currentPageBlocks);
+            currentPageBlocks = [];
+            currentHeight = 0;
+        }
+        currentPageBlocks.push(blocks[i]);
+        currentHeight += blockHeight;
+    }
+    if (currentPageBlocks.length > 0) pages.push(currentPageBlocks);
+
+    // Build page HTML
+    var output = document.getElementById('pagesOutput');
+    output.innerHTML = '';
+    var totalPages = pages.length;
+
+    for (var p = 0; p < pages.length; p++) {
+        var pageDiv = document.createElement('div');
+        pageDiv.className = 'a4-page';
+
+        // Header (skip on page 1 — cover-header already has code + logo)
+        if (p > 0) {
+            var header = document.createElement('div');
+            header.className = 'a4-page-header';
+            header.innerHTML = '<span class="a4-page-header-left">' + esc(headerCode) + '</span>'
+                + '<span class="a4-page-header-right">' + esc(headerRight) + '</span>';
+            pageDiv.appendChild(header);
+        }
+
+        // Content
+        var content = document.createElement('div');
+        content.className = 'a4-page-content';
+        for (var b = 0; b < pages[p].length; b++) {
+            content.appendChild(pages[p][b].cloneNode(true));
+        }
+        pageDiv.appendChild(content);
+
+        // Footer
+        var footer = document.createElement('div');
+        footer.className = 'a4-page-footer';
+        footer.innerHTML = '<span>' + esc(footerText) + '</span>'
+            + '<span>Seite ' + (p + 1) + ' von ' + totalPages + '</span>';
+        pageDiv.appendChild(footer);
+
+        output.appendChild(pageDiv);
+    }
+
+    // Cleanup
+    measure.innerHTML = '';
+}
+
+function renderItem(item, series, itemUpdates, itemAttachments) {
+    var html = '<div class="pv-discussion-item">';
+
+    html += '<div class="pv-item-header">';
+    html += '<span class="pv-item-title">' + (item.itemNumber || '') + '. ' + esc(item.title || '(ohne Titel)') + '</span>';
+    html += '<span class="' + statusCls(item.status) + '">' + esc(statusLabel(item.status, series)) + '</span>';
+    html += '</div>';
+
+    if (item.description) {
+        html += '<div class="pv-item-description">' + (item.description || '') + '</div>';
+    }
+
+    var fieldDefs = series.customFieldDefs || [];
+    var hasCustom = false;
+    var cfHtml = '<ul class="pv-custom-fields">';
+    fieldDefs.forEach(function(fd) {
+        var val = (item.customFields && item.customFields[fd.id]) || '';
+        if (val) {
+            var displayVal = (fd.type === 'date') ? fmtDate(val) : esc(val);
+            cfHtml += '<li><strong>' + esc(fd.label) + ':</strong> ' + displayVal + '</li>';
+            hasCustom = true;
+        }
+    });
+    cfHtml += '</ul>';
+    if (hasCustom) html += cfHtml;
+
+    if (itemUpdates.length > 0) {
+        itemUpdates.forEach(function(upd) {
+            html += '<div class="pv-update-block">';
+            html += '<div class="pv-update-text">';
+            if (upd.date) html += '<strong>' + fmtDate(upd.date) + ':</strong> ';
+            html += esc(upd.text);
+            html += '</div>';
+            html += '<div class="pv-update-meta">';
+            html += '<span>Erstellt am ' + fmtDate(upd.createdAt);
+            if (upd.author) html += ' von ' + esc(upd.author);
+            html += '</span>';
+            if (upd.updatedAt && upd.updatedAt !== upd.createdAt) {
+                html += '<span>Zuletzt aktualisiert am ' + fmtDate(upd.updatedAt);
+                if (upd.updatedBy) html += ' von ' + esc(upd.updatedBy);
+                html += '</span>';
+            }
+            html += '</div></div>';
+        });
+    }
+
+    if (item.dueDate) {
+        var _dl = Math.floor((new Date(item.dueDate) - new Date()) / 86400000);
+        var _dueStyle = (_dl <= 14) ? ' style="color:#e53e3e;"' : '';
+        html += '<div class="pv-item-due"' + _dueStyle + '>Fällig am ' + fmtDate(item.dueDate) + '</div>';
+    }
+
+    var assignees = item.assignees || [];
+    if (assignees.length > 0) {
+        html += '<div class="pv-item-assignees">Zugewiesen an: '
+            + assignees.map(function(a) {
+                return esc(a.name) + (a.company ? ' (' + esc(a.company) + ')' : '');
+            }).join(', ')
+            + '</div>';
+    }
+
+    if (itemAttachments.length > 0) {
+        html += '<div class="pv-item-attachments">';
+        html += '<div class="pv-item-attachments-title">Referenzen und Anhänge</div>';
+        html += '<div style="font-size:10px; color:#666; margin-bottom:3px;">Dateien (' + itemAttachments.length + ')</div>';
+        itemAttachments.forEach(function(att) {
+            html += '<div class="pv-item-attachments-file">' + esc(att.fileName) + '</div>';
+        });
+        html += '</div>';
+    }
+
+    html += '<div class="pv-update-meta" style="margin-top:6px;">';
+    html += '<span>Erstellt am ' + fmtDate(item.createdAt);
+    if (item.createdBy) html += ' von ' + esc(item.createdBy);
+    html += '</span>';
+    if (item.updatedAt && item.updatedAt !== item.createdAt) {
+        html += '<span>Zuletzt aktualisiert am ' + fmtDate(item.updatedAt);
+        if (item.updatedBy) html += ' von ' + esc(item.updatedBy);
+        html += '</span>';
+    }
+    html += '</div>';
+
+    html += '</div>';
+    return html;
+}
+
+init();
+</script>
+</body>
+</html>

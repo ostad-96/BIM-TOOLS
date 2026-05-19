@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Besprechungsserien — ACC</title>
+<link rel="stylesheet" href="../../shared/css/acc-variables.css">
+<link rel="stylesheet" href="../../shared/css/acc-base.css">
+<link rel="stylesheet" href="../../shared/css/acc-components.css">
+<link rel="stylesheet" href="css/meeting-minutes.css">
+</head>
+<body class="entering">
+
+<div class="page-transition"><div class="slide"></div><div class="slide-accent"></div></div>
+
+<div class="acc-topbar">
+    <div class="acc-topbar-left">
+        <button class="acc-btn-icon" onclick="ACC.Utils.navigateTo('../../index.html')" title="Zurück">&#8592;</button>
+        <div>
+            <div class="acc-topbar-title">Besprechungsserien</div>
+            <div class="acc-topbar-subtitle">Meeting Minutes &middot; ACC</div>
+        </div>
+    </div>
+    <div class="acc-flex-center acc-gap-2">
+        <select id="templateSelect" class="acc-select" style="width:220px;">
+            <option value="">Aus Vorlage erstellen...</option>
+        </select>
+        <button class="acc-btn acc-btn-primary" onclick="createNew()">+ Neue Serie</button>
+    </div>
+</div>
+
+<div class="series-filter-bar">
+    <input type="text" id="searchInput" class="acc-input" style="width:220px;" placeholder="Suchen...">
+    <select id="filterType" class="acc-select" style="width:170px;">
+        <option value="">Alle Typen</option>
+    </select>
+    <span class="series-count" id="seriesCount"></span>
+</div>
+
+<div style="padding: 0 24px 80px 24px;">
+    <div id="seriesListWrap" style="margin-top:16px;"></div>
+</div>
+
+<footer class="acc-footer">
+    <span>&copy; 2026 Emch+Berger GmbH</span>
+    <span>ACC Platform</span>
+</footer>
+
+<script src="../../shared/js/acc-utils.js"></script>
+<script src="../../shared/js/acc-storage.js"></script>
+<script src="../../shared/js/acc-storage-indexeddb.js"></script>
+<script src="../../shared/js/acc-ui.js"></script>
+<script src="js/meeting-templates.js"></script>
+<script src="js/meeting-store.js"></script>
+<script>
+var allSeries = [];
+var seriesStats = {};
+
+async function init() {
+    await ACC.StorageManager.init(new ACC.IndexedDBProvider('acc-platform'));
+    populateDropdowns();
+    await loadSeries();
+
+    document.getElementById('searchInput').addEventListener('input', ACC.Utils.debounce(renderList, 300));
+    document.getElementById('filterType').addEventListener('change', renderList);
+    document.getElementById('templateSelect').addEventListener('change', createFromTemplate);
+}
+
+function populateDropdowns() {
+    var typeSelect = document.getElementById('filterType');
+    var tplSelect = document.getElementById('templateSelect');
+    var types = ACC.Utils.MEETING_TYPES;
+    for (var key in types) {
+        typeSelect.innerHTML += '<option value="' + key + '">' + ACC.Utils.escapeHtml(types[key]) + '</option>';
+    }
+    ACC.MeetingTemplates.forEach(function(tpl) {
+        tplSelect.innerHTML += '<option value="' + tpl.id + '">' + ACC.Utils.escapeHtml(tpl.name) + '</option>';
+    });
+}
+
+async function loadSeries() {
+    allSeries = await ACC.MeetingStore.getAllSeries();
+    seriesStats = {};
+    for (var i = 0; i < allSeries.length; i++) {
+        seriesStats[allSeries[i].id] = await ACC.MeetingStore.getSeriesStats(allSeries[i].id);
+    }
+    renderList();
+}
+
+function getFiltered() {
+    var search = document.getElementById('searchInput').value.toLowerCase();
+    var typeFilter = document.getElementById('filterType').value;
+    return allSeries.filter(function(s) {
+        if (typeFilter && s.type !== typeFilter) return false;
+        if (search) {
+            var haystack = (s.title + ' ' + s.code + ' ' + s.description).toLowerCase();
+            if (haystack.indexOf(search) === -1) return false;
+        }
+        return true;
+    });
+}
+
+function renderList() {
+    var wrap = document.getElementById('seriesListWrap');
+    var filtered = getFiltered();
+    document.getElementById('seriesCount').textContent = filtered.length + ' von ' + allSeries.length + ' Serien';
+
+    if (filtered.length === 0) {
+        if (allSeries.length === 0) {
+            wrap.innerHTML = ACC.UI.renderEmptyState(
+                'Keine Besprechungsserien',
+                'Erstellen Sie eine neue Serie oder wählen Sie eine Vorlage.',
+                'Neue Serie erstellen',
+                'createNew()'
+            );
+        } else {
+            wrap.innerHTML = ACC.UI.renderEmptyState('Keine Ergebnisse', 'Passen Sie Ihre Filterkriterien an.');
+        }
+        return;
+    }
+
+    var html = '<table class="acc-table acc-table-hover">';
+    html += '<thead><tr>' +
+        '<th style="width:140px;">Code</th>' +
+        '<th>Titel</th>' +
+        '<th style="width:140px;">Typ</th>' +
+        '<th style="width:100px;">Instanzen</th>' +
+        '<th style="width:110px;">Letzte Sitzung</th>' +
+        '<th style="width:100px;">Offene Themen</th>' +
+        '<th style="width:60px;"></th>' +
+        '</tr></thead><tbody>';
+
+    filtered.forEach(function(s) {
+        var stats = seriesStats[s.id] || { instanceCount: 0, openItems: 0, totalItems: 0, lastDate: null };
+        html += '<tr onclick="openSeries(\'' + s.id + '\')">';
+        html += '<td><strong>' + ACC.Utils.escapeHtml(s.code || '—') + '</strong></td>';
+        html += '<td>' + ACC.Utils.escapeHtml(s.title || '(ohne Titel)') + '</td>';
+        html += '<td>' + ACC.UI.renderTypeBadge(s.type) + '</td>';
+        html += '<td>' + stats.instanceCount + '</td>';
+        html += '<td>' + (stats.lastDate ? ACC.Utils.formatDate(stats.lastDate) : '—') + '</td>';
+        html += '<td>';
+        if (stats.totalItems > 0) {
+            html += '<span style="color:var(--acc-status-offen); font-weight:600;">' + stats.openItems + '</span>';
+            html += '<span style="color:var(--acc-text-muted);">/' + stats.totalItems + '</span>';
+        } else {
+            html += '<span style="color:var(--acc-text-muted);">—</span>';
+        }
+        html += '</td>';
+        html += '<td style="text-align:right;">';
+        html += '<button class="acc-btn-icon acc-btn-sm" onclick="event.stopPropagation(); deleteSeries(\'' + s.id + '\')" title="Löschen">&times;</button>';
+        html += '</td>';
+        html += '</tr>';
+    });
+
+    html += '</tbody></table>';
+    wrap.innerHTML = html;
+}
+
+function openSeries(id) {
+    ACC.Utils.navigateTo('series-editor.html?id=' + id);
+}
+
+async function createNew() {
+    var series = await ACC.MeetingStore.createSeries({ type: 'custom' });
+    ACC.Utils.navigateTo('series-editor.html?id=' + series.id);
+}
+
+async function createFromTemplate() {
+    var sel = document.getElementById('templateSelect');
+    var tplId = sel.value;
+    if (!tplId) return;
+    sel.value = '';
+    var series = await ACC.MeetingStore.createFromTemplate(tplId);
+    ACC.Utils.navigateTo('series-editor.html?id=' + series.id);
+}
+
+async function deleteSeries(id) {
+    var confirmed = await ACC.UI.confirmDelete('Möchten Sie diese Serie und alle zugehörigen Daten wirklich löschen?');
+    if (!confirmed) return;
+    await ACC.MeetingStore.deleteSeries(id);
+    ACC.UI.success('Serie gelöscht');
+    await loadSeries();
+}
+
+init();
+</script>
+</body>
+</html>
