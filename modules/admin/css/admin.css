@@ -7,7 +7,7 @@
 /* Sidebar */
 .admin-sidebar {
     width: 220px; flex-shrink: 0;
-    background: var(--acc-primary); color: var(--acc-white);
+    background: var(--bim-primary); color: var(--bim-white);
     display: flex; flex-direction: column;
     position: fixed; top: 0; left: 0; bottom: 0; z-index: 50;
 }
@@ -16,7 +16,7 @@
     border-bottom: 1px solid rgba(255,255,255,0.1);
 }
 .admin-sidebar-logo {
-    width: 40px; height: 40px; border-radius: var(--acc-radius-sm);
+    width: 40px; height: 40px; border-radius: var(--bim-radius-sm);
     overflow: hidden; margin-bottom: 10px;
 }
 .admin-sidebar-logo img { width: 100%; height: 100%; object-fit: cover; }
@@ -40,12 +40,12 @@
 }
 .admin-nav-item:hover {
     background: rgba(255,255,255,0.08);
-    color: var(--acc-white);
+    color: var(--bim-white);
 }
 .admin-nav-item.active {
     background: rgba(255,255,255,0.12);
-    color: var(--acc-white);
-    border-left-color: var(--acc-white);
+    color: var(--bim-white);
+    border-left-color: var(--bim-white);
 }
 .admin-nav-item svg {
     width: 18px; height: 18px; flex-shrink: 0;
@@ -64,24 +64,24 @@
     cursor: pointer; transition: color 0.15s;
     text-decoration: none;
 }
-.admin-back-link:hover { color: var(--acc-white); text-decoration: none; }
+.admin-back-link:hover { color: var(--bim-white); text-decoration: none; }
 
 /* Main content */
 .admin-main {
-    flex: 1; margin-left: 220px; background: var(--acc-surface);
+    flex: 1; margin-left: 220px; background: var(--bim-surface);
     min-height: 100vh;
 }
 .admin-header {
     padding: 24px 32px 20px;
-    background: var(--acc-white);
-    border-bottom: 1px solid var(--acc-border);
+    background: var(--bim-white);
+    border-bottom: 1px solid var(--bim-border);
 }
 .admin-header-title {
-    font-size: 20px; font-weight: 700; color: var(--acc-text);
+    font-size: 20px; font-weight: 700; color: var(--bim-text);
     letter-spacing: -0.3px;
 }
 .admin-header-desc {
-    font-size: 12px; color: var(--acc-text-muted); margin-top: 4px;
+    font-size: 12px; color: var(--bim-text-muted); margin-top: 4px;
 }
 .admin-content {
     padding: 24px 32px 60px;
@@ -93,24 +93,24 @@
     margin-bottom: 24px;
 }
 .summary-card {
-    background: var(--acc-white); border: 1px solid var(--acc-border);
-    border-radius: var(--acc-radius-lg); padding: 18px 20px;
-    box-shadow: var(--acc-shadow-sm);
+    background: var(--bim-white); border: 1px solid var(--bim-border);
+    border-radius: var(--bim-radius-lg); padding: 18px 20px;
+    box-shadow: var(--bim-shadow-sm);
 }
 .summary-card-label {
     font-size: 11px; font-weight: 600; text-transform: uppercase;
-    letter-spacing: 0.8px; color: var(--acc-text-muted); margin-bottom: 6px;
+    letter-spacing: 0.8px; color: var(--bim-text-muted); margin-bottom: 6px;
 }
 .summary-card-value {
-    font-size: 28px; font-weight: 700; color: var(--acc-text);
+    font-size: 28px; font-weight: 700; color: var(--bim-text);
     letter-spacing: -1px;
 }
 .summary-card-sub {
-    font-size: 11px; color: var(--acc-text-muted); margin-top: 4px;
+    font-size: 11px; color: var(--bim-text-muted); margin-top: 4px;
 }
 .summary-card-icon {
     float: right; width: 36px; height: 36px;
-    border-radius: var(--acc-radius-md);
+    border-radius: var(--bim-radius-md);
     display: flex; align-items: center; justify-content: center;
 }
 .summary-card-icon svg { width: 20px; height: 20px; }
@@ -121,12 +121,12 @@
     margin-bottom: 24px;
 }
 .chart-card {
-    background: var(--acc-white); border: 1px solid var(--acc-border);
-    border-radius: var(--acc-radius-lg); padding: 20px;
-    box-shadow: var(--acc-shadow-sm);
+    background: var(--bim-white); border: 1px solid var(--bim-border);
+    border-radius: var(--bim-radius-lg); padding: 20px;
+    box-shadow: var(--bim-shadow-sm);
 }
 .chart-card-title {
-    font-size: 13px; font-weight: 600; color: var(--acc-text);
+    font-size: 13px; font-weight: 600; color: var(--bim-text);
     margin-bottom: 16px;
 }
 .chart-canvas-wrap {
@@ -135,73 +135,73 @@
 
 /* Activity feed */
 .activity-feed {
-    background: var(--acc-white); border: 1px solid var(--acc-border);
-    border-radius: var(--acc-radius-lg); box-shadow: var(--acc-shadow-sm);
+    background: var(--bim-white); border: 1px solid var(--bim-border);
+    border-radius: var(--bim-radius-lg); box-shadow: var(--bim-shadow-sm);
     overflow: hidden;
 }
 .activity-feed-header {
     padding: 14px 20px;
-    border-bottom: 1px solid var(--acc-border);
+    border-bottom: 1px solid var(--bim-border);
     font-size: 13px; font-weight: 600;
     display: flex; align-items: center; justify-content: space-between;
 }
 .activity-item {
     display: flex; align-items: flex-start; gap: 12px;
     padding: 12px 20px;
-    border-bottom: 1px solid var(--acc-border);
+    border-bottom: 1px solid var(--bim-border);
     transition: background 0.1s;
 }
 .activity-item:last-child { border-bottom: none; }
-.activity-item:hover { background: var(--acc-gray-50); }
+.activity-item:hover { background: var(--bim-gray-50); }
 .activity-avatar {
     width: 30px; height: 30px; border-radius: 50%; flex-shrink: 0;
     display: flex; align-items: center; justify-content: center;
-    font-size: 11px; font-weight: 700; color: var(--acc-white);
+    font-size: 11px; font-weight: 700; color: var(--bim-white);
 }
 .activity-text {
-    flex: 1; font-size: 12px; color: var(--acc-text-secondary);
+    flex: 1; font-size: 12px; color: var(--bim-text-secondary);
     line-height: 1.5;
 }
-.activity-text strong { color: var(--acc-text); font-weight: 600; }
+.activity-text strong { color: var(--bim-text); font-weight: 600; }
 .activity-time {
-    font-size: 10px; color: var(--acc-text-muted); white-space: nowrap;
+    font-size: 10px; color: var(--bim-text-muted); white-space: nowrap;
     margin-top: 2px;
 }
 
 /* User management table */
 .user-table-wrap {
-    background: var(--acc-white); border: 1px solid var(--acc-border);
-    border-radius: var(--acc-radius-lg); box-shadow: var(--acc-shadow-sm);
+    background: var(--bim-white); border: 1px solid var(--bim-border);
+    border-radius: var(--bim-radius-lg); box-shadow: var(--bim-shadow-sm);
     overflow: hidden;
 }
 .user-table-toolbar {
     padding: 12px 20px;
-    border-bottom: 1px solid var(--acc-border);
+    border-bottom: 1px solid var(--bim-border);
     display: flex; align-items: center; justify-content: space-between;
-    background: var(--acc-gray-50);
+    background: var(--bim-gray-50);
 }
 
 /* Role badges */
 .role-badge {
     display: inline-flex; align-items: center; padding: 2px 10px;
-    border-radius: var(--acc-radius-full); font-size: 11px; font-weight: 600;
+    border-radius: var(--bim-radius-full); font-size: 11px; font-weight: 600;
 }
-.role-badge-admin { background: var(--acc-role-admin-bg); color: var(--acc-role-admin); }
-.role-badge-editor { background: var(--acc-role-editor-bg); color: var(--acc-role-editor); }
-.role-badge-viewer { background: var(--acc-role-viewer-bg); color: var(--acc-role-viewer); }
+.role-badge-admin { background: var(--bim-role-admin-bg); color: var(--bim-role-admin); }
+.role-badge-editor { background: var(--bim-role-editor-bg); color: var(--bim-role-editor); }
+.role-badge-viewer { background: var(--bim-role-viewer-bg); color: var(--bim-role-viewer); }
 
 /* Status dot */
 .status-dot {
     display: inline-block; width: 8px; height: 8px; border-radius: 50%;
     margin-right: 6px;
 }
-.status-dot-active { background: var(--acc-success); }
-.status-dot-inactive { background: var(--acc-gray-400); }
+.status-dot-active { background: var(--bim-success); }
+.status-dot-inactive { background: var(--bim-gray-400); }
 
 /* Access matrix */
 .access-matrix-wrap {
-    background: var(--acc-white); border: 1px solid var(--acc-border);
-    border-radius: var(--acc-radius-lg); box-shadow: var(--acc-shadow-sm);
+    background: var(--bim-white); border: 1px solid var(--bim-border);
+    border-radius: var(--bim-radius-lg); box-shadow: var(--bim-shadow-sm);
     overflow: auto;
 }
 .access-matrix {
@@ -210,18 +210,18 @@
 .access-matrix th {
     padding: 10px 14px; font-size: 11px; font-weight: 600;
     text-transform: uppercase; letter-spacing: 0.5px;
-    color: var(--acc-text-secondary); background: var(--acc-gray-50);
-    border-bottom: 2px solid var(--acc-primary-30);
+    color: var(--bim-text-secondary); background: var(--bim-gray-50);
+    border-bottom: 2px solid var(--bim-primary-30);
     position: sticky; top: 0; z-index: 1; white-space: nowrap;
 }
 .access-matrix td {
-    padding: 8px 14px; border-bottom: 1px solid var(--acc-border);
+    padding: 8px 14px; border-bottom: 1px solid var(--bim-border);
     font-size: 12px; vertical-align: middle; text-align: center;
 }
 .access-matrix td:first-child { text-align: left; font-weight: 500; }
-.access-matrix tbody tr:hover { background: var(--acc-primary-10); }
+.access-matrix tbody tr:hover { background: var(--bim-primary-10); }
 .access-matrix input[type="checkbox"] {
-    accent-color: var(--acc-primary); cursor: pointer;
+    accent-color: var(--bim-primary); cursor: pointer;
     width: 16px; height: 16px;
 }
 
@@ -229,23 +229,23 @@
 .log-filters {
     display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
     padding: 12px 20px;
-    border-bottom: 1px solid var(--acc-border);
-    background: var(--acc-gray-50);
+    border-bottom: 1px solid var(--bim-border);
+    background: var(--bim-gray-50);
 }
-.log-filters .acc-input, .log-filters .acc-select {
+.log-filters .bim-input, .log-filters .bim-select {
     font-size: 12px; padding: 5px 10px;
 }
 
 /* Export button */
 .export-btn {
     display: inline-flex; align-items: center; gap: 6px;
-    padding: 5px 12px; border: 1px solid var(--acc-border);
-    border-radius: var(--acc-radius-md); background: var(--acc-white);
+    padding: 5px 12px; border: 1px solid var(--bim-border);
+    border-radius: var(--bim-radius-md); background: var(--bim-white);
     font-size: 11px; font-weight: 600; cursor: pointer;
-    color: var(--acc-text-secondary);
+    color: var(--bim-text-secondary);
     transition: all 0.15s;
 }
-.export-btn:hover { background: var(--acc-gray-50); border-color: var(--acc-border-strong); }
+.export-btn:hover { background: var(--bim-gray-50); border-color: var(--bim-border-strong); }
 
 /* Responsive */
 @media (max-width: 1100px) {

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Benutzer — ACC Admin</title>
+<title>Benutzer — BIM Tools Admin</title>
 <link rel="stylesheet" href="../../shared/css/acc-variables.css">
 <link rel="stylesheet" href="../../shared/css/acc-base.css">
 <link rel="stylesheet" href="../../shared/css/acc-components.css">
@@ -16,7 +16,7 @@
         <div class="admin-sidebar-header">
             <div class="admin-sidebar-logo"><img src="../../shared/assets/emch-berger-logo.gif" alt="Logo"></div>
             <div class="admin-sidebar-title">Administration</div>
-            <div class="admin-sidebar-subtitle">ACC Platform</div>
+            <div class="admin-sidebar-subtitle">BIM Tools</div>
         </div>
         <div class="admin-nav">
             <a class="admin-nav-item" href="index.html">
@@ -51,15 +51,15 @@
                     <div class="admin-header-title">Benutzerverwaltung</div>
                     <div class="admin-header-desc">Benutzer erstellen, bearbeiten und verwalten</div>
                 </div>
-                <button class="acc-btn acc-btn-primary" onclick="showAddModal()">+ Neuer Benutzer</button>
+                <button class="bim-btn bim-btn-primary" onclick="showAddModal()">+ Neuer Benutzer</button>
             </div>
         </div>
 
         <div class="admin-content">
             <div class="user-table-wrap">
                 <div class="user-table-toolbar">
-                    <input type="text" id="searchInput" class="acc-input" style="width:240px;" placeholder="Benutzer suchen..." oninput="renderUsers()">
-                    <select id="roleFilter" class="acc-select" style="width:160px;" onchange="renderUsers()">
+                    <input type="text" id="searchInput" class="bim-input" style="width:240px;" placeholder="Benutzer suchen..." oninput="renderUsers()">
+                    <select id="roleFilter" class="bim-select" style="width:160px;" onchange="renderUsers()">
                         <option value="">Alle Rollen</option>
                         <option value="admin">Administrator</option>
                         <option value="editor">Bearbeiter</option>
@@ -72,68 +72,47 @@
     </main>
 </div>
 
-<!-- Add/Edit Modal -->
-<div class="acc-modal-overlay" id="userModal">
-    <div class="acc-modal" style="max-width:480px;">
-        <div class="acc-modal-header">
+<!-- Add/Edit Modal (no password field — users set their own on first login) -->
+<div class="bim-modal-overlay" id="userModal">
+    <div class="bim-modal" style="max-width:480px;">
+        <div class="bim-modal-header">
             <h3 id="modalTitle">Neuer Benutzer</h3>
-            <button class="acc-btn-icon" onclick="closeModal()">&times;</button>
+            <button class="bim-btn-icon" onclick="closeModal()">&times;</button>
         </div>
-        <div class="acc-modal-body">
+        <div class="bim-modal-body">
             <input type="hidden" id="mUserId">
-            <div class="acc-form-group">
-                <label class="acc-form-label">Name *</label>
-                <input type="text" id="mName" class="acc-input" placeholder="Vollständiger Name">
+            <div class="bim-form-group">
+                <label class="bim-form-label">Name *</label>
+                <input type="text" id="mName" class="bim-input" placeholder="Vollständiger Name">
             </div>
-            <div class="acc-form-group">
-                <label class="acc-form-label">Benutzername *</label>
-                <input type="text" id="mUsername" class="acc-input" placeholder="Anmeldename">
+            <div class="bim-form-group">
+                <label class="bim-form-label">Benutzername *</label>
+                <input type="text" id="mUsername" class="bim-input" placeholder="Anmeldename">
             </div>
-            <div class="acc-form-group" id="passwordGroup">
-                <label class="acc-form-label">Passwort *</label>
-                <input type="password" id="mPassword" class="acc-input" placeholder="Passwort">
+            <div class="bim-form-group">
+                <label class="bim-form-label">E-Mail</label>
+                <input type="email" id="mEmail" class="bim-input" placeholder="E-Mail-Adresse">
             </div>
-            <div class="acc-form-group">
-                <label class="acc-form-label">E-Mail</label>
-                <input type="email" id="mEmail" class="acc-input" placeholder="E-Mail-Adresse">
+            <div class="bim-form-group">
+                <label class="bim-form-label">Firma</label>
+                <input type="text" id="mCompany" class="bim-input" placeholder="Firma">
             </div>
-            <div class="acc-form-group">
-                <label class="acc-form-label">Firma</label>
-                <input type="text" id="mCompany" class="acc-input" placeholder="Firma">
-            </div>
-            <div class="acc-form-group">
-                <label class="acc-form-label">Rolle *</label>
-                <select id="mRole" class="acc-select">
+            <div class="bim-form-group">
+                <label class="bim-form-label">Rolle *</label>
+                <select id="mRole" class="bim-select">
                     <option value="viewer">Betrachter</option>
                     <option value="editor">Bearbeiter</option>
                     <option value="admin">Administrator</option>
                 </select>
             </div>
-        </div>
-        <div class="acc-modal-footer">
-            <button class="acc-btn acc-btn-secondary" onclick="closeModal()">Abbrechen</button>
-            <button class="acc-btn acc-btn-primary" onclick="saveUser()">Speichern</button>
-        </div>
-    </div>
-</div>
-
-<!-- Password Change Modal -->
-<div class="acc-modal-overlay" id="pwModal">
-    <div class="acc-modal" style="max-width:400px;">
-        <div class="acc-modal-header">
-            <h3>Passwort ändern</h3>
-            <button class="acc-btn-icon" onclick="closePwModal()">&times;</button>
-        </div>
-        <div class="acc-modal-body">
-            <input type="hidden" id="pwUserId">
-            <div class="acc-form-group">
-                <label class="acc-form-label">Neues Passwort</label>
-                <input type="password" id="pwNew" class="acc-input" placeholder="Neues Passwort">
+            <div id="newUserHint" style="display:none; font-size:11px; color:var(--bim-text-muted); background:var(--bim-gray-50); padding:8px 12px; border-radius:var(--bim-radius-md); margin-top:4px;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13" style="vertical-align:-2px;margin-right:4px;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                Der Benutzer wird bei der ersten Anmeldung aufgefordert, ein eigenes Passwort zu erstellen.
             </div>
         </div>
-        <div class="acc-modal-footer">
-            <button class="acc-btn acc-btn-secondary" onclick="closePwModal()">Abbrechen</button>
-            <button class="acc-btn acc-btn-primary" onclick="changePassword()">Ändern</button>
+        <div class="bim-modal-footer">
+            <button class="bim-btn bim-btn-secondary" onclick="closeModal()">Abbrechen</button>
+            <button class="bim-btn bim-btn-primary" onclick="saveUser()">Speichern</button>
         </div>
     </div>
 </div>
@@ -141,6 +120,8 @@
 <script src="../../shared/js/acc-utils.js"></script>
 <script src="../../shared/js/acc-storage.js"></script>
 <script src="../../shared/js/acc-storage-indexeddb.js?v=3"></script>
+<script src="../../shared/js/acc-storage-json.js"></script>
+<script src="../../shared/js/crypto-polyfill.js"></script>
 <script src="../../shared/js/acc-auth.js"></script>
 <script src="../../shared/js/acc-ui.js"></script>
 <script>
@@ -148,17 +129,17 @@ var currentUser = null;
 var allUsers = [];
 
 async function init() {
-    await ACC.StorageManager.init(new ACC.IndexedDBProvider('acc-platform'));
-    await ACC.Auth.init();
-    currentUser = await ACC.Auth.requireAuth('../../login.html');
+    await BIM.StorageManager.init(new BIM.AutoStorageProvider());
+    await BIM.Auth.init();
+    currentUser = await BIM.Auth.requireAuth('../../login.html');
     if (!currentUser) return;
-    if (!ACC.Auth.canAccessAdmin(currentUser)) { window.location.href = '../../index.html'; return; }
+    if (!BIM.Auth.canAccessAdmin(currentUser)) { window.location.href = '../../index.html'; return; }
     document.body.style.opacity = '1';
     await loadUsers();
 }
 
 async function loadUsers() {
-    allUsers = await ACC.Auth.getAllUsers();
+    allUsers = await BIM.Auth.getAllUsers();
     renderUsers();
 }
 
@@ -174,32 +155,46 @@ function renderUsers() {
         return true;
     });
 
-    var html = '<table class="acc-table"><thead><tr>' +
+    var html = '<table class="bim-table"><thead><tr>' +
         '<th>Name</th><th>Benutzername</th><th>E-Mail</th><th>Firma</th>' +
-        '<th>Rolle</th><th>Status</th><th>Letzte Aktivität</th><th style="width:120px;"></th>' +
+        '<th>Rolle</th><th>Status</th><th>Letzte Aktivität</th><th style="width:140px;"></th>' +
         '</tr></thead><tbody>';
 
     if (filtered.length === 0) {
-        html += '<tr><td colspan="8" style="text-align:center;color:var(--acc-text-muted);padding:30px;">Keine Benutzer gefunden</td></tr>';
+        html += '<tr><td colspan="8" style="text-align:center;color:var(--bim-text-muted);padding:30px;">Keine Benutzer gefunden</td></tr>';
     }
 
     filtered.forEach(function(u) {
         var roleClass = 'role-badge role-badge-' + u.role;
         var statusDot = u.status === 'active' ? 'status-dot-active' : 'status-dot-inactive';
+
+        // Must-set-password indicator
+        var pwIndicator = '';
+        if (u.mustSetPassword || u.passwordHash === null) {
+            pwIndicator = '<span style="font-size:11px; color:var(--bim-warning, #f59e0b); margin-left:6px; cursor:help;" title="Passwort noch nicht gesetzt">&#9888;</span>';
+        }
+
+        // Lockout indicator
+        var lockIndicator = '';
+        if (u.lockedUntil && new Date(u.lockedUntil) > new Date()) {
+            lockIndicator = '<span style="font-size:11px; color:var(--bim-danger, #e53e3e); margin-left:4px; cursor:help;" title="Konto gesperrt">&#128274;</span>';
+        }
+
         html += '<tr>' +
-            '<td><strong>' + ACC.Utils.escapeHtml(u.name || '—') + '</strong></td>' +
-            '<td>' + ACC.Utils.escapeHtml(u.username) + '</td>' +
-            '<td>' + ACC.Utils.escapeHtml(u.email || '—') + '</td>' +
-            '<td>' + ACC.Utils.escapeHtml(u.company || '—') + '</td>' +
-            '<td><span class="' + roleClass + '">' + ACC.Auth.getRoleLabel(u.role) + '</span></td>' +
+            '<td><strong>' + BIM.Utils.escapeHtml(u.name || '—') + '</strong>' + pwIndicator + lockIndicator + '</td>' +
+            '<td>' + BIM.Utils.escapeHtml(u.username) + '</td>' +
+            '<td>' + BIM.Utils.escapeHtml(u.email || '—') + '</td>' +
+            '<td>' + BIM.Utils.escapeHtml(u.company || '—') + '</td>' +
+            '<td><span class="' + roleClass + '">' + BIM.Auth.getRoleLabel(u.role) + '</span></td>' +
             '<td><span class="status-dot ' + statusDot + '"></span>' + (u.status === 'active' ? 'Aktiv' : 'Inaktiv') + '</td>' +
-            '<td style="font-size:11px;color:var(--acc-text-muted);">' + (u.lastActivity ? ACC.Utils.formatDateTime(u.lastActivity) : '—') + '</td>' +
+            '<td style="font-size:11px;color:var(--bim-text-muted);">' + (u.lastActivity ? BIM.Utils.formatDateTime(u.lastActivity) : '—') + '</td>' +
             '<td style="text-align:right;">' +
-                '<button class="acc-btn-icon acc-btn-sm" onclick="editUser(\'' + u.id + '\')" title="Bearbeiten" style="margin-right:4px;">&#9998;</button>' +
-                '<button class="acc-btn-icon acc-btn-sm" onclick="showPwModal(\'' + u.id + '\')" title="Passwort ändern" style="margin-right:4px;">&#128273;</button>' +
+                '<button class="bim-btn-icon bim-btn-sm" onclick="editUser(\'' + u.id + '\')" title="Bearbeiten" style="margin-right:4px;">&#9998;</button>' +
+                '<button class="bim-btn-icon bim-btn-sm" onclick="resetPassword(\'' + u.id + '\')" title="Passwort zurücksetzen" style="margin-right:4px;">&#128273;</button>' +
                 (u.status === 'active'
-                    ? '<button class="acc-btn-icon acc-btn-sm" onclick="toggleStatus(\'' + u.id + '\', false)" title="Deaktivieren">&#10006;</button>'
-                    : '<button class="acc-btn-icon acc-btn-sm" onclick="toggleStatus(\'' + u.id + '\', true)" title="Aktivieren" style="color:var(--acc-success);">&#10004;</button>') +
+                    ? '<button class="bim-btn-icon bim-btn-sm" onclick="toggleStatus(\'' + u.id + '\', false)" title="Deaktivieren" style="margin-right:4px;">&#10006;</button>'
+                    : '<button class="bim-btn-icon bim-btn-sm" onclick="toggleStatus(\'' + u.id + '\', true)" title="Aktivieren" style="color:var(--bim-success);margin-right:4px;">&#10004;</button>') +
+                (u.id !== currentUser.id ? '<button class="bim-btn-icon bim-btn-sm" onclick="deleteUser(\'' + u.id + '\')" title="Endgültig löschen" style="color:var(--bim-danger, #e53e3e);">&#128465;</button>' : '') +
             '</td></tr>';
     });
 
@@ -212,12 +207,11 @@ function showAddModal() {
     document.getElementById('mUserId').value = '';
     document.getElementById('mName').value = '';
     document.getElementById('mUsername').value = '';
-    document.getElementById('mPassword').value = '';
     document.getElementById('mEmail').value = '';
     document.getElementById('mCompany').value = '';
     document.getElementById('mRole').value = 'viewer';
-    document.getElementById('passwordGroup').style.display = 'block';
     document.getElementById('mUsername').disabled = false;
+    document.getElementById('newUserHint').style.display = 'block';
     document.getElementById('userModal').classList.add('active');
 }
 
@@ -228,12 +222,11 @@ function editUser(id) {
     document.getElementById('mUserId').value = u.id;
     document.getElementById('mName').value = u.name || '';
     document.getElementById('mUsername').value = u.username;
-    document.getElementById('mPassword').value = '';
     document.getElementById('mEmail').value = u.email || '';
     document.getElementById('mCompany').value = u.company || '';
     document.getElementById('mRole').value = u.role;
-    document.getElementById('passwordGroup').style.display = 'none';
     document.getElementById('mUsername').disabled = true;
+    document.getElementById('newUserHint').style.display = 'none';
     document.getElementById('userModal').classList.add('active');
 }
 
@@ -243,12 +236,11 @@ async function saveUser() {
     var id = document.getElementById('mUserId').value;
     var name = document.getElementById('mName').value.trim();
     var username = document.getElementById('mUsername').value.trim();
-    var password = document.getElementById('mPassword').value;
     var email = document.getElementById('mEmail').value.trim();
     var company = document.getElementById('mCompany').value.trim();
     var role = document.getElementById('mRole').value;
 
-    if (!name || !username) { ACC.UI.error('Name und Benutzername sind Pflichtfelder.'); return; }
+    if (!name || !username) { BIM.UI.error('Name und Benutzername sind Pflichtfelder.'); return; }
 
     try {
         if (id) {
@@ -259,60 +251,87 @@ async function saveUser() {
             user.email = email;
             user.company = company;
             user.role = role;
-            await ACC.Auth.updateUser(user);
-            ACC.Auth.logActivity(currentUser.id, currentUser.name, 'update', 'user', user.id, user.name, 'Benutzer bearbeitet');
-            ACC.UI.success('Benutzer aktualisiert');
+            await BIM.Auth.updateUser(user);
+            BIM.Auth.logActivity(currentUser.id, currentUser.name, 'update', 'user', user.id, user.name, 'Benutzer bearbeitet');
+            BIM.UI.success('Benutzer aktualisiert');
         } else {
-            // Create new
-            if (!password) { ACC.UI.error('Passwort ist ein Pflichtfeld.'); return; }
-            var newUser = await ACC.Auth.createUser({
-                name: name, username: username, password: password,
+            // Create new (no password — user sets own on first login)
+            var newUser = await BIM.Auth.createUser({
+                name: name, username: username,
                 email: email, company: company, role: role
             });
-            ACC.Auth.logActivity(currentUser.id, currentUser.name, 'create', 'user', newUser.id, newUser.name, 'Benutzer erstellt');
-            ACC.UI.success('Benutzer erstellt');
+            BIM.Auth.logActivity(currentUser.id, currentUser.name, 'create', 'user', newUser.id, newUser.name, 'Benutzer erstellt');
+            BIM.UI.success('Benutzer erstellt. Passwort wird bei Erstanmeldung gesetzt.');
         }
         closeModal();
         await loadUsers();
     } catch (e) {
-        ACC.UI.error(e.message || 'Fehler beim Speichern');
+        BIM.UI.error(e.message || 'Fehler beim Speichern');
     }
 }
 
-function showPwModal(id) {
-    document.getElementById('pwUserId').value = id;
-    document.getElementById('pwNew').value = '';
-    document.getElementById('pwModal').classList.add('active');
-}
-function closePwModal() { document.getElementById('pwModal').classList.remove('active'); }
+// ── Admin Password Reset (forces user to set new password on next login) ──
 
-async function changePassword() {
-    var id = document.getElementById('pwUserId').value;
-    var pw = document.getElementById('pwNew').value;
-    if (!pw) { ACC.UI.error('Bitte neues Passwort eingeben.'); return; }
+async function resetPassword(id) {
+    var u = allUsers.find(function(x) { return x.id === id; });
+    if (!u) return;
+
+    var confirmed = await BIM.UI.confirm(
+        'Passwort zurücksetzen',
+        'Das Passwort von "' + (u.name || u.username) + '" wird zurückgesetzt. Der Benutzer muss bei der nächsten Anmeldung ein neues Passwort erstellen.'
+    );
+    if (!confirmed) return;
+
     try {
-        await ACC.Auth.changePassword(id, pw);
-        var u = allUsers.find(function(x) { return x.id === id; });
-        ACC.Auth.logActivity(currentUser.id, currentUser.name, 'update', 'user', id, u ? u.name : '', 'Passwort geändert');
-        ACC.UI.success('Passwort geändert');
-        closePwModal();
-    } catch (e) { ACC.UI.error(e.message); }
+        await BIM.Auth.adminResetPassword(u.id);
+        BIM.Auth.logActivity(currentUser.id, currentUser.name, 'update', 'user', id, u.name || u.username, 'Passwort zurückgesetzt');
+        BIM.UI.success('Passwort zurückgesetzt. Benutzer muss neues Passwort erstellen.');
+        await loadUsers();
+    } catch (e) {
+        BIM.UI.error(e.message || 'Fehler beim Zurücksetzen');
+    }
 }
 
 async function toggleStatus(id, activate) {
     try {
         if (activate) {
-            await ACC.Auth.activateUser(id);
+            await BIM.Auth.activateUser(id);
         } else {
-            // Prevent deactivating self
-            if (id === currentUser.id) { ACC.UI.error('Sie können Ihr eigenes Konto nicht deaktivieren.'); return; }
-            await ACC.Auth.deactivateUser(id);
+            if (id === currentUser.id) { BIM.UI.error('Sie können Ihr eigenes Konto nicht deaktivieren.'); return; }
+            await BIM.Auth.deactivateUser(id);
         }
         var u = allUsers.find(function(x) { return x.id === id; });
-        ACC.Auth.logActivity(currentUser.id, currentUser.name, 'update', 'user', id, u ? u.name : '', activate ? 'Aktiviert' : 'Deaktiviert');
-        ACC.UI.success(activate ? 'Benutzer aktiviert' : 'Benutzer deaktiviert');
+        BIM.Auth.logActivity(currentUser.id, currentUser.name, 'update', 'user', id, u ? u.name : '', activate ? 'Aktiviert' : 'Deaktiviert');
+        BIM.UI.success(activate ? 'Benutzer aktiviert' : 'Benutzer deaktiviert');
         await loadUsers();
-    } catch (e) { ACC.UI.error(e.message); }
+    } catch (e) { BIM.UI.error(e.message); }
+}
+
+async function deleteUser(id) {
+    var u = allUsers.find(function(x) { return x.id === id; });
+    if (!u) return;
+    if (id === currentUser.id) { BIM.UI.error('Sie können Ihr eigenes Konto nicht löschen.'); return; }
+
+    var confirmed = await BIM.UI.confirm(
+        'Benutzer endgültig löschen',
+        'Der Benutzer "' + BIM.Utils.escapeHtml(u.name || u.username) + '" wird unwiderruflich aus der Datenbank gelöscht. Diese Aktion kann nicht rückgängig gemacht werden.'
+    );
+    if (!confirmed) return;
+
+    try {
+        // Remove all sessions for this user
+        var sessions = await BIM.StorageManager.query('sessions', { userId: id });
+        for (var i = 0; i < sessions.length; i++) {
+            await BIM.StorageManager.remove('sessions', sessions[i].id);
+        }
+        // Remove user profile
+        await BIM.StorageManager.remove('userProfiles', id);
+        BIM.Auth.logActivity(currentUser.id, currentUser.name, 'delete', 'user', id, u.name || u.username, 'Benutzer endgültig gelöscht');
+        BIM.UI.success('Benutzer "' + (u.name || u.username) + '" wurde gelöscht.');
+        await loadUsers();
+    } catch (e) {
+        BIM.UI.error(e.message || 'Fehler beim Löschen');
+    }
 }
 
 init();

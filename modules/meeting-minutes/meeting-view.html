@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Besprechungsprotokoll — ACC</title>
+<title>Besprechungsprotokoll — BIM Tools</title>
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 body {
@@ -119,12 +119,18 @@ body {
 .pv-item-status-informationen { background: #f5f5f5; color: #666; }
 .pv-item-status-erledigt { background: #e8f5e9; color: #388E3C; }
 
-.pv-item-description { font-size: 11px; line-height: 1.55; white-space: pre-wrap; margin-bottom: 5px; }
+.pv-item-description { font-size: 11px; line-height: 1.55; margin-bottom: 5px; }
+.pv-item-description ul, .pv-item-description ol { margin: 4px 0; padding-left: 24px; }
+.pv-item-description ul { list-style-type: disc; }
+.pv-item-description ol { list-style-type: decimal; }
+.pv-item-description li { margin-bottom: 2px; }
 
 .pv-custom-fields { font-size: 10px; color: #666; margin-bottom: 5px; list-style: none; padding-left: 8px; }
 .pv-custom-fields li { margin-bottom: 1px; }
 .pv-custom-fields li::before { content: '\2022'; margin-right: 6px; color: #999; }
 
+.pv-instance-group { margin-bottom: 8px; padding-left: 8px; border-left: 2px solid #e0e0e0; }
+.pv-instance-group-label { font-size: 9px; font-weight: 700; color: #666; text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 4px; }
 .pv-update-block { margin-bottom: 6px; font-size: 10px; }
 .pv-update-text { line-height: 1.5; white-space: pre-wrap; }
 .pv-update-meta {
@@ -173,17 +179,19 @@ body {
 <script src="../../shared/js/acc-utils.js"></script>
 <script src="../../shared/js/acc-storage.js"></script>
 <script src="../../shared/js/acc-storage-indexeddb.js?v=3"></script>
+<script src="../../shared/js/acc-storage-json.js"></script>
+<script src="../../shared/js/crypto-polyfill.js"></script>
 <script src="../../shared/js/acc-auth.js"></script>
 <script src="../../shared/js/acc-ui.js"></script>
 <script src="js/meeting-templates.js"></script>
 <script src="js/meeting-store.js"></script>
 <script>
-var instanceId = ACC.Utils.getUrlParam('instanceId');
+var instanceId = BIM.Utils.getUrlParam('instanceId');
 
 // A4 content height in px: 297mm - 18mm top padding - 20mm bottom padding - ~28px header - ~30px footer ≈ ~940px
 var PAGE_CONTENT_HEIGHT = 920;
 
-function esc(s) { return ACC.Utils.escapeHtml(s || ''); }
+function esc(s) { return BIM.Utils.escapeHtml(s || ''); }
 
 function fmtDate(iso) {
     if (!iso) return '';
@@ -213,31 +221,38 @@ function statusLabel(statusKey, series) {
 function statusCls(key) { return 'pv-item-status pv-item-status-' + (key || 'offen'); }
 
 async function init() {
-    await ACC.StorageManager.init(new ACC.IndexedDBProvider('acc-platform'));
-    await ACC.Auth.init();
-    var user = await ACC.Auth.requireAuth('../../login.html');
+    await BIM.StorageManager.init(new BIM.AutoStorageProvider());
+    await BIM.Auth.init();
+    var user = await BIM.Auth.requireAuth('../../login.html');
     if (!user) return;
 
     if (!instanceId) { document.getElementById('loadingMsg').textContent = 'Keine Instanz-ID angegeben.'; return; }
-    var data = await ACC.MeetingStore.getInstanceFull(instanceId);
+    var data = await BIM.MeetingStore.getInstanceFull(instanceId);
     if (!data) { document.getElementById('loadingMsg').textContent = 'Besprechung nicht gefunden.'; return; }
 
-    if (!ACC.Auth.canAccessSeries(user, data.series.id)) {
+    if (!BIM.Auth.canAccessSeries(user, data.series.id)) {
         document.getElementById('loadingMsg').textContent = 'Kein Zugriff auf diese Serie.';
         return;
     }
 
-    ACC.Auth.logActivity(user.id, user.name, 'view', 'instance', instanceId, data.series.code + ' #' + data.instance.number, '');
-    render(data);
+    // Load all instances for grouping
+    var allInstances = await BIM.MeetingStore.getInstancesForSeries(data.series.id);
+    BIM.Auth.logActivity(user.id, user.name, 'view', 'instance', instanceId, data.series.code + ' #' + data.instance.number, '');
+    render(data, allInstances);
 }
 
-function render(data) {
+function render(data, allInstances) {
     var series = data.series;
     var inst = data.instance;
     var participants = data.participants || [];
     var items = data.discussionItems || [];
     var updates = data.updates || [];
     var attachments = data.attachments || [];
+    var currentInstanceId = inst.id;
+
+    // Build instance lookup map
+    var instanceMap = {};
+    (allInstances || []).forEach(function(i) { instanceMap[i.id] = i; });
 
     var updatesMap = {};
     updates.forEach(function(u) {
@@ -248,6 +263,15 @@ function render(data) {
     attachments.forEach(function(a) {
         if (!attachMap[a.discussionItemId]) attachMap[a.discussionItemId] = [];
         attachMap[a.discussionItemId].push(a);
+    });
+
+    // Filter items: show if created in this instance, has updates in this instance, or is still open/laufend
+    items = items.filter(function(item) {
+        if (item.createdByInstanceId === currentInstanceId) return true;
+        var hasUpdates = (updatesMap[item.id] || []).some(function(u) { return u.instanceId === currentInstanceId; });
+        if (hasUpdates) return true;
+        if (item.status === 'offen' || item.status === 'laufend') return true;
+        return false;
     });
 
     var organisatoren = participants.filter(function(p) { return p.participantType === 'organisator'; });
@@ -264,10 +288,10 @@ function render(data) {
         itemsByCat[cid].sort(function(a, b) { return (a.itemNumber || 0) - (b.itemNumber || 0); });
     }
 
-    var typeName = ACC.Utils.MEETING_TYPES[series.type] || series.type || '';
+    var typeName = BIM.Utils.MEETING_TYPES[series.type] || series.type || '';
     var headerCode = series.code || '';
     var headerRight = headerCode + (typeName ? ': ' + typeName : '');
-    var footerText = 'Erstellt von ' + (inst.createdBy || 'Unbekannt') + ' mit ACC Platform am ' + fmtDateTime(inst.createdAt);
+    var footerText = 'Erstellt von ' + (inst.createdBy || 'Unbekannt') + ' mit BIM Tools am ' + fmtDateTime(inst.createdAt);
 
     // ── Build content blocks as separate elements for pagination ──
     var measure = document.getElementById('measureContainer');
@@ -337,7 +361,7 @@ function render(data) {
         addBlock(measure, '<div class="pv-category-heading">' + esc(cat.code) + ' ' + esc(cat.label) + '</div>');
         var catItems = itemsByCat[cat.id] || [];
         catItems.forEach(function(item) {
-            addBlock(measure, renderItem(item, series, updatesMap[item.id] || [], attachMap[item.id] || []));
+            addBlock(measure, renderItem(item, series, updatesMap[item.id] || [], attachMap[item.id] || [], instanceMap, currentInstanceId));
         });
     });
 
@@ -345,7 +369,7 @@ function render(data) {
     if (uncategorized.length > 0) {
         addBlock(measure, '<div class="pv-category-heading">Ohne Kategorie</div>');
         uncategorized.forEach(function(item) {
-            addBlock(measure, renderItem(item, series, updatesMap[item.id] || [], attachMap[item.id] || []));
+            addBlock(measure, renderItem(item, series, updatesMap[item.id] || [], attachMap[item.id] || [], instanceMap, currentInstanceId));
         });
     }
 
@@ -443,7 +467,7 @@ function paginate(measure, headerCode, headerRight, footerText) {
     measure.innerHTML = '';
 }
 
-function renderItem(item, series, itemUpdates, itemAttachments) {
+function renderItem(item, series, itemUpdates, itemAttachments, instanceMap, currentInstanceId) {
     var html = '<div class="pv-discussion-item">';
 
     html += '<div class="pv-item-header">';
@@ -470,22 +494,52 @@ function renderItem(item, series, itemUpdates, itemAttachments) {
     if (hasCustom) html += cfHtml;
 
     if (itemUpdates.length > 0) {
+        // Group updates by instanceId
+        var updatesByInstance = {};
+        var instanceOrder = [];
         itemUpdates.forEach(function(upd) {
-            html += '<div class="pv-update-block">';
-            html += '<div class="pv-update-text">';
-            if (upd.date) html += '<strong>' + fmtDate(upd.date) + ':</strong> ';
-            html += esc(upd.text);
-            html += '</div>';
-            html += '<div class="pv-update-meta">';
-            html += '<span>Erstellt am ' + fmtDate(upd.createdAt);
-            if (upd.author) html += ' von ' + esc(upd.author);
-            html += '</span>';
-            if (upd.updatedAt && upd.updatedAt !== upd.createdAt) {
-                html += '<span>Zuletzt aktualisiert am ' + fmtDate(upd.updatedAt);
-                if (upd.updatedBy) html += ' von ' + esc(upd.updatedBy);
-                html += '</span>';
+            var iid = upd.instanceId || 'unknown';
+            if (!updatesByInstance[iid]) {
+                updatesByInstance[iid] = [];
+                instanceOrder.push(iid);
             }
-            html += '</div></div>';
+            updatesByInstance[iid].push(upd);
+        });
+
+        // Sort: current instance first, then by instanceNumber descending
+        instanceOrder.sort(function(a, b) {
+            if (a === currentInstanceId) return -1;
+            if (b === currentInstanceId) return 1;
+            var instA = instanceMap[a];
+            var instB = instanceMap[b];
+            var numA = instA ? instA.instanceNumber : 0;
+            var numB = instB ? instB.instanceNumber : 0;
+            return numB - numA;
+        });
+
+        var multipleInstances = instanceOrder.length > 1;
+
+        instanceOrder.forEach(function(iid) {
+            var inst = instanceMap[iid];
+            if (multipleInstances) {
+                var label = inst ? 'Sitzung ' + inst.instanceNumber : 'Unbekannte Sitzung';
+                if (iid === currentInstanceId) label += ' (aktuell)';
+                html += '<div class="pv-instance-group">';
+                html += '<div class="pv-instance-group-label">' + esc(label) + '</div>';
+            }
+
+            updatesByInstance[iid].forEach(function(upd) {
+                html += '<div class="pv-update-block">';
+                html += '<div class="pv-update-text">' + fmtDate(upd.createdAt) + ': ' + esc(upd.text) + '</div>';
+                html += '<div class="pv-update-meta">';
+                if (upd.author) html += '<span>Erstellt von ' + esc(upd.author) + '</span>';
+                if (upd.updatedAt && upd.updatedAt !== upd.createdAt) {
+                    html += '<span style="font-style:italic;">bearbeitet' + (upd.updatedBy ? ' von ' + esc(upd.updatedBy) : '') + '</span>';
+                }
+                html += '</div></div>';
+            });
+
+            if (multipleInstances) html += '</div>';
         });
     }
 

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sitzung bearbeiten — ACC</title>
+<title>Sitzung bearbeiten — BIM Tools</title>
 <link rel="stylesheet" href="../../shared/css/acc-variables.css">
 <link rel="stylesheet" href="../../shared/css/acc-base.css">
 <link rel="stylesheet" href="../../shared/css/acc-components.css">
@@ -13,23 +13,23 @@
 
 <div class="page-transition"><div class="slide"></div><div class="slide-accent"></div></div>
 
-<div class="acc-topbar">
-    <div class="acc-topbar-left">
-        <button class="acc-btn-icon" onclick="goBack()" title="Zurück">&#8592;</button>
+<div class="bim-topbar">
+    <div class="bim-topbar-left">
+        <button class="bim-btn-icon" onclick="goBack()" title="Zurück">&#8592;</button>
         <div>
-            <div class="acc-topbar-title" id="topbarTitle">Sitzung</div>
-            <div class="acc-topbar-subtitle" id="topbarSubtitle">Besprechungsprotokoll &middot; ACC</div>
+            <div class="bim-topbar-title" id="topbarTitle">Sitzung</div>
+            <div class="bim-topbar-subtitle" id="topbarSubtitle">Besprechungsprotokoll &middot; BIM Tools</div>
         </div>
     </div>
-    <div class="acc-flex-center acc-gap-2">
+    <div class="bim-flex-center bim-gap-2">
         <div class="user-selector">
             <span>Benutzer:</span>
-            <select id="userSelect" class="acc-select acc-input-sm" style="width:200px;" onchange="switchUser(this.value)">
+            <select id="userSelect" class="bim-select bim-input-sm" style="width:200px;" onchange="switchUser(this.value)">
                 <option value="">— Kein Benutzer —</option>
             </select>
-            <button class="acc-btn-icon acc-btn-sm" onclick="addNewUser()" title="Neuen Benutzer anlegen">+</button>
+            <button class="bim-btn-icon bim-btn-sm" onclick="addNewUser()" title="Neuen Benutzer anlegen">+</button>
         </div>
-        <span id="autoSaveLabel" class="acc-text-xs acc-text-muted"></span>
+        <span id="autoSaveLabel" class="bim-text-xs bim-text-muted"></span>
     </div>
 </div>
 
@@ -45,32 +45,32 @@
     <div class="mm-tab-panel active" id="tab-meta">
         <div style="padding:16px 24px; max-width:960px; margin:0 auto;">
 
-            <div class="acc-card editor-section">
+            <div class="bim-card editor-section">
                 <div class="editor-section-header"><span class="editor-section-title">Kopfdaten</span></div>
                 <div class="editor-section-body">
-                    <div class="acc-form-row">
-                        <label class="acc-form-label">Sitzungsnummer</label>
-                        <input type="text" id="fInstanceNum" class="acc-input" style="max-width:200px;" disabled>
+                    <div class="bim-form-row">
+                        <label class="bim-form-label">Sitzungsnummer</label>
+                        <input type="text" id="fInstanceNum" class="bim-input" style="max-width:200px;" disabled>
                     </div>
-                    <div class="acc-form-row">
-                        <label class="acc-form-label">Datum</label>
-                        <input type="date" id="fDate" class="acc-input" style="max-width:170px;" onchange="autoSave()">
+                    <div class="bim-form-row">
+                        <label class="bim-form-label">Datum</label>
+                        <input type="date" id="fDate" class="bim-input" style="max-width:170px;" onchange="autoSave()">
                     </div>
-                    <div class="acc-form-row">
-                        <label class="acc-form-label">Zeit</label>
-                        <div class="acc-flex-center acc-gap-2">
-                            <input type="time" id="fTimeStart" class="acc-input" style="width:120px;" onchange="autoSave()">
-                            <span class="acc-text-muted">bis</span>
-                            <input type="time" id="fTimeEnd" class="acc-input" style="width:120px;" onchange="autoSave()">
+                    <div class="bim-form-row">
+                        <label class="bim-form-label">Zeit</label>
+                        <div class="bim-flex-center bim-gap-2">
+                            <input type="time" id="fTimeStart" class="bim-input" style="width:120px;" onchange="autoSave()">
+                            <span class="bim-text-muted">bis</span>
+                            <input type="time" id="fTimeEnd" class="bim-input" style="width:120px;" onchange="autoSave()">
                         </div>
                     </div>
-                    <div class="acc-form-row">
-                        <label class="acc-form-label">Ort</label>
-                        <input type="text" id="fLocation" class="acc-input" placeholder="Besprechungsort..." onchange="autoSave()">
+                    <div class="bim-form-row">
+                        <label class="bim-form-label">Ort</label>
+                        <input type="text" id="fLocation" class="bim-input" placeholder="Besprechungsort..." onchange="autoSave()">
                     </div>
-                    <div class="acc-form-row">
-                        <label class="acc-form-label">Status</label>
-                        <select id="fStatus" class="acc-select" style="max-width:200px;" onchange="autoSave()">
+                    <div class="bim-form-row">
+                        <label class="bim-form-label">Status</label>
+                        <select id="fStatus" class="bim-select" style="max-width:200px;" onchange="autoSave()">
                             <option value="entwurf">Entwurf</option>
                             <option value="aktiv">Aktiv</option>
                             <option value="abgeschlossen">Abgeschlossen</option>
@@ -80,19 +80,19 @@
             </div>
 
             <!-- Organisatoren -->
-            <div class="acc-card editor-section">
+            <div class="bim-card editor-section">
                 <div class="editor-section-header">
                     <span class="editor-section-title">Organisatoren</span>
-                    <button class="acc-btn acc-btn-sm acc-btn-primary" onclick="addParticipant('organisator')">+ Organisator</button>
+                    <button class="bim-btn bim-btn-sm bim-btn-primary" onclick="addParticipant('organisator')">+ Organisator</button>
                 </div>
                 <div class="editor-section-body" id="organizersWrap"></div>
             </div>
 
             <!-- Eingeladene -->
-            <div class="acc-card editor-section">
+            <div class="bim-card editor-section">
                 <div class="editor-section-header">
                     <span class="editor-section-title">Eingeladene</span>
-                    <button class="acc-btn acc-btn-sm acc-btn-primary" onclick="addParticipant('eingeladene')">+ Eingeladene/r</button>
+                    <button class="bim-btn bim-btn-sm bim-btn-primary" onclick="addParticipant('eingeladene')">+ Eingeladene/r</button>
                 </div>
                 <div class="editor-section-body" id="inviteesWrap"></div>
             </div>
@@ -104,7 +104,7 @@
         <div class="discussion-layout">
             <div class="category-nav" id="categoryNav"></div>
             <div class="discussion-content" id="discussionContent">
-                <div class="acc-text-sm acc-text-muted" style="padding:40px; text-align:center;">Wählen Sie eine Kategorie aus der linken Navigation.</div>
+                <div class="bim-text-sm bim-text-muted" style="padding:40px; text-align:center;">Wählen Sie eine Kategorie aus der linken Navigation.</div>
             </div>
         </div>
     </div>
@@ -112,13 +112,13 @@
     <!-- TAB: OVERVIEW -->
     <div class="mm-tab-panel" id="tab-overview">
         <div style="padding:16px 24px; max-width:960px; margin:0 auto;">
-            <div class="acc-card editor-section">
+            <div class="bim-card editor-section">
                 <div class="editor-section-header"><span class="editor-section-title">Zusammenfassung</span></div>
                 <div class="editor-section-body">
-                    <textarea id="fSummary" class="acc-textarea" rows="6" placeholder="Besprechungsübersicht / Zusammenfassung..." onchange="autoSave()"></textarea>
+                    <textarea id="fSummary" class="bim-textarea" rows="6" placeholder="Besprechungsübersicht / Zusammenfassung..." onchange="autoSave()"></textarea>
                 </div>
             </div>
-            <div class="acc-card editor-section">
+            <div class="bim-card editor-section">
                 <div class="editor-section-header"><span class="editor-section-title">Statistik</span></div>
                 <div class="editor-section-body" id="statsWrap"></div>
             </div>
@@ -127,23 +127,25 @@
 </div>
 
 <div class="editor-footer">
-    <button class="acc-btn acc-btn-secondary" onclick="goBack()">Zurück</button>
+    <button class="bim-btn bim-btn-secondary" onclick="goBack()">Zurück</button>
     <div class="editor-footer-spacer"></div>
-    <button class="acc-btn acc-btn-secondary" onclick="openPrintView()">Druckansicht</button>
-    <button class="acc-btn acc-btn-secondary" onclick="createNextInstance()">Neue Sitzung</button>
-    <button class="acc-btn acc-btn-primary" onclick="saveInstance()">Speichern</button>
+    <button class="bim-btn bim-btn-secondary" onclick="openPrintView()">Druckansicht</button>
+    <button class="bim-btn bim-btn-secondary" onclick="createNextInstance()">Neue Sitzung</button>
+    <button class="bim-btn bim-btn-primary" onclick="saveInstance()">Speichern</button>
 </div>
 
 <script src="../../shared/js/acc-utils.js"></script>
 <script src="../../shared/js/acc-storage.js"></script>
 <script src="../../shared/js/acc-storage-indexeddb.js?v=3"></script>
+<script src="../../shared/js/acc-storage-json.js"></script>
+<script src="../../shared/js/crypto-polyfill.js"></script>
 <script src="../../shared/js/acc-auth.js"></script>
 <script src="../../shared/js/acc-ui.js"></script>
 <script src="js/meeting-templates.js"></script>
 <script src="js/meeting-store.js"></script>
 <script>
-var seriesId = ACC.Utils.getUrlParam('seriesId');
-var instanceId = ACC.Utils.getUrlParam('instanceId');
+var seriesId = BIM.Utils.getUrlParam('seriesId');
+var instanceId = BIM.Utils.getUrlParam('instanceId');
 var series = null;
 var instance = null;
 var participants = [];
@@ -153,23 +155,25 @@ var allAttachments = [];
 var activeCategoryId = null;
 var autoSaveTimer = null;
 var currentUser = null;
+var allSeriesInstances = [];
+var instanceMap = {};
 
 async function init() {
-    await ACC.StorageManager.init(new ACC.IndexedDBProvider('acc-platform'));
-    await ACC.Auth.init();
-    currentUser = await ACC.Auth.requireAuth('../../login.html');
+    await BIM.StorageManager.init(new BIM.AutoStorageProvider());
+    await BIM.Auth.init();
+    currentUser = await BIM.Auth.requireAuth('../../login.html');
     if (!currentUser) return;
     document.body.style.opacity = '1';
 
-    if (!seriesId || !instanceId) { ACC.UI.error('Fehlende Parameter'); return; }
-    if (!ACC.Auth.canAccessSeries(currentUser, seriesId)) {
-        ACC.UI.error('Kein Zugriff auf diese Serie');
+    if (!seriesId || !instanceId) { BIM.UI.error('Fehlende Parameter'); return; }
+    if (!BIM.Auth.canAccessSeries(currentUser, seriesId)) {
+        BIM.UI.error('Kein Zugriff auf diese Serie');
         setTimeout(function() { window.location.href = 'index.html'; }, 1500);
         return;
     }
 
-    var full = await ACC.MeetingStore.getInstanceFull(instanceId);
-    if (!full) { ACC.UI.error('Sitzung nicht gefunden'); return; }
+    var full = await BIM.MeetingStore.getInstanceFull(instanceId);
+    if (!full) { BIM.UI.error('Sitzung nicht gefunden'); return; }
 
     series = full.series;
     instance = full.instance;
@@ -177,6 +181,10 @@ async function init() {
     allItems = full.discussionItems;
     allUpdates = full.updates;
     allAttachments = full.attachments;
+
+    // Load all instances for carried-over detection
+    allSeriesInstances = await BIM.MeetingStore.getInstancesForSeries(seriesId);
+    allSeriesInstances.forEach(function(i) { instanceMap[i.id] = i; });
 
     await loadUserProfiles();
     loadFormData();
@@ -189,12 +197,12 @@ async function init() {
     }
 
     // Viewer read-only mode: disable all editing controls
-    if (!ACC.Auth.canEdit(currentUser)) {
+    if (!BIM.Auth.canEdit(currentUser)) {
         document.querySelectorAll('input, select, textarea, [contenteditable]').forEach(function(el) {
             el.disabled = true;
             el.removeAttribute('contenteditable');
         });
-        document.querySelectorAll('.acc-btn-primary, .acc-btn-danger, .acc-btn-icon, .rt-toolbar').forEach(function(el) {
+        document.querySelectorAll('.bim-btn-primary, .bim-btn-danger, .bim-btn-icon, .rt-toolbar').forEach(function(el) {
             el.style.display = 'none';
         });
     }
@@ -202,47 +210,47 @@ async function init() {
     // Replace user selector with logged-in user identity
     var userSelWrap = document.querySelector('.user-selector');
     if (userSelWrap) {
-        userSelWrap.innerHTML = '<span style="font-size:12px;color:var(--acc-text-secondary);">Angemeldet als:</span> ' +
-            '<strong style="font-size:12px;">' + ACC.Utils.escapeHtml(currentUser.name || currentUser.username) + '</strong>';
+        userSelWrap.innerHTML = '<span style="font-size:12px;color:var(--bim-text-secondary);">Angemeldet als:</span> ' +
+            '<strong style="font-size:12px;">' + BIM.Utils.escapeHtml(currentUser.name || currentUser.username) + '</strong>';
     }
 }
 
 // ── USER PROFILES ──
 async function loadUserProfiles() {
-    var profiles = await ACC.MeetingStore.getAllUserProfiles();
+    var profiles = await BIM.MeetingStore.getAllUserProfiles();
     var sel = document.getElementById('userSelect');
     sel.innerHTML = '<option value="">— Kein Benutzer —</option>';
     profiles.forEach(function(p) {
-        sel.innerHTML += '<option value="' + p.id + '">' + ACC.Utils.escapeHtml(ACC.Utils.formatAuthor(p.name, p.company)) + '</option>';
+        sel.innerHTML += '<option value="' + p.id + '">' + BIM.Utils.escapeHtml(BIM.Utils.formatAuthor(p.name, p.company)) + '</option>';
     });
-    var current = await ACC.MeetingStore.getCurrentUser();
+    var current = await BIM.MeetingStore.getCurrentUser();
     if (current) sel.value = current.id;
 }
 
 async function switchUser(profileId) {
     if (profileId) {
-        await ACC.MeetingStore.setCurrentUser(profileId);
+        await BIM.MeetingStore.setCurrentUser(profileId);
     }
 }
 
 async function addNewUser() {
-    var result = await ACC.UI.modal({
+    var result = await BIM.UI.modal({
         title: 'Neuen Benutzer anlegen',
-        body: '<div class="acc-form-row"><label class="acc-form-label">Name</label><input type="text" id="newUserName" class="acc-input" placeholder="Vorname Nachname"></div>' +
-              '<div class="acc-form-row"><label class="acc-form-label">Firma</label><input type="text" id="newUserCompany" class="acc-input" placeholder="Firmenname"></div>',
+        body: '<div class="bim-form-row"><label class="bim-form-label">Name</label><input type="text" id="newUserName" class="bim-input" placeholder="Vorname Nachname"></div>' +
+              '<div class="bim-form-row"><label class="bim-form-label">Firma</label><input type="text" id="newUserCompany" class="bim-input" placeholder="Firmenname"></div>',
         buttons: [
-            { label: 'Abbrechen', action: 'cancel', cls: 'acc-btn-secondary' },
-            { label: 'Anlegen', action: 'create', cls: 'acc-btn-primary' }
+            { label: 'Abbrechen', action: 'cancel', cls: 'bim-btn-secondary' },
+            { label: 'Anlegen', action: 'create', cls: 'bim-btn-primary' }
         ]
     });
     if (result !== 'create') return;
     var name = document.getElementById('newUserName').value.trim();
     var company = document.getElementById('newUserCompany').value.trim();
     if (!name) return;
-    var profile = await ACC.MeetingStore.createUserProfile({ name: name, company: company, isDefault: true });
-    await ACC.MeetingStore.setCurrentUser(profile.id);
+    var profile = await BIM.MeetingStore.createUserProfile({ name: name, company: company, isDefault: true });
+    await BIM.MeetingStore.setCurrentUser(profile.id);
     await loadUserProfiles();
-    ACC.UI.success('Benutzer angelegt');
+    BIM.UI.success('Benutzer angelegt');
 }
 
 // ── FORM DATA ──
@@ -259,7 +267,7 @@ function loadFormData() {
 
 function updateTopbar() {
     document.getElementById('topbarTitle').textContent = 'Besprechung ' + instance.instanceNumber + ': ' + (series.title || '');
-    document.getElementById('topbarSubtitle').textContent = (series.code ? series.code + ' · ' : '') + 'Sitzungsprotokoll · ACC';
+    document.getElementById('topbarSubtitle').textContent = (series.code ? series.code + ' · ' : '') + 'Sitzungsprotokoll · BIM Tools';
 }
 
 function collectFields() {
@@ -275,7 +283,7 @@ function autoSave() {
     clearTimeout(autoSaveTimer);
     autoSaveTimer = setTimeout(async function() {
         collectFields();
-        await ACC.MeetingStore.updateInstance(instance);
+        await BIM.MeetingStore.updateInstance(instance);
         showSaved();
     }, 1000);
 }
@@ -286,8 +294,8 @@ function showSaved() {
 
 async function saveInstance() {
     collectFields();
-    await ACC.MeetingStore.updateInstance(instance);
-    ACC.UI.success('Sitzung gespeichert');
+    await BIM.MeetingStore.updateInstance(instance);
+    BIM.UI.success('Sitzung gespeichert');
     showSaved();
 }
 
@@ -308,26 +316,26 @@ function renderParticipants() {
 function renderParticipantGroup(wrapId, list) {
     var wrap = document.getElementById(wrapId);
     if (list.length === 0) {
-        wrap.innerHTML = '<div class="acc-text-sm acc-text-muted" style="padding:8px 0;">Keine Einträge.</div>';
+        wrap.innerHTML = '<div class="bim-text-sm bim-text-muted" style="padding:8px 0;">Keine Einträge.</div>';
         return;
     }
     var html = '';
     list.forEach(function(p) {
         html += '<div class="participant-row" data-id="' + p.id + '">';
-        html += '<input type="text" class="acc-input acc-input-sm name-field" value="' + ACC.Utils.escapeHtml(p.name) + '" placeholder="Name" data-field="name" onchange="updateParticipant(this)">';
-        html += '<input type="text" class="acc-input acc-input-sm" value="' + ACC.Utils.escapeHtml(p.company) + '" placeholder="Firma" data-field="company" onchange="updateParticipant(this)">';
-        html += '<input type="text" class="acc-input acc-input-sm" value="' + ACC.Utils.escapeHtml(p.role) + '" placeholder="Rolle" data-field="role" onchange="updateParticipant(this)" style="width:140px;">';
+        html += '<input type="text" class="bim-input bim-input-sm name-field" value="' + BIM.Utils.escapeHtml(p.name) + '" placeholder="Name" data-field="name" onchange="updateParticipant(this)">';
+        html += '<input type="text" class="bim-input bim-input-sm" value="' + BIM.Utils.escapeHtml(p.company) + '" placeholder="Firma" data-field="company" onchange="updateParticipant(this)">';
+        html += '<input type="text" class="bim-input bim-input-sm" value="' + BIM.Utils.escapeHtml(p.role) + '" placeholder="Rolle" data-field="role" onchange="updateParticipant(this)" style="width:140px;">';
         if (p.participantType !== 'organisator') {
-            html += '<label class="acc-checkbox-label" style="flex-shrink:0;"><input type="checkbox" ' + (p.present ? 'checked' : '') + ' data-field="present" onchange="updateParticipant(this)"> Anw.</label>';
+            html += '<label class="bim-checkbox-label" style="flex-shrink:0;"><input type="checkbox" ' + (p.present ? 'checked' : '') + ' data-field="present" onchange="updateParticipant(this)"> Anw.</label>';
         }
-        html += '<button class="acc-btn-icon acc-btn-sm" onclick="removeParticipant(\'' + p.id + '\')" title="Entfernen">&times;</button>';
+        html += '<button class="bim-btn-icon bim-btn-sm" onclick="removeParticipant(\'' + p.id + '\')" title="Entfernen">&times;</button>';
         html += '</div>';
     });
     wrap.innerHTML = html;
 }
 
 async function addParticipant(type) {
-    var p = await ACC.MeetingStore.createParticipant(instanceId, seriesId, { participantType: type });
+    var p = await BIM.MeetingStore.createParticipant(instanceId, seriesId, { participantType: type });
     participants.push(p);
     renderParticipants();
 }
@@ -339,11 +347,11 @@ async function updateParticipant(el) {
     var p = participants.find(function(x) { return x.id === id; });
     if (!p) return;
     p[field] = field === 'present' ? el.checked : el.value;
-    await ACC.MeetingStore.updateParticipant(p);
+    await BIM.MeetingStore.updateParticipant(p);
 }
 
 async function removeParticipant(id) {
-    await ACC.MeetingStore.removeParticipant(id);
+    await BIM.MeetingStore.removeParticipant(id);
     participants = participants.filter(function(p) { return p.id !== id; });
     renderParticipants();
 }
@@ -353,7 +361,7 @@ function renderCategoryNav() {
     var nav = document.getElementById('categoryNav');
     var cats = (series.topicCategoryDefs || []).slice().sort(function(a, b) { return a.sortOrder - b.sortOrder; });
     if (cats.length === 0) {
-        nav.innerHTML = '<div class="acc-text-sm acc-text-muted" style="padding:16px;">Keine Kategorien definiert.</div>';
+        nav.innerHTML = '<div class="bim-text-sm bim-text-muted" style="padding:16px;">Keine Kategorien definiert.</div>';
         return;
     }
     var html = '';
@@ -361,8 +369,8 @@ function renderCategoryNav() {
         var itemCount = allItems.filter(function(it) { return it.categoryId === cat.id; }).length;
         var isActive = cat.id === activeCategoryId;
         html += '<button class="category-nav-item' + (isActive ? ' active' : '') + '" onclick="selectCategory(\'' + cat.id + '\')">';
-        html += '<span class="category-nav-code">' + ACC.Utils.escapeHtml(cat.code) + '</span>';
-        html += '<span>' + ACC.Utils.escapeHtml(cat.label) + '</span>';
+        html += '<span class="category-nav-code">' + BIM.Utils.escapeHtml(cat.code) + '</span>';
+        html += '<span>' + BIM.Utils.escapeHtml(cat.label) + '</span>';
         if (itemCount > 0) html += '<span class="category-item-count">' + itemCount + '</span>';
         html += '</button>';
     });
@@ -378,7 +386,7 @@ function selectCategory(catId) {
 // ── DISCUSSION ITEMS ──
 function getStatusLabel(key) {
     var opt = (series.statusOptions || []).find(function(o) { return o.key === key; });
-    return opt ? opt.label : (ACC.Utils.DISCUSSION_STATUSES[key] || key);
+    return opt ? opt.label : (BIM.Utils.DISCUSSION_STATUSES[key] || key);
 }
 
 function renderDiscussionItems() {
@@ -386,21 +394,28 @@ function renderDiscussionItems() {
     var cat = (series.topicCategoryDefs || []).find(function(c) { return c.id === activeCategoryId; });
     if (!cat) { wrap.innerHTML = ''; return; }
 
+    // Remember which items are open before re-render
+    var openItemIds = [];
+    wrap.querySelectorAll('.discussion-item.open').forEach(function(el) {
+        var id = el.getAttribute('data-id');
+        if (id) openItemIds.push(id);
+    });
+
     var items = allItems.filter(function(it) { return it.categoryId === activeCategoryId; });
     items.sort(function(a, b) { return a.itemNumber - b.itemNumber; });
 
     var statusOpts = '';
     (series.statusOptions || []).forEach(function(o) {
-        statusOpts += '<option value="' + ACC.Utils.escapeHtml(o.key) + '">' + ACC.Utils.escapeHtml(o.label) + '</option>';
+        statusOpts += '<option value="' + BIM.Utils.escapeHtml(o.key) + '">' + BIM.Utils.escapeHtml(o.label) + '</option>';
     });
 
     var html = '<div class="discussion-content-header">';
-    html += '<span class="discussion-content-title">' + ACC.Utils.escapeHtml(cat.code + ' ' + cat.label) + '</span>';
-    html += '<button class="acc-btn acc-btn-sm acc-btn-primary" onclick="addDiscussionItem()">+ Neues Thema</button>';
+    html += '<span class="discussion-content-title">' + BIM.Utils.escapeHtml(cat.code + ' ' + cat.label) + '</span>';
+    html += '<button class="bim-btn bim-btn-sm bim-btn-primary" onclick="addDiscussionItem()">+ Neues Thema</button>';
     html += '</div>';
 
     if (items.length === 0) {
-        html += '<div class="acc-text-sm acc-text-muted" style="padding:20px; text-align:center;">Keine Diskussionsthemen in dieser Kategorie.</div>';
+        html += '<div class="bim-text-sm bim-text-muted" style="padding:20px; text-align:center;">Keine Diskussionsthemen in dieser Kategorie.</div>';
         wrap.innerHTML = html;
         return;
     }
@@ -408,127 +423,220 @@ function renderDiscussionItems() {
     items.forEach(function(item) {
         var itemUpdates = allUpdates.filter(function(u) { return u.discussionItemId === item.id; });
         var itemAttachments = allAttachments.filter(function(a) { return a.discussionItemId === item.id; });
+        var isCarriedOver = item.createdByInstanceId && item.createdByInstanceId !== instanceId;
+        var sourceInst = isCarriedOver ? instanceMap[item.createdByInstanceId] : null;
+        var sourceLabel = sourceInst ? 'Sitzung ' + sourceInst.instanceNumber : '';
 
-        html += '<div class="discussion-item" data-id="' + item.id + '">';
+        html += '<div class="discussion-item' + (isCarriedOver ? ' carried-over' : '') + '" data-id="' + item.id + '">';
         html += '<div class="discussion-item-header" onclick="toggleItem(this)">';
         html += '<div class="discussion-item-number">' + item.itemNumber + '</div>';
-        html += '<div class="discussion-item-title">' + ACC.Utils.escapeHtml(item.title || '(ohne Titel)') + '</div>';
-        html += ACC.UI.renderDiscussionStatusBadge(item.status, getStatusLabel(item.status));
-        if (itemUpdates.length > 0) html += '<span class="acc-text-xs acc-text-muted" style="margin-left:4px;">(' + itemUpdates.length + ')</span>';
+        html += '<div class="discussion-item-title">' + BIM.Utils.escapeHtml(item.title || '(ohne Titel)') + '</div>';
+        if (isCarriedOver) {
+            html += '<span class="carried-over-badge" title="Übernommen aus ' + BIM.Utils.escapeHtml(sourceLabel) + '">&#128274;</span>';
+        }
+        html += BIM.UI.renderDiscussionStatusBadge(item.status, getStatusLabel(item.status));
+        if (itemUpdates.length > 0) html += '<span class="bim-text-xs bim-text-muted" style="margin-left:4px;">(' + itemUpdates.length + ')</span>';
         html += '<svg class="discussion-item-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>';
         html += '</div>';
 
         html += '<div class="discussion-item-body" onclick="event.stopPropagation()">';
 
-        // Title + Description
-        html += '<div class="acc-form-row"><label class="acc-form-label">Titel</label>';
-        html += '<input type="text" class="acc-input acc-input-sm" value="' + ACC.Utils.escapeHtml(item.title) + '" onchange="updateItemField(\'' + item.id + '\', \'title\', this.value)"></div>';
-        html += '<div class="acc-form-row"><label class="acc-form-label">Beschreibung</label>';
-        html += '<div class="rt-editor-wrap">';
-        html += '<div class="rt-toolbar">';
-        html += '<button type="button" onmousedown="event.preventDefault()" onclick="execFmt(\'bold\')" title="Fett"><b>B</b></button>';
-        html += '<button type="button" onmousedown="event.preventDefault()" onclick="execFmt(\'italic\')" title="Kursiv"><i>I</i></button>';
-        html += '<button type="button" onmousedown="event.preventDefault()" onclick="execFmt(\'underline\')" title="Unterstrichen"><u>U</u></button>';
-        html += '<span class="rt-separator"></span>';
-        html += '<button type="button" onmousedown="event.preventDefault()" onclick="execFmt(\'insertUnorderedList\')" title="Aufzählung">&bull;</button>';
-        html += '<button type="button" onmousedown="event.preventDefault()" onclick="execFmt(\'insertOrderedList\')" title="Nummerierung">1.</button>';
-        html += '</div>';
-        html += '<div class="rt-content" contenteditable="true" onblur="updateDescriptionRT(\'' + item.id + '\', this)">'
-            + (item.description || '') + '</div>';
-        html += '</div></div>';
+        if (isCarriedOver) {
+            // ── LOCKED: Carried-over item (read-only fields) ──
+            html += '<div class="bim-form-row"><label class="bim-form-label">Titel</label>';
+            html += '<div class="locked-field-value">' + BIM.Utils.escapeHtml(item.title || '(ohne Titel)') + '</div></div>';
 
-        // Status + Due date
-        var _dueSoon = '';
-        if (item.dueDate) {
-            var _daysLeft = Math.floor((new Date(item.dueDate) - new Date()) / 86400000);
-            if (_daysLeft >= 0 && _daysLeft <= 14) _dueSoon = 'color:#e53e3e; font-weight:600;';
-            else if (_daysLeft < 0) _dueSoon = 'color:#e53e3e; font-weight:600;';
-        }
-        html += '<div class="acc-flex-center acc-gap-2" style="margin-bottom:8px;">';
-        html += '<select class="acc-select acc-input-sm" style="width:150px;" onchange="updateItemField(\'' + item.id + '\', \'status\', this.value)" data-status-sel="' + item.id + '">' + statusOpts + '</select>';
-        html += '<input type="date" class="acc-input acc-input-sm" style="width:150px;' + _dueSoon + '" value="' + (item.dueDate || '') + '" onchange="updateItemField(\'' + item.id + '\', \'dueDate\', this.value)">';
-        if (item.dueDate) html += '<span class="acc-text-xs" style="margin-left:4px;' + _dueSoon + '">' + formatDateDE(item.dueDate) + '</span>';
-        html += '</div>';
+            html += '<div class="bim-form-row rt-form-row"><label class="bim-form-label">Beschreibung</label>';
+            html += '<div class="rt-editor-wrap locked-editor">';
+            html += '<div class="rt-content-locked">' + (item.description || '<span class="bim-text-muted">Keine Beschreibung</span>') + '</div>';
+            html += '</div></div>';
 
-        // Assignees
-        html += '<div style="margin-bottom:8px;"><label class="acc-form-label" style="margin-bottom:4px;">Zugewiesen an</label>';
-        html += '<div id="assignees-' + item.id + '">';
-        (item.assignees || []).forEach(function(a, ai) {
-            html += '<div class="acc-flex-center acc-gap-2" style="margin-bottom:4px;">';
-            html += '<input type="text" class="acc-input acc-input-sm" style="flex:1;" value="' + ACC.Utils.escapeHtml(a.name) + '" placeholder="Name" onchange="updateAssignee(\'' + item.id + '\',' + ai + ',\'name\',this.value)">';
-            html += '<input type="text" class="acc-input acc-input-sm" style="flex:1;" value="' + ACC.Utils.escapeHtml(a.company) + '" placeholder="Firma" onchange="updateAssignee(\'' + item.id + '\',' + ai + ',\'company\',this.value)">';
-            html += '<button class="acc-btn-icon acc-btn-sm" onclick="removeAssignee(\'' + item.id + '\',' + ai + ')">&times;</button>';
+            // Status + Due date (read-only)
+            html += '<div class="bim-flex-center bim-gap-2" style="margin-bottom:8px;">';
+            html += '<span class="locked-field-value" style="font-size:12px;">' + BIM.Utils.escapeHtml(getStatusLabel(item.status)) + '</span>';
+            if (item.dueDate) {
+                var _dueSoon2 = '';
+                var _dl2 = Math.floor((new Date(item.dueDate) - new Date()) / 86400000);
+                if (_dl2 <= 14) _dueSoon2 = 'color:#e53e3e; font-weight:600;';
+                html += '<span class="locked-field-value" style="font-size:12px;' + _dueSoon2 + '">Fällig: ' + formatDateDE(item.dueDate) + '</span>';
+            }
             html += '</div>';
-        });
-        html += '<button class="acc-btn acc-btn-sm acc-btn-ghost" onclick="addAssignee(\'' + item.id + '\')">+ Zuweisen</button>';
-        html += '</div></div>';
 
-        // Custom fields
-        if (series.customFieldDefs && series.customFieldDefs.length > 0) {
-            html += '<div style="margin-bottom:8px;"><label class="acc-form-label" style="margin-bottom:4px;">Zusatzfelder</label>';
-            series.customFieldDefs.forEach(function(fd) {
-                var val = (item.customFields || {})[fd.id] || '';
-                html += '<div class="acc-flex-center acc-gap-2" style="margin-bottom:4px;">';
-                html += '<span class="acc-text-xs acc-text-muted" style="min-width:140px;">' + ACC.Utils.escapeHtml(fd.label) + ':</span>';
-                if (fd.type === 'select' && fd.options) {
-                    html += '<select class="acc-select acc-input-sm" style="flex:1;" onchange="updateCustomFieldVal(\'' + item.id + '\',\'' + fd.id + '\',this.value)">';
-                    html += '<option value="">—</option>';
-                    fd.options.forEach(function(o) {
-                        html += '<option value="' + ACC.Utils.escapeHtml(o) + '"' + (val === o ? ' selected' : '') + '>' + ACC.Utils.escapeHtml(o) + '</option>';
+            // Assignees (read-only)
+            if (item.assignees && item.assignees.length > 0) {
+                html += '<div style="margin-bottom:8px;"><label class="bim-form-label" style="margin-bottom:4px;">Zugewiesen an</label>';
+                (item.assignees || []).forEach(function(a) {
+                    html += '<div class="locked-field-value" style="margin-bottom:4px;">' + BIM.Utils.escapeHtml(a.name) + (a.company ? ' (' + BIM.Utils.escapeHtml(a.company) + ')' : '') + '</div>';
+                });
+                html += '</div>';
+            }
+
+            // Custom fields (read-only)
+            if (series.customFieldDefs && series.customFieldDefs.length > 0) {
+                var hasCustomValues = series.customFieldDefs.some(function(fd) { return (item.customFields || {})[fd.id]; });
+                if (hasCustomValues) {
+                    html += '<div style="margin-bottom:8px;"><label class="bim-form-label" style="margin-bottom:4px;">Zusatzfelder</label>';
+                    series.customFieldDefs.forEach(function(fd) {
+                        var val = (item.customFields || {})[fd.id] || '';
+                        if (!val) return;
+                        html += '<div class="bim-flex-center bim-gap-2" style="margin-bottom:4px;">';
+                        html += '<span class="bim-text-xs bim-text-muted" style="min-width:140px;">' + BIM.Utils.escapeHtml(fd.label) + ':</span>';
+                        html += '<span class="locked-field-value" style="flex:1;">' + BIM.Utils.escapeHtml(fd.type === 'date' && val ? formatDateDE(val) : val) + '</span>';
+                        html += '</div>';
                     });
-                    html += '</select>';
-                } else {
-                    var inputType = fd.type === 'date' ? 'date' : fd.type === 'number' ? 'number' : 'text';
-                    html += '<input type="' + inputType + '" class="acc-input acc-input-sm" style="flex:1;" value="' + ACC.Utils.escapeHtml(val) + '" onchange="updateCustomFieldVal(\'' + item.id + '\',\'' + fd.id + '\',this.value)">';
-                    if (fd.type === 'date' && val) {
-                        html += '<span class="acc-text-xs acc-text-muted" style="margin-left:6px; white-space:nowrap;">' + formatDateDE(val) + '</span>';
-                    }
+                    html += '</div>';
                 }
+            }
+        } else {
+            // ── EDITABLE: Item created in this instance ──
+            html += '<div class="bim-form-row"><label class="bim-form-label">Titel</label>';
+            html += '<input type="text" class="bim-input bim-input-sm" value="' + BIM.Utils.escapeHtml(item.title) + '" onchange="updateItemField(\'' + item.id + '\', \'title\', this.value)"></div>';
+            html += '<div class="bim-form-row rt-form-row"><label class="bim-form-label">Beschreibung</label>';
+            html += '<div class="rt-editor-wrap">';
+            html += '<div class="rt-toolbar">';
+            html += '<button type="button" onmousedown="event.preventDefault()" onclick="execFmt(\'bold\', this)" title="Fett"><b>B</b></button>';
+            html += '<button type="button" onmousedown="event.preventDefault()" onclick="execFmt(\'italic\', this)" title="Kursiv"><i>I</i></button>';
+            html += '<button type="button" onmousedown="event.preventDefault()" onclick="execFmt(\'underline\', this)" title="Unterstrichen"><u>U</u></button>';
+            html += '<span class="rt-separator"></span>';
+            html += '<button type="button" onmousedown="event.preventDefault()" onclick="execFmt(\'insertUnorderedList\', this)" title="Aufzählung">&bull;</button>';
+            html += '<button type="button" onmousedown="event.preventDefault()" onclick="execFmt(\'insertOrderedList\', this)" title="Nummerierung">1.</button>';
+            html += '</div>';
+            html += '<div class="rt-content" contenteditable="true" data-item-id="' + item.id + '" onfocus="_activeEditor=this" onblur="updateDescriptionRT(\'' + item.id + '\', this)">'
+                + (item.description || '') + '</div>';
+            html += '</div></div>';
+
+            // Status + Due date
+            var _dueSoon = '';
+            if (item.dueDate) {
+                var _daysLeft = Math.floor((new Date(item.dueDate) - new Date()) / 86400000);
+                if (_daysLeft <= 14) _dueSoon = 'color:#e53e3e; font-weight:600;';
+            }
+            html += '<div class="bim-flex-center bim-gap-2" style="margin-bottom:8px;">';
+            html += '<select class="bim-select bim-input-sm" style="width:150px;" onchange="updateItemField(\'' + item.id + '\', \'status\', this.value)" data-status-sel="' + item.id + '">' + statusOpts + '</select>';
+            html += '<input type="date" class="bim-input bim-input-sm" style="width:150px;' + _dueSoon + '" value="' + (item.dueDate || '') + '" onchange="updateItemField(\'' + item.id + '\', \'dueDate\', this.value)">';
+            if (item.dueDate) html += '<span class="bim-text-xs" style="margin-left:4px;' + _dueSoon + '">' + formatDateDE(item.dueDate) + '</span>';
+            html += '</div>';
+
+            // Assignees
+            html += '<div style="margin-bottom:8px;"><label class="bim-form-label" style="margin-bottom:4px;">Zugewiesen an</label>';
+            html += '<div id="assignees-' + item.id + '">';
+            (item.assignees || []).forEach(function(a, ai) {
+                html += '<div class="bim-flex-center bim-gap-2" style="margin-bottom:4px;">';
+                html += '<input type="text" class="bim-input bim-input-sm" style="flex:1;" value="' + BIM.Utils.escapeHtml(a.name) + '" placeholder="Name" onchange="updateAssignee(\'' + item.id + '\',' + ai + ',\'name\',this.value)">';
+                html += '<input type="text" class="bim-input bim-input-sm" style="flex:1;" value="' + BIM.Utils.escapeHtml(a.company) + '" placeholder="Firma" onchange="updateAssignee(\'' + item.id + '\',' + ai + ',\'company\',this.value)">';
+                html += '<button class="bim-btn-icon bim-btn-sm" onclick="removeAssignee(\'' + item.id + '\',' + ai + ')">&times;</button>';
                 html += '</div>';
             });
-            html += '</div>';
+            html += '<button class="bim-btn bim-btn-sm bim-btn-ghost" onclick="addAssignee(\'' + item.id + '\')">+ Zuweisen</button>';
+            html += '</div></div>';
+
+            // Custom fields
+            if (series.customFieldDefs && series.customFieldDefs.length > 0) {
+                html += '<div style="margin-bottom:8px;"><label class="bim-form-label" style="margin-bottom:4px;">Zusatzfelder</label>';
+                series.customFieldDefs.forEach(function(fd) {
+                    var val = (item.customFields || {})[fd.id] || '';
+                    html += '<div class="bim-flex-center bim-gap-2" style="margin-bottom:4px;">';
+                    html += '<span class="bim-text-xs bim-text-muted" style="min-width:140px;">' + BIM.Utils.escapeHtml(fd.label) + ':</span>';
+                    if (fd.type === 'select' && fd.options) {
+                        html += '<select class="bim-select bim-input-sm" style="flex:1;" onchange="updateCustomFieldVal(\'' + item.id + '\',\'' + fd.id + '\',this.value)">';
+                        html += '<option value="">—</option>';
+                        fd.options.forEach(function(o) {
+                            html += '<option value="' + BIM.Utils.escapeHtml(o) + '"' + (val === o ? ' selected' : '') + '>' + BIM.Utils.escapeHtml(o) + '</option>';
+                        });
+                        html += '</select>';
+                    } else {
+                        var inputType = fd.type === 'date' ? 'date' : fd.type === 'number' ? 'number' : 'text';
+                        html += '<input type="' + inputType + '" class="bim-input bim-input-sm" style="flex:1;" value="' + BIM.Utils.escapeHtml(val) + '" onchange="updateCustomFieldVal(\'' + item.id + '\',\'' + fd.id + '\',this.value)">';
+                        if (fd.type === 'date' && val) {
+                            html += '<span class="bim-text-xs bim-text-muted" style="margin-left:6px; white-space:nowrap;">' + formatDateDE(val) + '</span>';
+                        }
+                    }
+                    html += '</div>';
+                });
+                html += '</div>';
+            }
         }
 
-        // Update timeline
+        // ── Update timeline (ALWAYS editable, even for carried-over items) ──
         html += '<div class="update-timeline">';
         html += '<div class="update-timeline-title">Verlauf (' + itemUpdates.length + ' Einträge)</div>';
         itemUpdates.forEach(function(u) {
+            var isOwner = currentUser && u.userId && u.userId === currentUser.id;
+            var isAdmin = currentUser && currentUser.role === 'admin';
+
             html += '<div class="update-entry">';
-            html += '<div class="update-entry-date">' + ACC.Utils.formatDate(u.date) + '</div>';
-            html += '<div class="update-entry-text">' + ACC.Utils.escapeHtml(u.text) + '</div>';
-            html += '<div class="update-entry-meta">' + ACC.Utils.escapeHtml(u.author || '') + ' · ' + ACC.Utils.formatDateTime(u.createdAt) + '</div>';
-            html += '<button class="acc-btn-icon acc-btn-sm" style="position:absolute;right:8px;top:6px;" onclick="removeUpdate(\'' + u.id + '\',\'' + item.id + '\')" title="Entfernen">&times;</button>';
+
+            if (_editingUpdateId === u.id) {
+                html += '<textarea id="editUpdate-' + u.id + '" class="update-edit-area">' + BIM.Utils.escapeHtml(u.text) + '</textarea>';
+                html += '<div class="update-edit-btns">';
+                html += '<button class="bim-btn bim-btn-sm bim-btn-primary" onclick="saveUpdateEdit(\'' + u.id + '\')">Speichern</button>';
+                html += '<button class="bim-btn bim-btn-sm bim-btn-secondary" onclick="cancelUpdateEdit()">Abbrechen</button>';
+                html += '</div>';
+            } else {
+                html += '<div class="update-entry-text">' + formatDateDE(u.createdAt) + ': ' + BIM.Utils.escapeHtml(u.text) + '</div>';
+            }
+
+            html += '<div class="update-entry-meta">';
+            html += '<span>Erstellt von ' + BIM.Utils.escapeHtml(u.author || 'Unbekannt') + '</span>';
+            if (u.updatedAt && u.updatedAt !== u.createdAt) {
+                html += '<span style="font-style:italic;">bearbeitet' + (u.updatedBy ? ' von ' + BIM.Utils.escapeHtml(u.updatedBy) : '') + '</span>';
+            }
+            if ((isOwner || isAdmin) && _editingUpdateId !== u.id) {
+                html += '<span class="update-entry-actions">';
+                html += '<button onclick="editUpdate(\'' + u.id + '\')" title="Bearbeiten">&#9998;</button>';
+                if (isAdmin) {
+                    html += '<button class="danger" onclick="removeUpdate(\'' + u.id + '\',\'' + item.id + '\')" title="Entfernen">&times;</button>';
+                }
+                html += '</span>';
+            }
+            html += '</div>';
+
             html += '</div>';
         });
-        html += '<div style="margin-top:8px;">';
-        html += '<textarea id="newUpdate-' + item.id + '" class="acc-textarea acc-input-sm" rows="2" placeholder="Neuen Eintrag hinzufügen..."></textarea>';
-        html += '<button class="acc-btn acc-btn-sm acc-btn-primary" style="margin-top:4px;" onclick="addUpdate(\'' + item.id + '\')">Eintrag hinzufügen</button>';
-        html += '</div></div>';
+        if (BIM.Auth.canEdit(currentUser)) {
+            html += '<div style="margin-top:8px;">';
+            html += '<textarea id="newUpdate-' + item.id + '" class="bim-textarea bim-input-sm" rows="2" placeholder="Neuen Eintrag hinzufügen..."></textarea>';
+            html += '<button class="bim-btn bim-btn-sm bim-btn-primary" style="margin-top:4px;" onclick="addUpdate(\'' + item.id + '\')">Eintrag hinzufügen</button>';
+            html += '</div>';
+        }
+        html += '</div>';
 
         // Attachments
         html += '<div class="attachment-list" style="margin-top:12px;">';
-        html += '<label class="acc-form-label" style="margin-bottom:4px;">Anhänge (' + itemAttachments.length + ')</label>';
+        html += '<label class="bim-form-label" style="margin-bottom:4px;">Anhänge (' + itemAttachments.length + ')</label>';
         itemAttachments.forEach(function(att) {
             var sizeKB = Math.round(att.size / 1024);
             html += '<div class="attachment-item">';
-            html += '<span class="attachment-item-name" onclick="downloadAttachment(\'' + att.id + '\')">' + ACC.Utils.escapeHtml(att.fileName) + '</span>';
+            html += '<span class="attachment-item-name" onclick="downloadAttachment(\'' + att.id + '\')">' + BIM.Utils.escapeHtml(att.fileName) + '</span>';
             html += '<span class="attachment-item-size">' + sizeKB + ' KB</span>';
-            html += '<button class="acc-btn-icon acc-btn-sm" onclick="removeAttachment(\'' + att.id + '\',\'' + item.id + '\')" title="Entfernen">&times;</button>';
+            if (!isCarriedOver) {
+                html += '<button class="bim-btn-icon bim-btn-sm" onclick="removeAttachment(\'' + att.id + '\',\'' + item.id + '\')" title="Entfernen">&times;</button>';
+            }
             html += '</div>';
         });
-        html += '<input type="file" id="fileInput-' + item.id + '" style="display:none;" onchange="handleFileUpload(\'' + item.id + '\', this)" multiple>';
-        html += '<button class="acc-btn acc-btn-sm acc-btn-ghost" onclick="document.getElementById(\'fileInput-' + item.id + '\').click()">+ Datei hochladen</button>';
+        if (!isCarriedOver) {
+            html += '<input type="file" id="fileInput-' + item.id + '" style="display:none;" onchange="handleFileUpload(\'' + item.id + '\', this)" multiple>';
+            html += '<button class="bim-btn bim-btn-sm bim-btn-ghost" onclick="document.getElementById(\'fileInput-' + item.id + '\').click()">+ Datei hochladen</button>';
+        }
         html += '</div>';
 
-        // Delete item
-        html += '<div style="text-align:right; margin-top:12px; padding-top:8px; border-top:1px solid var(--acc-border);">';
-        html += '<button class="acc-btn acc-btn-sm acc-btn-danger" onclick="removeDiscussionItem(\'' + item.id + '\')">Thema entfernen</button>';
-        html += '</div>';
+        // Delete item (only for items created in this instance)
+        if (!isCarriedOver) {
+            html += '<div style="text-align:right; margin-top:12px; padding-top:8px; border-top:1px solid var(--bim-border);">';
+            html += '<button class="bim-btn bim-btn-sm bim-btn-danger" onclick="removeDiscussionItem(\'' + item.id + '\')">Thema entfernen</button>';
+            html += '</div>';
+        }
 
         html += '</div></div>';
     });
 
     wrap.innerHTML = html;
+
+    // Restore open state
+    openItemIds.forEach(function(id) {
+        var el = wrap.querySelector('.discussion-item[data-id="' + id + '"]');
+        if (el) el.classList.add('open');
+    });
 
     // Set status select values
     items.forEach(function(item) {
@@ -542,7 +650,7 @@ function toggleItem(header) {
 }
 
 async function addDiscussionItem() {
-    var item = await ACC.MeetingStore.createDiscussionItem(seriesId, activeCategoryId, { instanceId: instanceId });
+    var item = await BIM.MeetingStore.createDiscussionItem(seriesId, activeCategoryId, { instanceId: instanceId });
     allItems.push(item);
     renderCategoryNav();
     renderDiscussionItems();
@@ -552,7 +660,7 @@ async function updateItemField(itemId, field, value) {
     var item = allItems.find(function(it) { return it.id === itemId; });
     if (!item) return;
     item[field] = value;
-    await ACC.MeetingStore.updateDiscussionItem(item);
+    await BIM.MeetingStore.updateDiscussionItem(item);
     if (field === 'title') renderDiscussionItems();
 }
 
@@ -560,7 +668,7 @@ async function updateAssignee(itemId, idx, field, value) {
     var item = allItems.find(function(it) { return it.id === itemId; });
     if (!item) return;
     item.assignees[idx][field] = value;
-    await ACC.MeetingStore.updateDiscussionItem(item);
+    await BIM.MeetingStore.updateDiscussionItem(item);
 }
 
 async function addAssignee(itemId) {
@@ -568,7 +676,7 @@ async function addAssignee(itemId) {
     if (!item) return;
     if (!item.assignees) item.assignees = [];
     item.assignees.push({ name: '', company: '' });
-    await ACC.MeetingStore.updateDiscussionItem(item);
+    await BIM.MeetingStore.updateDiscussionItem(item);
     renderDiscussionItems();
 }
 
@@ -576,7 +684,7 @@ async function removeAssignee(itemId, idx) {
     var item = allItems.find(function(it) { return it.id === itemId; });
     if (!item) return;
     item.assignees.splice(idx, 1);
-    await ACC.MeetingStore.updateDiscussionItem(item);
+    await BIM.MeetingStore.updateDiscussionItem(item);
     renderDiscussionItems();
 }
 
@@ -585,7 +693,7 @@ async function updateCustomFieldVal(itemId, fieldDefId, value) {
     if (!item) return;
     if (!item.customFields) item.customFields = {};
     item.customFields[fieldDefId] = value;
-    await ACC.MeetingStore.updateDiscussionItem(item);
+    await BIM.MeetingStore.updateDiscussionItem(item);
 }
 
 // ── UPDATES ──
@@ -593,14 +701,16 @@ async function addUpdate(itemId) {
     var textarea = document.getElementById('newUpdate-' + itemId);
     var text = textarea.value.trim();
     if (!text) return;
-    var update = await ACC.MeetingStore.addUpdate(itemId, instanceId, { text: text });
+    var update = await BIM.MeetingStore.addUpdate(itemId, instanceId, { text: text });
     allUpdates.push(update);
     textarea.value = '';
     renderDiscussionItems();
 }
 
 async function removeUpdate(updateId, itemId) {
-    await ACC.MeetingStore.removeUpdate(updateId);
+    var ok = await BIM.UI.confirm('Eintrag wirklich entfernen?', 'Dieser Eintrag wird unwiderruflich gelöscht.');
+    if (!ok) return;
+    await BIM.MeetingStore.removeUpdate(updateId);
     allUpdates = allUpdates.filter(function(u) { return u.id !== updateId; });
     renderDiscussionItems();
 }
@@ -610,10 +720,10 @@ async function handleFileUpload(itemId, input) {
     var files = input.files;
     for (var i = 0; i < files.length; i++) {
         try {
-            var att = await ACC.MeetingStore.addAttachment(itemId, instanceId, files[i]);
+            var att = await BIM.MeetingStore.addAttachment(itemId, instanceId, files[i]);
             allAttachments.push(att);
         } catch (e) {
-            ACC.UI.error(e.message);
+            BIM.UI.error(e.message);
         }
     }
     input.value = '';
@@ -621,20 +731,20 @@ async function handleFileUpload(itemId, input) {
 }
 
 async function downloadAttachment(attId) {
-    await ACC.MeetingStore.downloadAttachment(attId);
+    await BIM.MeetingStore.downloadAttachment(attId);
 }
 
 async function removeAttachment(attId, itemId) {
-    await ACC.MeetingStore.removeAttachment(attId);
+    await BIM.MeetingStore.removeAttachment(attId);
     allAttachments = allAttachments.filter(function(a) { return a.id !== attId; });
     renderDiscussionItems();
 }
 
 // ── REMOVE ITEM ──
 async function removeDiscussionItem(itemId) {
-    var confirmed = await ACC.UI.confirmDelete('Dieses Thema und alle zugehörigen Einträge löschen?');
+    var confirmed = await BIM.UI.confirmDelete('Dieses Thema und alle zugehörigen Einträge löschen?');
     if (!confirmed) return;
-    await ACC.MeetingStore.removeDiscussionItem(itemId);
+    await BIM.MeetingStore.removeDiscussionItem(itemId);
     allItems = allItems.filter(function(it) { return it.id !== itemId; });
     allUpdates = allUpdates.filter(function(u) { return u.discussionItemId !== itemId; });
     allAttachments = allAttachments.filter(function(a) { return a.discussionItemId !== itemId; });
@@ -651,11 +761,11 @@ function renderStats() {
     var updatesThisInstance = allUpdates.filter(function(u) { return u.instanceId === instanceId; }).length;
 
     wrap.innerHTML =
-        '<div class="acc-flex-center acc-gap-4" style="font-size:14px;">' +
-        '<div><strong>' + total + '</strong> <span class="acc-text-muted">Themen gesamt</span></div>' +
-        '<div><strong style="color:var(--acc-status-offen);">' + open + '</strong> <span class="acc-text-muted">Offene Themen</span></div>' +
-        '<div><strong>' + thisInstance + '</strong> <span class="acc-text-muted">Neue Themen (diese Sitzung)</span></div>' +
-        '<div><strong>' + updatesThisInstance + '</strong> <span class="acc-text-muted">Einträge (diese Sitzung)</span></div>' +
+        '<div class="bim-flex-center bim-gap-4" style="font-size:14px;">' +
+        '<div><strong>' + total + '</strong> <span class="bim-text-muted">Themen gesamt</span></div>' +
+        '<div><strong style="color:var(--bim-status-offen);">' + open + '</strong> <span class="bim-text-muted">Offene Themen</span></div>' +
+        '<div><strong>' + thisInstance + '</strong> <span class="bim-text-muted">Neue Themen (diese Sitzung)</span></div>' +
+        '<div><strong>' + updatesThisInstance + '</strong> <span class="bim-text-muted">Einträge (diese Sitzung)</span></div>' +
         '</div>';
 }
 
@@ -668,30 +778,99 @@ function formatDateDE(iso) {
     return d.getDate() + '. ' + months[d.getMonth()] + ' ' + d.getFullYear();
 }
 
-function execFmt(cmd) {
+var _activeEditor = null;
+var _savedRange = null;
+var _editingUpdateId = null;
+
+// Track selection inside contenteditable editors
+document.addEventListener('selectionchange', function() {
+    var sel = window.getSelection();
+    if (!sel || sel.rangeCount === 0) return;
+    var range = sel.getRangeAt(0);
+    var node = range.commonAncestorContainer;
+    if (node.nodeType === 3) node = node.parentNode;
+    while (node && node !== document) {
+        if (node.classList && node.classList.contains('rt-content')) {
+            _activeEditor = node;
+            _savedRange = range.cloneRange();
+            return;
+        }
+        node = node.parentNode;
+    }
+});
+
+function execFmt(cmd, btnEl) {
+    var editor = _activeEditor;
+    if (!editor && btnEl) {
+        var wrap = btnEl.closest('.rt-editor-wrap');
+        if (wrap) editor = wrap.querySelector('.rt-content');
+    }
+    if (!editor) return;
+
+    editor.focus();
+
+    // Restore the exact saved selection
+    if (_savedRange) {
+        var sel = window.getSelection();
+        sel.removeAllRanges();
+        sel.addRange(_savedRange);
+    }
+
     document.execCommand(cmd, false, null);
+
+    // Update saved range after command
+    var sel2 = window.getSelection();
+    if (sel2.rangeCount > 0) {
+        _savedRange = sel2.getRangeAt(0).cloneRange();
+    }
+}
+
+// ── UPDATE EDITING ──
+function editUpdate(updateId) {
+    _editingUpdateId = updateId;
+    renderDiscussionItems();
+}
+
+async function saveUpdateEdit(updateId) {
+    var textarea = document.getElementById('editUpdate-' + updateId);
+    if (!textarea) return;
+    var text = textarea.value.trim();
+    if (!text) { BIM.UI.error('Text darf nicht leer sein.'); return; }
+    var upd = allUpdates.find(function(u) { return u.id === updateId; });
+    if (!upd) return;
+    upd.text = text;
+    upd.updatedAt = BIM.Utils.now();
+    upd.updatedBy = BIM.Utils.formatAuthor(currentUser.name, currentUser.company);
+    await BIM.MeetingStore.updateUpdate(upd);
+    _editingUpdateId = null;
+    renderDiscussionItems();
+}
+
+function cancelUpdateEdit() {
+    _editingUpdateId = null;
+    renderDiscussionItems();
 }
 
 function updateDescriptionRT(itemId, el) {
     var item = allItems.find(function(it) { return it.id === itemId; });
     if (!item) return;
     item.description = el.innerHTML;
-    ACC.MeetingStore.updateDiscussionItem(item);
+    BIM.MeetingStore.updateDiscussionItem(item);
 }
 
 // ── NAV ──
-function goBack() { ACC.Utils.navigateTo('series-editor.html?id=' + seriesId); }
+function goBack() { BIM.Utils.navigateTo('series-editor.html?id=' + seriesId); }
 
 function openPrintView() {
     window.open('meeting-view.html?seriesId=' + seriesId + '&instanceId=' + instanceId, '_blank');
 }
 
 async function createNextInstance() {
-    var confirmed = await ACC.UI.confirm('Neue Sitzung', 'Eine neue Sitzung in dieser Serie erstellen? Teilnehmer werden übernommen.');
+    var confirmed = await BIM.UI.confirm('Neue Sitzung', 'Eine neue Sitzung in dieser Serie erstellen? Teilnehmer werden übernommen.');
     if (!confirmed) return;
-    var inst = await ACC.MeetingStore.createInstance(seriesId, {});
-    ACC.UI.success('Sitzung #' + inst.instanceNumber + ' erstellt');
-    ACC.Utils.navigateTo('instance-editor.html?seriesId=' + seriesId + '&instanceId=' + inst.id);
+    var inst = await BIM.MeetingStore.createInstance(seriesId, {});
+    BIM.UI.success('Sitzung #' + inst.instanceNumber + ' erstellt');
+    BIM.Utils.navigateTo('instance-editor.html?seriesId=' + seriesId + '&instanceId=' + inst.id);
 }
 
 init();

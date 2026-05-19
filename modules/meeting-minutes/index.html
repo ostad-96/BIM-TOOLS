@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Besprechungsserien — ACC</title>
+<title>Besprechungsserien — BIM Tools</title>
 <link rel="stylesheet" href="../../shared/css/acc-variables.css">
 <link rel="stylesheet" href="../../shared/css/acc-base.css">
 <link rel="stylesheet" href="../../shared/css/acc-components.css">
@@ -13,25 +13,25 @@
 
 <div class="page-transition"><div class="slide"></div><div class="slide-accent"></div></div>
 
-<div class="acc-topbar">
-    <div class="acc-topbar-left">
-        <button class="acc-btn-icon" onclick="ACC.Utils.navigateTo('../../index.html')" title="Zurück">&#8592;</button>
+<div class="bim-topbar">
+    <div class="bim-topbar-left">
+        <button class="bim-btn-icon" onclick="BIM.Utils.navigateTo('../../index.html')" title="Zurück">&#8592;</button>
         <div>
-            <div class="acc-topbar-title">Besprechungsserien</div>
-            <div class="acc-topbar-subtitle">Meeting Minutes &middot; ACC</div>
+            <div class="bim-topbar-title">Besprechungsserien</div>
+            <div class="bim-topbar-subtitle">Meeting Minutes &middot; BIM Tools</div>
         </div>
     </div>
-    <div class="acc-flex-center acc-gap-2">
-        <select id="templateSelect" class="acc-select" style="width:220px;">
+    <div class="bim-flex-center bim-gap-2">
+        <select id="templateSelect" class="bim-select" style="width:220px;">
             <option value="">Aus Vorlage erstellen...</option>
         </select>
-        <button class="acc-btn acc-btn-primary" onclick="createNew()">+ Neue Serie</button>
+        <button class="bim-btn bim-btn-primary" onclick="createNew()">+ Neue Serie</button>
     </div>
 </div>
 
 <div class="series-filter-bar">
-    <input type="text" id="searchInput" class="acc-input" style="width:220px;" placeholder="Suchen...">
-    <select id="filterType" class="acc-select" style="width:170px;">
+    <input type="text" id="searchInput" class="bim-input" style="width:220px;" placeholder="Suchen...">
+    <select id="filterType" class="bim-select" style="width:170px;">
         <option value="">Alle Typen</option>
     </select>
     <span class="series-count" id="seriesCount"></span>
@@ -41,14 +41,16 @@
     <div id="seriesListWrap" style="margin-top:16px;"></div>
 </div>
 
-<footer class="acc-footer">
+<footer class="bim-footer">
     <span>&copy; 2026 Emch+Berger GmbH</span>
-    <span>ACC Platform</span>
+    <span>BIM Tools</span>
 </footer>
 
 <script src="../../shared/js/acc-utils.js"></script>
 <script src="../../shared/js/acc-storage.js"></script>
 <script src="../../shared/js/acc-storage-indexeddb.js?v=3"></script>
+<script src="../../shared/js/acc-storage-json.js"></script>
+<script src="../../shared/js/crypto-polyfill.js"></script>
 <script src="../../shared/js/acc-auth.js"></script>
 <script src="../../shared/js/acc-ui.js"></script>
 <script src="js/meeting-templates.js"></script>
@@ -59,22 +61,22 @@ var seriesStats = {};
 var currentUser = null;
 
 async function init() {
-    await ACC.StorageManager.init(new ACC.IndexedDBProvider('acc-platform'));
-    await ACC.Auth.init();
-    currentUser = await ACC.Auth.requireAuth('../../login.html');
+    await BIM.StorageManager.init(new BIM.AutoStorageProvider());
+    await BIM.Auth.init();
+    currentUser = await BIM.Auth.requireAuth('../../login.html');
     if (!currentUser) return;
     document.body.style.opacity = '1';
 
     // Hide create controls for viewers
-    if (!ACC.Auth.canEdit(currentUser)) {
-        var topbarRight = document.querySelector('.acc-topbar .acc-flex-center');
+    if (!BIM.Auth.canEdit(currentUser)) {
+        var topbarRight = document.querySelector('.bim-topbar .bim-flex-center');
         if (topbarRight) topbarRight.style.display = 'none';
     }
 
     populateDropdowns();
     await loadSeries();
 
-    document.getElementById('searchInput').addEventListener('input', ACC.Utils.debounce(renderList, 300));
+    document.getElementById('searchInput').addEventListener('input', BIM.Utils.debounce(renderList, 300));
     document.getElementById('filterType').addEventListener('change', renderList);
     document.getElementById('templateSelect').addEventListener('change', createFromTemplate);
 }
@@ -82,20 +84,20 @@ async function init() {
 function populateDropdowns() {
     var typeSelect = document.getElementById('filterType');
     var tplSelect = document.getElementById('templateSelect');
-    var types = ACC.Utils.MEETING_TYPES;
+    var types = BIM.Utils.MEETING_TYPES;
     for (var key in types) {
-        typeSelect.innerHTML += '<option value="' + key + '">' + ACC.Utils.escapeHtml(types[key]) + '</option>';
+        typeSelect.innerHTML += '<option value="' + key + '">' + BIM.Utils.escapeHtml(types[key]) + '</option>';
     }
-    ACC.MeetingTemplates.forEach(function(tpl) {
-        tplSelect.innerHTML += '<option value="' + tpl.id + '">' + ACC.Utils.escapeHtml(tpl.name) + '</option>';
+    BIM.MeetingTemplates.forEach(function(tpl) {
+        tplSelect.innerHTML += '<option value="' + tpl.id + '">' + BIM.Utils.escapeHtml(tpl.name) + '</option>';
     });
 }
 
 async function loadSeries() {
-    allSeries = await ACC.MeetingStore.getAllSeries();
+    allSeries = await BIM.MeetingStore.getAllSeries();
     seriesStats = {};
     for (var i = 0; i < allSeries.length; i++) {
-        seriesStats[allSeries[i].id] = await ACC.MeetingStore.getSeriesStats(allSeries[i].id);
+        seriesStats[allSeries[i].id] = await BIM.MeetingStore.getSeriesStats(allSeries[i].id);
     }
     renderList();
 }
@@ -105,7 +107,7 @@ function getFiltered() {
     var typeFilter = document.getElementById('filterType').value;
     return allSeries.filter(function(s) {
         // RBAC: filter by series access
-        if (!ACC.Auth.canAccessSeries(currentUser, s.id)) return false;
+        if (!BIM.Auth.canAccessSeries(currentUser, s.id)) return false;
         if (typeFilter && s.type !== typeFilter) return false;
         if (search) {
             var haystack = (s.title + ' ' + s.code + ' ' + s.description).toLowerCase();
@@ -122,19 +124,19 @@ function renderList() {
 
     if (filtered.length === 0) {
         if (allSeries.length === 0) {
-            wrap.innerHTML = ACC.UI.renderEmptyState(
+            wrap.innerHTML = BIM.UI.renderEmptyState(
                 'Keine Besprechungsserien',
                 'Erstellen Sie eine neue Serie oder wählen Sie eine Vorlage.',
                 'Neue Serie erstellen',
                 'createNew()'
             );
         } else {
-            wrap.innerHTML = ACC.UI.renderEmptyState('Keine Ergebnisse', 'Passen Sie Ihre Filterkriterien an.');
+            wrap.innerHTML = BIM.UI.renderEmptyState('Keine Ergebnisse', 'Passen Sie Ihre Filterkriterien an.');
         }
         return;
     }
 
-    var html = '<table class="acc-table acc-table-hover">';
+    var html = '<table class="bim-table bim-table-hover">';
     html += '<thead><tr>' +
         '<th style="width:140px;">Code</th>' +
         '<th>Titel</th>' +
@@ -148,22 +150,22 @@ function renderList() {
     filtered.forEach(function(s) {
         var stats = seriesStats[s.id] || { instanceCount: 0, openItems: 0, totalItems: 0, lastDate: null };
         html += '<tr onclick="openSeries(\'' + s.id + '\')">';
-        html += '<td><strong>' + ACC.Utils.escapeHtml(s.code || '—') + '</strong></td>';
-        html += '<td>' + ACC.Utils.escapeHtml(s.title || '(ohne Titel)') + '</td>';
-        html += '<td>' + ACC.UI.renderTypeBadge(s.type) + '</td>';
+        html += '<td><strong>' + BIM.Utils.escapeHtml(s.code || '—') + '</strong></td>';
+        html += '<td>' + BIM.Utils.escapeHtml(s.title || '(ohne Titel)') + '</td>';
+        html += '<td>' + BIM.UI.renderTypeBadge(s.type) + '</td>';
         html += '<td>' + stats.instanceCount + '</td>';
-        html += '<td>' + (stats.lastDate ? ACC.Utils.formatDate(stats.lastDate) : '—') + '</td>';
+        html += '<td>' + (stats.lastDate ? BIM.Utils.formatDate(stats.lastDate) : '—') + '</td>';
         html += '<td>';
         if (stats.totalItems > 0) {
-            html += '<span style="color:var(--acc-status-offen); font-weight:600;">' + stats.openItems + '</span>';
-            html += '<span style="color:var(--acc-text-muted);">/' + stats.totalItems + '</span>';
+            html += '<span style="color:var(--bim-status-offen); font-weight:600;">' + stats.openItems + '</span>';
+            html += '<span style="color:var(--bim-text-muted);">/' + stats.totalItems + '</span>';
         } else {
-            html += '<span style="color:var(--acc-text-muted);">—</span>';
+            html += '<span style="color:var(--bim-text-muted);">—</span>';
         }
         html += '</td>';
         html += '<td style="text-align:right;">';
-        if (ACC.Auth.canEditSeriesSettings(currentUser)) {
-            html += '<button class="acc-btn-icon acc-btn-sm" onclick="event.stopPropagation(); deleteSeries(\'' + s.id + '\')" title="Löschen">&times;</button>';
+        if (BIM.Auth.canEditSeriesSettings(currentUser)) {
+            html += '<button class="bim-btn-icon bim-btn-sm" onclick="event.stopPropagation(); deleteSeries(\'' + s.id + '\')" title="Löschen">&times;</button>';
         }
         html += '</td>';
         html += '</tr>';
@@ -174,12 +176,12 @@ function renderList() {
 }
 
 function openSeries(id) {
-    ACC.Utils.navigateTo('series-editor.html?id=' + id);
+    BIM.Utils.navigateTo('series-editor.html?id=' + id);
 }
 
 async function createNew() {
-    var series = await ACC.MeetingStore.createSeries({ type: 'custom' });
-    ACC.Utils.navigateTo('series-editor.html?id=' + series.id);
+    var series = await BIM.MeetingStore.createSeries({ type: 'custom' });
+    BIM.Utils.navigateTo('series-editor.html?id=' + series.id);
 }
 
 async function createFromTemplate() {
@@ -187,15 +189,15 @@ async function createFromTemplate() {
     var tplId = sel.value;
     if (!tplId) return;
     sel.value = '';
-    var series = await ACC.MeetingStore.createFromTemplate(tplId);
-    ACC.Utils.navigateTo('series-editor.html?id=' + series.id);
+    var series = await BIM.MeetingStore.createFromTemplate(tplId);
+    BIM.Utils.navigateTo('series-editor.html?id=' + series.id);
 }
 
 async function deleteSeries(id) {
-    var confirmed = await ACC.UI.confirmDelete('Möchten Sie diese Serie und alle zugehörigen Daten wirklich löschen?');
+    var confirmed = await BIM.UI.confirmDelete('Möchten Sie diese Serie und alle zugehörigen Daten wirklich löschen?');
     if (!confirmed) return;
-    await ACC.MeetingStore.deleteSeries(id);
-    ACC.UI.success('Serie gelöscht');
+    await BIM.MeetingStore.deleteSeries(id);
+    BIM.UI.success('Serie gelöscht');
     await loadSeries();
 }
 

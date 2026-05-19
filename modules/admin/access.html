@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Zugriff — ACC Admin</title>
+<title>Zugriff — BIM Tools Admin</title>
 <link rel="stylesheet" href="../../shared/css/acc-variables.css">
 <link rel="stylesheet" href="../../shared/css/acc-base.css">
 <link rel="stylesheet" href="../../shared/css/acc-components.css">
@@ -16,7 +16,7 @@
         <div class="admin-sidebar-header">
             <div class="admin-sidebar-logo"><img src="../../shared/assets/emch-berger-logo.gif" alt="Logo"></div>
             <div class="admin-sidebar-title">Administration</div>
-            <div class="admin-sidebar-subtitle">ACC Platform</div>
+            <div class="admin-sidebar-subtitle">BIM Tools</div>
         </div>
         <div class="admin-nav">
             <a class="admin-nav-item" href="index.html">
@@ -53,12 +53,12 @@
         </div>
 
         <div class="admin-content">
-            <div id="matrixInfo" style="margin-bottom:16px;font-size:12px;color:var(--acc-text-muted);"></div>
+            <div id="matrixInfo" style="margin-bottom:16px;font-size:12px;color:var(--bim-text-muted);"></div>
             <div class="access-matrix-wrap">
                 <div id="matrixWrap"></div>
             </div>
             <div style="margin-top:16px;text-align:right;">
-                <button class="acc-btn acc-btn-primary" onclick="saveAccess()">Zugriff speichern</button>
+                <button class="bim-btn bim-btn-primary" onclick="saveAccess()">Zugriff speichern</button>
             </div>
         </div>
     </main>
@@ -67,6 +67,8 @@
 <script src="../../shared/js/acc-utils.js"></script>
 <script src="../../shared/js/acc-storage.js"></script>
 <script src="../../shared/js/acc-storage-indexeddb.js?v=3"></script>
+<script src="../../shared/js/acc-storage-json.js"></script>
+<script src="../../shared/js/crypto-polyfill.js"></script>
 <script src="../../shared/js/acc-auth.js"></script>
 <script src="../../shared/js/acc-ui.js"></script>
 <script>
@@ -75,15 +77,15 @@ var allUsers = [];
 var allSeries = [];
 
 async function init() {
-    await ACC.StorageManager.init(new ACC.IndexedDBProvider('acc-platform'));
-    await ACC.Auth.init();
-    currentUser = await ACC.Auth.requireAuth('../../login.html');
+    await BIM.StorageManager.init(new BIM.AutoStorageProvider());
+    await BIM.Auth.init();
+    currentUser = await BIM.Auth.requireAuth('../../login.html');
     if (!currentUser) return;
-    if (!ACC.Auth.canAccessAdmin(currentUser)) { window.location.href = '../../index.html'; return; }
+    if (!BIM.Auth.canAccessAdmin(currentUser)) { window.location.href = '../../index.html'; return; }
     document.body.style.opacity = '1';
 
-    allUsers = await ACC.Auth.getAllUsers();
-    allSeries = await ACC.StorageManager.getAll('meetingSeries');
+    allUsers = await BIM.Auth.getAllUsers();
+    allSeries = await BIM.StorageManager.getAll('meetingSeries');
     renderMatrix();
 }
 
@@ -93,12 +95,12 @@ function renderMatrix() {
 
     if (allSeries.length === 0) {
         document.getElementById('matrixWrap').innerHTML =
-            '<div style="padding:40px;text-align:center;color:var(--acc-text-muted);font-size:13px;">Keine Besprechungsserien vorhanden.</div>';
+            '<div style="padding:40px;text-align:center;color:var(--bim-text-muted);font-size:13px;">Keine Besprechungsserien vorhanden.</div>';
         return;
     }
     if (users.length === 0) {
         document.getElementById('matrixWrap').innerHTML =
-            '<div style="padding:40px;text-align:center;color:var(--acc-text-muted);font-size:13px;">Keine Bearbeiter oder Betrachter vorhanden.</div>';
+            '<div style="padding:40px;text-align:center;color:var(--bim-text-muted);font-size:13px;">Keine Bearbeiter oder Betrachter vorhanden.</div>';
         return;
     }
 
@@ -107,7 +109,7 @@ function renderMatrix() {
 
     var html = '<table class="access-matrix"><thead><tr><th>Benutzer</th><th>Rolle</th>';
     allSeries.forEach(function(s) {
-        html += '<th title="' + ACC.Utils.escapeHtml(s.title || '') + '">' + ACC.Utils.escapeHtml(s.code || s.title || '—') + '</th>';
+        html += '<th title="' + BIM.Utils.escapeHtml(s.title || '') + '">' + BIM.Utils.escapeHtml(s.code || s.title || '—') + '</th>';
     });
     html += '</tr></thead><tbody>';
 
@@ -115,8 +117,8 @@ function renderMatrix() {
         var access = u.seriesAccess || [];
         var roleClass = 'role-badge role-badge-' + u.role;
         html += '<tr>';
-        html += '<td><strong>' + ACC.Utils.escapeHtml(u.name || u.username) + '</strong></td>';
-        html += '<td><span class="' + roleClass + '">' + ACC.Auth.getRoleLabel(u.role) + '</span></td>';
+        html += '<td><strong>' + BIM.Utils.escapeHtml(u.name || u.username) + '</strong></td>';
+        html += '<td><span class="' + roleClass + '">' + BIM.Auth.getRoleLabel(u.role) + '</span></td>';
         allSeries.forEach(function(s) {
             var checked = access.length === 0 || access.indexOf(s.id) !== -1;
             html += '<td><input type="checkbox" data-user="' + u.id + '" data-series="' + s.id + '"' + (checked ? ' checked' : '') + '></td>';
@@ -151,11 +153,11 @@ async function saveAccess() {
         // If all series are checked, store empty array (= all access)
         if (newAccess.length === allSeries.length) newAccess = [];
         u.seriesAccess = newAccess;
-        await ACC.Auth.updateUser(u);
+        await BIM.Auth.updateUser(u);
     }
 
-    ACC.Auth.logActivity(currentUser.id, currentUser.name, 'update', 'system', null, 'Zugriffmatrix', 'Serienzugriff aktualisiert');
-    ACC.UI.success('Zugriff gespeichert');
+    BIM.Auth.logActivity(currentUser.id, currentUser.name, 'update', 'system', null, 'Zugriffmatrix', 'Serienzugriff aktualisiert');
+    BIM.UI.success('Zugriff gespeichert');
 }
 
 init();

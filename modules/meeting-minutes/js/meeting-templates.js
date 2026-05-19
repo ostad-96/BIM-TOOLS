@@ -1,6 +1,6 @@
-var ACC = ACC || {};
+var BIM = BIM || {};
 
-ACC.MeetingTemplates = [
+BIM.MeetingTemplates = [
     {
         id: 'tpl-bim-koordination',
         name: 'BIM-Koordinationssitzung',
@@ -146,10 +146,10 @@ ACC.MeetingTemplates = [
     }
 ];
 
-ACC.MeetingTemplates.getById = function(id) {
+BIM.MeetingTemplates.getById = function(id) {
     return this.find(function(t) { return t.id === id; }) || null;
 };
 
-ACC.MeetingTemplates.getByType = function(type) {
+BIM.MeetingTemplates.getByType = function(type) {
     return this.filter(function(t) { return t.type === type; });
 };

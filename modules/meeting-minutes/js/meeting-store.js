@@ -1,11 +1,16 @@
-var ACC = ACC || {};
+var BIM = BIM || {};
 
-ACC.MeetingStore = {
-    SM: function() { return ACC.StorageManager; },
+BIM.MeetingStore = {
+    SM: function() { return BIM.StorageManager; },
 
     // ── USER PROFILES ──
 
     getCurrentUser: async function() {
+        // Use auth session (logged-in user) first, fall back to legacy isDefault selector
+        if (BIM.Auth && BIM.Auth.getCurrentUser) {
+            var authUser = await BIM.Auth.getCurrentUser();
+            if (authUser) return authUser;
+        }
         var all = await this.SM().query('userProfiles', { isDefault: true });
         return all.length > 0 ? all[0] : null;
     },
@@ -28,7 +33,7 @@ ACC.MeetingStore = {
 
     createUserProfile: async function(data) {
         var profile = {
-            id: ACC.Utils.uuid(),
+            id: BIM.Utils.uuid(),
             name: data.name || '',
             company: data.company || '',
             email: data.email || '',
@@ -52,14 +57,14 @@ ACC.MeetingStore = {
     getCurrentAuthor: async function() {
         var user = await this.getCurrentUser();
         if (!user) return '';
-        return ACC.Utils.formatAuthor(user.name, user.company);
+        return BIM.Utils.formatAuthor(user.name, user.company);
     },
 
     // ── MEETING SERIES ──
 
     createSeries: async function(data) {
-        var id = ACC.Utils.uuid();
-        var now = ACC.Utils.now();
+        var id = BIM.Utils.uuid();
+        var now = BIM.Utils.now();
         var series = {
             id: id,
             code: data.code || '',
@@ -85,7 +90,7 @@ ACC.MeetingStore = {
     },
 
     updateSeries: async function(series) {
-        series.updatedAt = ACC.Utils.now();
+        series.updatedAt = BIM.Utils.now();
         return this.SM().update('meetingSeries', series);
     },
 
@@ -148,12 +153,12 @@ ACC.MeetingStore = {
         await this.updateSeries(series);
 
         var author = await this.getCurrentAuthor();
-        var now = ACC.Utils.now();
+        var now = BIM.Utils.now();
         var instance = {
-            id: ACC.Utils.uuid(),
+            id: BIM.Utils.uuid(),
             seriesId: seriesId,
             instanceNumber: series.instanceCount,
-            date: (data && data.date) || ACC.Utils.today(),
+            date: (data && data.date) || BIM.Utils.today(),
             timeStart: (data && data.timeStart) || '',
             timeEnd: (data && data.timeEnd) || '',
             location: (data && data.location) || series.defaultLocation || '',
@@ -201,7 +206,7 @@ ACC.MeetingStore = {
     },
 
     updateInstance: async function(instance) {
-        instance.updatedAt = ACC.Utils.now();
+        instance.updatedAt = BIM.Utils.now();
         return this.SM().update('meetingInstances', instance);
     },
 
@@ -261,7 +266,7 @@ ACC.MeetingStore = {
 
     createParticipant: async function(instanceId, seriesId, data) {
         var participant = {
-            id: ACC.Utils.uuid(),
+            id: BIM.Utils.uuid(),
             instanceId: instanceId,
             seriesId: seriesId,
             name: data.name || '',
@@ -292,10 +297,10 @@ ACC.MeetingStore = {
         var existing = await this.SM().query('discussionItems', { seriesId: seriesId });
         var inCategory = existing.filter(function(it) { return it.categoryId === categoryId; });
         var author = await this.getCurrentAuthor();
-        var now = ACC.Utils.now();
+        var now = BIM.Utils.now();
 
         var item = {
-            id: ACC.Utils.uuid(),
+            id: BIM.Utils.uuid(),
             seriesId: seriesId,
             categoryId: categoryId,
             itemNumber: inCategory.length + 1,
@@ -316,7 +321,7 @@ ACC.MeetingStore = {
 
     updateDiscussionItem: async function(item) {
         var author = await this.getCurrentAuthor();
-        item.updatedAt = ACC.Utils.now();
+        item.updatedAt = BIM.Utils.now();
         item.updatedBy = author;
         return this.SM().update('discussionItems', item);
     },
@@ -368,20 +373,22 @@ ACC.MeetingStore = {
     // ── DISCUSSION UPDATES ──
 
     addUpdate: async function(discussionItemId, instanceId, data) {
-        var author = await this.getCurrentAuthor();
+        var user = await this.getCurrentUser();
+        var author = user ? BIM.Utils.formatAuthor(user.name, user.company) : '';
         var update = {
-            id: ACC.Utils.uuid(),
+            id: BIM.Utils.uuid(),
             discussionItemId: discussionItemId,
             instanceId: instanceId,
-            date: data.date || ACC.Utils.today(),
+            userId: user ? user.id : null,
+            date: data.date || BIM.Utils.today(),
             text: data.text || '',
             author: author,
-            createdAt: ACC.Utils.now()
+            createdAt: BIM.Utils.now()
         };
 
         var item = await this.SM().getById('discussionItems', discussionItemId);
         if (item) {
-            item.updatedAt = ACC.Utils.now();
+            item.updatedAt = BIM.Utils.now();
             item.updatedBy = author;
             await this.SM().update('discussionItems', item);
         }
@@ -411,7 +418,7 @@ ACC.MeetingStore = {
         }
         var author = await this.getCurrentAuthor();
         var attachment = {
-            id: ACC.Utils.uuid(),
+            id: BIM.Utils.uuid(),
             discussionItemId: discussionItemId,
             instanceId: instanceId,
             fileName: file.name,
@@ -419,7 +426,7 @@ ACC.MeetingStore = {
             size: file.size,
             blob: file,
             createdBy: author,
-            createdAt: ACC.Utils.now()
+            createdAt: BIM.Utils.now()
         };
         return this.SM().create('attachments', attachment);
     },
@@ -438,8 +445,19 @@ ACC.MeetingStore = {
 
     downloadAttachment: async function(id) {
         var att = await this.SM().getById('attachments', id);
-        if (!att || !att.blob) return;
-        var url = URL.createObjectURL(att.blob);
+        if (!att) return;
+
+        var blob = att.blob;
+        // If blob is not stored inline (JsonStorageProvider), fetch from server
+        if (!blob && att._hasFile) {
+            var provider = this.SM().provider();
+            if (provider.getAttachmentBlob) {
+                blob = await provider.getAttachmentBlob(id);
+            }
+        }
+        if (!blob) return;
+
+        var url = URL.createObjectURL(blob);
         var a = document.createElement('a');
         a.href = url;
         a.download = att.fileName;
@@ -452,12 +470,12 @@ ACC.MeetingStore = {
     // ── TEMPLATES ──
 
     createFromTemplate: async function(templateId) {
-        var tpl = ACC.MeetingTemplates.getById(templateId);
+        var tpl = BIM.MeetingTemplates.getById(templateId);
         if (!tpl) throw new Error('Template not found: ' + templateId);
 
         var catDefs = (tpl.defaultTopicCategories || []).map(function(cat, i) {
             return {
-                id: ACC.Utils.uuid(),
+                id: BIM.Utils.uuid(),
                 code: cat.code,
                 label: cat.label,
                 sortOrder: cat.sortOrder || (i + 1)
@@ -466,7 +484,7 @@ ACC.MeetingStore = {
 
         var fieldDefs = (tpl.defaultCustomFieldDefs || []).map(function(fd) {
             return {
-                id: ACC.Utils.uuid(),
+                id: BIM.Utils.uuid(),
                 label: fd.label,
                 type: fd.type || 'text',
                 options: fd.options || null

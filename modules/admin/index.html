@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Administration — ACC</title>
+<title>Administration — BIM Tools</title>
 <link rel="stylesheet" href="../../shared/css/acc-variables.css">
 <link rel="stylesheet" href="../../shared/css/acc-base.css">
 <link rel="stylesheet" href="../../shared/css/acc-components.css">
@@ -21,7 +21,7 @@
                 <img src="../../shared/assets/emch-berger-logo.gif" alt="Logo">
             </div>
             <div class="admin-sidebar-title">Administration</div>
-            <div class="admin-sidebar-subtitle">ACC Platform</div>
+            <div class="admin-sidebar-subtitle">BIM Tools</div>
         </div>
         <div class="admin-nav">
             <a class="admin-nav-item active" href="index.html">
@@ -57,7 +57,7 @@
                     <div class="admin-header-title">Dashboard</div>
                     <div class="admin-header-desc">Systemübersicht und Aktivitäten</div>
                 </div>
-                <div id="adminUser" style="font-size:12px;color:var(--acc-text-muted);"></div>
+                <div id="adminUser" style="font-size:12px;color:var(--bim-text-muted);"></div>
             </div>
         </div>
 
@@ -100,17 +100,19 @@
 <script src="../../shared/js/acc-utils.js"></script>
 <script src="../../shared/js/acc-storage.js"></script>
 <script src="../../shared/js/acc-storage-indexeddb.js?v=3"></script>
+<script src="../../shared/js/acc-storage-json.js"></script>
+<script src="../../shared/js/crypto-polyfill.js"></script>
 <script src="../../shared/js/acc-auth.js"></script>
 <script src="../../shared/js/acc-ui.js"></script>
 <script>
 var currentUser = null;
 
 async function init() {
-    await ACC.StorageManager.init(new ACC.IndexedDBProvider('acc-platform'));
-    await ACC.Auth.init();
-    currentUser = await ACC.Auth.requireAuth('../../login.html');
+    await BIM.StorageManager.init(new BIM.AutoStorageProvider());
+    await BIM.Auth.init();
+    currentUser = await BIM.Auth.requireAuth('../../login.html');
     if (!currentUser) return;
-    if (!ACC.Auth.canAccessAdmin(currentUser)) {
+    if (!BIM.Auth.canAccessAdmin(currentUser)) {
         window.location.href = '../../index.html';
         return;
     }
@@ -121,23 +123,23 @@ async function init() {
 }
 
 async function loadDashboard() {
-    var users = await ACC.Auth.getAllUsers();
-    var logs = await ACC.Auth.getActivityLogs();
-    var series = await ACC.StorageManager.getAll('meetingSeries');
-    var instances = await ACC.StorageManager.getAll('meetingInstances');
+    var users = await BIM.Auth.getAllUsers();
+    var logs = await BIM.Auth.getActivityLogs();
+    var series = await BIM.StorageManager.getAll('meetingSeries');
+    var instances = await BIM.StorageManager.getAll('meetingInstances');
 
     var activeUsers = users.filter(function(u) { return u.status === 'active'; }).length;
 
     // Summary cards
     document.getElementById('summaryCards').innerHTML =
-        summaryCard('Benutzer', users.length, activeUsers + ' aktiv', '#7c3aed', 'var(--acc-role-admin-bg)',
+        summaryCard('Benutzer', users.length, activeUsers + ' aktiv', '#7c3aed', 'var(--bim-role-admin-bg)',
             '<svg viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>') +
-        summaryCard('Serien', series.length, '', 'var(--acc-primary)', 'var(--acc-primary-10)',
-            '<svg viewBox="0 0 24 24" fill="none" stroke="var(--acc-primary)" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>') +
-        summaryCard('Sitzungen', instances.length, '', 'var(--acc-info)', 'var(--acc-info-light)',
-            '<svg viewBox="0 0 24 24" fill="none" stroke="var(--acc-info)" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>') +
-        summaryCard('Protokolleinträge', logs.length, '', 'var(--acc-success)', 'var(--acc-success-light)',
-            '<svg viewBox="0 0 24 24" fill="none" stroke="var(--acc-success)" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>');
+        summaryCard('Serien', series.length, '', 'var(--bim-primary)', 'var(--bim-primary-10)',
+            '<svg viewBox="0 0 24 24" fill="none" stroke="var(--bim-primary)" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>') +
+        summaryCard('Sitzungen', instances.length, '', 'var(--bim-info)', 'var(--bim-info-light)',
+            '<svg viewBox="0 0 24 24" fill="none" stroke="var(--bim-info)" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>') +
+        summaryCard('Protokolleinträge', logs.length, '', 'var(--bim-success)', 'var(--bim-success-light)',
+            '<svg viewBox="0 0 24 24" fill="none" stroke="var(--bim-success)" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>');
 
     // Charts
     buildActivityChart(logs);
@@ -223,7 +225,7 @@ function buildTopUsersChart(logs) {
 
 function renderFeed(logs) {
     var wrap = document.getElementById('recentFeed');
-    if (logs.length === 0) { wrap.innerHTML = '<div style="padding:20px;text-align:center;color:var(--acc-text-muted);font-size:12px;">Keine Aktivitäten</div>'; return; }
+    if (logs.length === 0) { wrap.innerHTML = '<div style="padding:20px;text-align:center;color:var(--bim-text-muted);font-size:12px;">Keine Aktivitäten</div>'; return; }
     var html = '';
     logs.forEach(function(l) {
         var initials = (l.userName || '?').split(' ').map(function(w){return w[0];}).join('').toUpperCase().slice(0,2);
@@ -231,9 +233,9 @@ function renderFeed(logs) {
         html += '<div class="activity-item">' +
             '<div class="activity-avatar" style="background:' + bgColor + '">' + initials + '</div>' +
             '<div class="activity-text">' +
-                '<strong>' + ACC.Utils.escapeHtml(l.userName || 'System') + '</strong> ' +
+                '<strong>' + BIM.Utils.escapeHtml(l.userName || 'System') + '</strong> ' +
                 actionLabel(l.action) +
-                (l.resourceName ? ' — <em>' + ACC.Utils.escapeHtml(l.resourceName) + '</em>' : '') +
+                (l.resourceName ? ' — <em>' + BIM.Utils.escapeHtml(l.resourceName) + '</em>' : '') +
                 '<div class="activity-time">' + timeAgo(l.timestamp) + '</div>' +
             '</div>' +
         '</div>';

@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ACC — Bauprojekt-Koordination</title>
+<title>BIM Tools — Bauprojekt-Koordination</title>
 <link rel="stylesheet" href="shared/css/acc-variables.css">
 <link rel="stylesheet" href="shared/css/acc-base.css">
 <link rel="stylesheet" href="shared/css/acc-components.css">
 <style>
 .hub-banner {
-    position: relative; height: 130px; background: var(--acc-primary); overflow: hidden;
+    position: relative; height: 130px; background: var(--bim-primary); overflow: hidden;
 }
 .hub-banner canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
 .hub-banner-content {
@@ -17,7 +17,7 @@
     display: flex; align-items: flex-end; justify-content: space-between;
     padding: 16px 32px 16px 180px;
 }
-.hub-title { font-size: 16px; font-weight: 700; color: var(--acc-white); letter-spacing: 0.5px; text-transform: uppercase; }
+.hub-title { font-size: 16px; font-weight: 700; color: var(--bim-white); letter-spacing: 0.5px; text-transform: uppercase; }
 .hub-subtitle { font-size: 10px; color: rgba(255,255,255,0.7); font-weight: 400; margin-top: 2px; letter-spacing: 0.5px; text-transform: uppercase; }
 .hub-version {
     font-size: 10px; font-weight: 500; color: rgba(255,255,255,0.8);
@@ -26,61 +26,61 @@
 .hub-logo {
     position: absolute; top: 55px; left: 40px; z-index: 10;
     width: 110px; height: 110px; box-shadow: 0 3px 16px rgba(0,0,0,0.2);
-    background: var(--acc-white); border-radius: 4px;
+    background: var(--bim-white); border-radius: 4px;
 }
 .hub-logo img { width: 100%; height: 100%; object-fit: cover; display: block; }
 
 .hub-main { max-width: 720px; padding: 80px 36px 60px 50px; }
 .hub-section-label {
     font-size: 10px; font-weight: 600; text-transform: uppercase;
-    letter-spacing: 1.2px; color: var(--acc-primary); margin-bottom: 5px;
+    letter-spacing: 1.2px; color: var(--bim-primary); margin-bottom: 5px;
 }
 .hub-section-title { font-size: 21px; font-weight: 700; margin-bottom: 4px; letter-spacing: -0.3px; }
-.hub-section-desc { font-size: 13px; color: var(--acc-text-secondary); margin-bottom: 20px; line-height: 1.6; }
+.hub-section-desc { font-size: 13px; color: var(--bim-text-secondary); margin-bottom: 20px; line-height: 1.6; }
 
 .module-list {
     display: flex; flex-direction: column; gap: 1px;
-    background: var(--acc-border); border: 1px solid var(--acc-border); border-radius: 8px; overflow: hidden;
+    background: var(--bim-border); border: 1px solid var(--bim-border); border-radius: 8px; overflow: hidden;
 }
 .module-item {
     display: flex; align-items: center; gap: 14px; padding: 14px 18px;
-    background: var(--acc-white); cursor: pointer; transition: background 0.15s; position: relative;
+    background: var(--bim-white); cursor: pointer; transition: background 0.15s; position: relative;
 }
-.module-item:hover { background: var(--acc-primary-10); }
+.module-item:hover { background: var(--bim-primary-10); }
 .module-item:hover .module-arrow { opacity: 1; transform: translateX(0); }
-.module-item:hover .module-icon-wrap { background: var(--acc-primary-30); }
-.module-item:hover .module-icon-wrap svg { stroke: var(--acc-primary); }
+.module-item:hover .module-icon-wrap { background: var(--bim-primary-30); }
+.module-item:hover .module-icon-wrap svg { stroke: var(--bim-primary); }
 
 .module-item.disabled { cursor: not-allowed; }
-.module-item.disabled:hover { background: var(--acc-white); }
-.module-item.disabled:hover .module-icon-wrap { background: var(--acc-gray-100); }
-.module-item.disabled:hover .module-icon-wrap svg { stroke: var(--acc-gray-300); }
+.module-item.disabled:hover { background: var(--bim-white); }
+.module-item.disabled:hover .module-icon-wrap { background: var(--bim-gray-100); }
+.module-item.disabled:hover .module-icon-wrap svg { stroke: var(--bim-gray-300); }
 
 .module-icon-wrap {
     width: 36px; height: 36px; flex-shrink: 0;
     display: flex; align-items: center; justify-content: center;
-    background: var(--acc-primary-10); border-radius: 6px; transition: background 0.2s;
+    background: var(--bim-primary-10); border-radius: 6px; transition: background 0.2s;
 }
 .module-icon-wrap svg { width: 18px; height: 18px; transition: stroke 0.2s; }
-.module-item.disabled .module-icon-wrap { background: var(--acc-gray-100); }
-.module-item.disabled .module-icon-wrap svg { stroke: var(--acc-gray-300); }
+.module-item.disabled .module-icon-wrap { background: var(--bim-gray-100); }
+.module-item.disabled .module-icon-wrap svg { stroke: var(--bim-gray-300); }
 
 .module-text { flex: 1; }
 .module-label { font-weight: 600; font-size: 13px; }
-.module-item.disabled .module-label { color: var(--acc-gray-400); }
-.module-desc { font-size: 11px; color: var(--acc-text-muted); margin-top: 2px; }
-.module-item.disabled .module-desc { color: var(--acc-gray-300); }
+.module-item.disabled .module-label { color: var(--bim-gray-400); }
+.module-desc { font-size: 11px; color: var(--bim-text-muted); margin-top: 2px; }
+.module-item.disabled .module-desc { color: var(--bim-gray-300); }
 
 .module-status {
     font-size: 9px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.8px;
     padding: 2px 8px; border-radius: 20px; flex-shrink: 0;
 }
-.module-status.active { color: var(--acc-primary); background: var(--acc-primary-10); }
-.module-status.soon { color: var(--acc-text-muted); background: var(--acc-gray-100); }
+.module-status.active { color: var(--bim-primary); background: var(--bim-primary-10); }
+.module-status.soon { color: var(--bim-text-muted); background: var(--bim-gray-100); }
 
 .module-arrow {
     flex-shrink: 0; opacity: 0; transform: translateX(-6px);
-    transition: all 0.2s; color: var(--acc-primary);
+    transition: all 0.2s; color: var(--bim-primary);
 }
 .module-arrow svg { width: 15px; height: 15px; }
 .module-item.disabled .module-arrow { display: none; }
@@ -93,13 +93,13 @@
 .user-pill {
     display: flex; align-items: center; gap: 8px;
     padding: 6px 14px 6px 10px;
-    background: var(--acc-white); border: 1px solid var(--acc-border);
-    border-radius: var(--acc-radius-full); box-shadow: var(--acc-shadow-sm);
-    font-size: 12px; font-weight: 500; color: var(--acc-text);
+    background: var(--bim-white); border: 1px solid var(--bim-border);
+    border-radius: var(--bim-radius-full); box-shadow: var(--bim-shadow-sm);
+    font-size: 12px; font-weight: 500; color: var(--bim-text);
 }
 .user-avatar {
     width: 26px; height: 26px; border-radius: 50%;
-    background: var(--acc-primary); color: var(--acc-white);
+    background: var(--bim-primary); color: var(--bim-white);
     display: flex; align-items: center; justify-content: center;
     font-size: 11px; font-weight: 700;
 }
@@ -109,11 +109,11 @@
 }
 .user-logout-btn {
     width: 30px; height: 30px; border-radius: 50%;
-    border: 1px solid var(--acc-border); background: var(--acc-white);
+    border: 1px solid var(--bim-border); background: var(--bim-white);
     display: flex; align-items: center; justify-content: center;
-    cursor: pointer; transition: all 0.15s; box-shadow: var(--acc-shadow-sm);
+    cursor: pointer; transition: all 0.15s; box-shadow: var(--bim-shadow-sm);
 }
-.user-logout-btn:hover { background: var(--acc-danger-light); border-color: var(--acc-danger); }
+.user-logout-btn:hover { background: var(--bim-danger-light); border-color: var(--bim-danger); }
 .user-logout-btn svg { width: 14px; height: 14px; }
 </style>
 </head>
@@ -128,7 +128,7 @@
     <div class="hub-banner-content">
         <div>
             <div class="hub-title">Bauprojekt-Koordination</div>
-            <div class="hub-subtitle">ACC Platform</div>
+            <div class="hub-subtitle">BIM Tools</div>
         </div>
         <span class="hub-version">v1.0</span>
     </div>
@@ -141,13 +141,13 @@
 <main class="hub-main">
     <div class="hub-section-label">Module</div>
     <h2 class="hub-section-title">Projektmanagement</h2>
-    <div class="acc-divider acc-mb-4"></div>
+    <div class="bim-divider bim-mb-4"></div>
     <p class="hub-section-desc">
         Wählen Sie ein Modul für die Verwaltung und Koordination Ihres Bauprojekts.
     </p>
 
     <div class="module-list">
-        <div class="module-item" onclick="ACC.Utils.navigateTo('modules/meeting-minutes/index.html')">
+        <div class="module-item" onclick="BIM.Utils.navigateTo('modules/meeting-minutes/index.html')">
             <div class="module-icon-wrap">
                 <svg viewBox="0 0 24 24" fill="none" stroke="#003B4D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/>
@@ -202,8 +202,8 @@
             <span class="module-status soon">Bald</span>
         </div>
 
-        <div class="module-item" id="adminModule" style="display:none" onclick="ACC.Utils.navigateTo('modules/admin/index.html')">
-            <div class="module-icon-wrap" style="background:var(--acc-role-admin-bg)">
+        <div class="module-item" id="adminModule" style="display:none" onclick="BIM.Utils.navigateTo('modules/admin/index.html')">
+            <div class="module-icon-wrap" style="background:var(--bim-role-admin-bg)">
                 <svg viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M12 15c-4 0-7 2-7 4v1h14v-1c0-2-3-4-7-4z"/><circle cx="12" cy="8" r="4"/><path d="M20 8v4m2-2h-4"/>
                 </svg>
@@ -212,7 +212,7 @@
                 <div class="module-label">Administration</div>
                 <div class="module-desc">Benutzer, Zugriffsrechte und Aktivitätsprotokolle verwalten</div>
             </div>
-            <span class="module-status" style="color:var(--acc-role-admin);background:var(--acc-role-admin-bg)">Admin</span>
+            <span class="module-status" style="color:var(--bim-role-admin);background:var(--bim-role-admin-bg)">Admin</span>
             <div class="module-arrow">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
             </div>
@@ -220,25 +220,33 @@
     </div>
 </main>
 
-<footer class="acc-footer">
+<footer class="bim-footer">
     <span>&copy; 2026 Emch+Berger GmbH</span>
-    <span>ACC Platform</span>
+    <span>BIM Tools</span>
 </footer>
 
 <script src="shared/js/acc-utils.js"></script>
 <script src="shared/js/acc-storage.js"></script>
 <script src="shared/js/acc-storage-indexeddb.js?v=3"></script>
+<script src="shared/js/acc-storage-json.js"></script>
+<script src="shared/js/crypto-polyfill.js"></script>
 <script src="shared/js/acc-auth.js"></script>
+<script src="shared/js/acc-ui.js"></script>
 <script>
 // ── Auth gate ──
 (function() {
-    var db = new ACC.IndexedDBProvider('acc-platform');
-    ACC.StorageManager.init(db).then(function() {
-        return ACC.Auth.init();
+    var db = new BIM.AutoStorageProvider();
+    BIM.StorageManager.init(db).then(function() {
+        return BIM.Auth.init();
     }).then(function() {
-        return ACC.Auth.getCurrentUser();
+        return BIM.Auth.getCurrentUser();
     }).then(function(user) {
         if (!user || user.status !== 'active') {
+            window.location.href = 'login.html';
+            return;
+        }
+        // Force password setup if needed
+        if (user.mustSetPassword || user.passwordHash === null) {
             window.location.href = 'login.html';
             return;
         }
@@ -247,14 +255,19 @@
 
         // Build user indicator
         var initials = (user.name || user.username || '?').split(' ').map(function(w){return w[0];}).join('').toUpperCase().slice(0,2);
-        var roleColor = user.role === 'admin' ? 'var(--acc-role-admin)' : user.role === 'editor' ? 'var(--acc-role-editor)' : 'var(--acc-role-viewer)';
+        var roleColor = user.role === 'admin' ? 'var(--bim-role-admin)' : user.role === 'editor' ? 'var(--bim-role-editor)' : 'var(--bim-role-viewer)';
         var ind = document.getElementById('userIndicator');
         ind.innerHTML =
             '<div class="user-pill">' +
                 '<div class="user-avatar">' + initials + '</div>' +
-                '<span>' + ACC.Utils.escapeHtml(user.name || user.username) + '</span>' +
-                '<span class="user-role-dot" style="background:' + roleColor + '" title="' + ACC.Auth.getRoleLabel(user.role) + '"></span>' +
+                '<span>' + BIM.Utils.escapeHtml(user.name || user.username) + '</span>' +
+                '<span class="user-role-dot" style="background:' + roleColor + '" title="' + BIM.Auth.getRoleLabel(user.role) + '"></span>' +
             '</div>' +
+            '<button class="user-logout-btn" onclick="BIM.UI.showPasswordChangeModal()" title="Passwort ändern" style="margin-right:2px;">' +
+                '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16">' +
+                    '<rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/>' +
+                '</svg>' +
+            '</button>' +
             '<button class="user-logout-btn" onclick="doLogout()" title="Abmelden">' +
                 '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
                     '<path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>' +
@@ -263,17 +276,17 @@
         ind.style.display = 'flex';
 
         // Show admin module if admin
-        if (ACC.Auth.canAccessAdmin(user)) {
+        if (BIM.Auth.canAccessAdmin(user)) {
             document.getElementById('adminModule').style.display = 'flex';
         }
 
         // Log view
-        ACC.Auth.logActivity(user.id, user.name, 'view', 'system', null, 'Hub', '');
+        BIM.Auth.logActivity(user.id, user.name, 'view', 'system', null, 'Hub', '');
     });
 })();
 
 function doLogout() {
-    ACC.Auth.logout().then(function() {
+    BIM.Auth.logout().then(function() {
         window.location.href = 'login.html';
     });
 }

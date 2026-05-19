@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Serie bearbeiten — ACC</title>
+<title>Serie bearbeiten — BIM Tools</title>
 <link rel="stylesheet" href="../../shared/css/acc-variables.css">
 <link rel="stylesheet" href="../../shared/css/acc-base.css">
 <link rel="stylesheet" href="../../shared/css/acc-components.css">
@@ -13,17 +13,17 @@
 
 <div class="page-transition"><div class="slide"></div><div class="slide-accent"></div></div>
 
-<div class="acc-topbar">
-    <div class="acc-topbar-left">
-        <button class="acc-btn-icon" onclick="goBack()" title="Zurück">&#8592;</button>
+<div class="bim-topbar">
+    <div class="bim-topbar-left">
+        <button class="bim-btn-icon" onclick="goBack()" title="Zurück">&#8592;</button>
         <div>
-            <div class="acc-topbar-title" id="topbarTitle">Neue Serie</div>
-            <div class="acc-topbar-subtitle" id="topbarSubtitle">Besprechungsserie &middot; ACC</div>
+            <div class="bim-topbar-title" id="topbarTitle">Neue Serie</div>
+            <div class="bim-topbar-subtitle" id="topbarSubtitle">Besprechungsserie &middot; BIM Tools</div>
         </div>
     </div>
-    <div class="acc-flex-center acc-gap-2">
-        <span id="autoSaveLabel" class="acc-text-xs acc-text-muted"></span>
-        <button class="acc-btn acc-btn-primary acc-btn-sm" onclick="createNewInstance()">+ Neue Sitzung</button>
+    <div class="bim-flex-center bim-gap-2">
+        <span id="autoSaveLabel" class="bim-text-xs bim-text-muted"></span>
+        <button class="bim-btn bim-btn-primary bim-btn-sm" onclick="createNewInstance()">+ Neue Sitzung</button>
     </div>
 </div>
 
@@ -38,66 +38,66 @@
     <div class="mm-tab-panel active" id="tab-settings">
 
         <!-- Kopfdaten -->
-        <div class="acc-card editor-section">
+        <div class="bim-card editor-section">
             <div class="editor-section-header">
                 <span class="editor-section-title">Kopfdaten</span>
             </div>
             <div class="editor-section-body">
-                <div class="acc-form-row">
-                    <label class="acc-form-label">Seriencode</label>
-                    <input type="text" id="fCode" class="acc-input" style="max-width:240px;" placeholder="z.B. B3|SSW-VE02-AP" onchange="autoSave()">
+                <div class="bim-form-row">
+                    <label class="bim-form-label">Seriencode</label>
+                    <input type="text" id="fCode" class="bim-input" style="max-width:240px;" placeholder="z.B. B3|SSW-VE02-AP" onchange="autoSave()">
                 </div>
-                <div class="acc-form-row">
-                    <label class="acc-form-label">Titel</label>
-                    <input type="text" id="fTitle" class="acc-input" placeholder="Serienstitel eingeben..." onchange="autoSave()">
+                <div class="bim-form-row">
+                    <label class="bim-form-label">Titel</label>
+                    <input type="text" id="fTitle" class="bim-input" placeholder="Serienstitel eingeben..." onchange="autoSave()">
                 </div>
-                <div class="acc-form-row">
-                    <label class="acc-form-label">Typ</label>
-                    <select id="fType" class="acc-select" style="max-width:240px;" onchange="autoSave()"></select>
+                <div class="bim-form-row">
+                    <label class="bim-form-label">Typ</label>
+                    <select id="fType" class="bim-select" style="max-width:240px;" onchange="autoSave()"></select>
                 </div>
-                <div class="acc-form-row">
-                    <label class="acc-form-label">Beschreibung</label>
-                    <textarea id="fDescription" class="acc-textarea" rows="2" placeholder="Beschreibung der Besprechungsserie..." onchange="autoSave()"></textarea>
+                <div class="bim-form-row">
+                    <label class="bim-form-label">Beschreibung</label>
+                    <textarea id="fDescription" class="bim-textarea" rows="2" placeholder="Beschreibung der Besprechungsserie..." onchange="autoSave()"></textarea>
                 </div>
-                <div class="acc-form-row">
-                    <label class="acc-form-label">Standard-Ort</label>
-                    <input type="text" id="fLocation" class="acc-input" placeholder="Standard-Besprechungsort..." onchange="autoSave()">
+                <div class="bim-form-row">
+                    <label class="bim-form-label">Standard-Ort</label>
+                    <input type="text" id="fLocation" class="bim-input" placeholder="Standard-Besprechungsort..." onchange="autoSave()">
                 </div>
             </div>
         </div>
 
         <!-- Themenkategorien -->
-        <div class="acc-card editor-section">
+        <div class="bim-card editor-section">
             <div class="editor-section-header">
                 <span class="editor-section-title">Themenkategorien</span>
-                <button class="acc-btn acc-btn-sm acc-btn-primary" onclick="addCategory()">+ Kategorie</button>
+                <button class="bim-btn bim-btn-sm bim-btn-primary" onclick="addCategory()">+ Kategorie</button>
             </div>
             <div class="editor-section-body" id="categoriesWrap"></div>
         </div>
 
         <!-- Benutzerdefinierte Felder -->
-        <div class="acc-card editor-section">
+        <div class="bim-card editor-section">
             <div class="editor-section-header">
                 <span class="editor-section-title">Benutzerdefinierte Felder</span>
-                <button class="acc-btn acc-btn-sm acc-btn-primary" onclick="addCustomField()">+ Feld</button>
+                <button class="bim-btn bim-btn-sm bim-btn-primary" onclick="addCustomField()">+ Feld</button>
             </div>
             <div class="editor-section-body" id="customFieldsWrap"></div>
         </div>
 
         <!-- Statusoptionen -->
-        <div class="acc-card editor-section">
+        <div class="bim-card editor-section">
             <div class="editor-section-header">
                 <span class="editor-section-title">Statusoptionen</span>
-                <button class="acc-btn acc-btn-sm acc-btn-primary" onclick="addStatusOption()">+ Status</button>
+                <button class="bim-btn bim-btn-sm bim-btn-primary" onclick="addStatusOption()">+ Status</button>
             </div>
             <div class="editor-section-body" id="statusOptionsWrap"></div>
         </div>
 
         <!-- Standard-Teilnehmer -->
-        <div class="acc-card editor-section">
+        <div class="bim-card editor-section">
             <div class="editor-section-header">
                 <span class="editor-section-title">Standard-Teilnehmer</span>
-                <button class="acc-btn acc-btn-sm acc-btn-primary" onclick="addDefaultParticipant()">+ Teilnehmer</button>
+                <button class="bim-btn bim-btn-sm bim-btn-primary" onclick="addDefaultParticipant()">+ Teilnehmer</button>
             </div>
             <div class="editor-section-body" id="defaultParticipantsWrap"></div>
         </div>
@@ -110,59 +110,61 @@
 </div>
 
 <div class="editor-footer">
-    <button class="acc-btn acc-btn-secondary" onclick="goBack()">Zurück</button>
+    <button class="bim-btn bim-btn-secondary" onclick="goBack()">Zurück</button>
     <div class="editor-footer-spacer"></div>
-    <button class="acc-btn acc-btn-danger" onclick="deleteSeries()">Serie löschen</button>
-    <button class="acc-btn acc-btn-primary" onclick="saveSeries()">Speichern</button>
+    <button class="bim-btn bim-btn-danger" onclick="deleteSeries()">Serie löschen</button>
+    <button class="bim-btn bim-btn-primary" onclick="saveSeries()">Speichern</button>
 </div>
 
 <script src="../../shared/js/acc-utils.js"></script>
 <script src="../../shared/js/acc-storage.js"></script>
 <script src="../../shared/js/acc-storage-indexeddb.js?v=3"></script>
+<script src="../../shared/js/acc-storage-json.js"></script>
+<script src="../../shared/js/crypto-polyfill.js"></script>
 <script src="../../shared/js/acc-auth.js"></script>
 <script src="../../shared/js/acc-ui.js"></script>
 <script src="js/meeting-templates.js"></script>
 <script src="js/meeting-store.js"></script>
 <script>
-var seriesId = ACC.Utils.getUrlParam('id');
+var seriesId = BIM.Utils.getUrlParam('id');
 var series = null;
 var instances = [];
 var autoSaveTimer = null;
 var currentUser = null;
 
 async function init() {
-    await ACC.StorageManager.init(new ACC.IndexedDBProvider('acc-platform'));
-    await ACC.Auth.init();
-    currentUser = await ACC.Auth.requireAuth('../../login.html');
+    await BIM.StorageManager.init(new BIM.AutoStorageProvider());
+    await BIM.Auth.init();
+    currentUser = await BIM.Auth.requireAuth('../../login.html');
     if (!currentUser) return;
     document.body.style.opacity = '1';
 
     populateTypeDropdown();
 
-    if (!seriesId) { ACC.UI.error('Keine Serien-ID angegeben'); return; }
-    if (!ACC.Auth.canAccessSeries(currentUser, seriesId)) {
-        ACC.UI.error('Kein Zugriff auf diese Serie');
+    if (!seriesId) { BIM.UI.error('Keine Serien-ID angegeben'); return; }
+    if (!BIM.Auth.canAccessSeries(currentUser, seriesId)) {
+        BIM.UI.error('Kein Zugriff auf diese Serie');
         setTimeout(function() { window.location.href = 'index.html'; }, 1500);
         return;
     }
-    series = await ACC.MeetingStore.getSeriesById(seriesId);
-    if (!series) { ACC.UI.error('Serie nicht gefunden'); return; }
+    series = await BIM.MeetingStore.getSeriesById(seriesId);
+    if (!series) { BIM.UI.error('Serie nicht gefunden'); return; }
 
     // Restrict editors/viewers from settings
-    if (!ACC.Auth.canEditSeriesSettings(currentUser)) {
+    if (!BIM.Auth.canEditSeriesSettings(currentUser)) {
         // Hide settings tab, show only instances
         var settingsTab = document.querySelector('[data-tab="settings"]');
         if (settingsTab) settingsTab.style.display = 'none';
         switchTab('instances');
         // Hide delete and save buttons
-        var footerDanger = document.querySelector('.acc-btn-danger');
+        var footerDanger = document.querySelector('.bim-btn-danger');
         if (footerDanger) footerDanger.style.display = 'none';
-        var footerSave = document.querySelector('.editor-footer .acc-btn-primary');
+        var footerSave = document.querySelector('.editor-footer .bim-btn-primary');
         if (footerSave) footerSave.style.display = 'none';
     }
     // Viewers can't create instances
-    if (!ACC.Auth.canEdit(currentUser)) {
-        var newBtn = document.querySelector('.acc-topbar .acc-btn-primary');
+    if (!BIM.Auth.canEdit(currentUser)) {
+        var newBtn = document.querySelector('.bim-topbar .bim-btn-primary');
         if (newBtn) newBtn.style.display = 'none';
     }
 
@@ -176,9 +178,9 @@ async function init() {
 
 function populateTypeDropdown() {
     var sel = document.getElementById('fType');
-    var types = ACC.Utils.MEETING_TYPES;
+    var types = BIM.Utils.MEETING_TYPES;
     for (var key in types) {
-        sel.innerHTML += '<option value="' + key + '">' + ACC.Utils.escapeHtml(types[key]) + '</option>';
+        sel.innerHTML += '<option value="' + key + '">' + BIM.Utils.escapeHtml(types[key]) + '</option>';
     }
 }
 
@@ -195,7 +197,7 @@ function updateTopbar() {
     var title = document.getElementById('fTitle').value || 'Neue Serie';
     var code = document.getElementById('fCode').value;
     document.getElementById('topbarTitle').textContent = title;
-    document.getElementById('topbarSubtitle').textContent = (code ? code + ' · ' : '') + 'Besprechungsserie · ACC';
+    document.getElementById('topbarSubtitle').textContent = (code ? code + ' · ' : '') + 'Besprechungsserie · BIM Tools';
 }
 
 function collectFields() {
@@ -211,7 +213,7 @@ function autoSave() {
     clearTimeout(autoSaveTimer);
     autoSaveTimer = setTimeout(async function() {
         collectFields();
-        await ACC.MeetingStore.updateSeries(series);
+        await BIM.MeetingStore.updateSeries(series);
         showSaved();
     }, 1000);
 }
@@ -222,8 +224,8 @@ function showSaved() {
 
 async function saveSeries() {
     collectFields();
-    await ACC.MeetingStore.updateSeries(series);
-    ACC.UI.success('Serie gespeichert');
+    await BIM.MeetingStore.updateSeries(series);
+    BIM.UI.success('Serie gespeichert');
     showSaved();
 }
 
@@ -238,16 +240,16 @@ function renderCategories() {
     var wrap = document.getElementById('categoriesWrap');
     var cats = series.topicCategoryDefs || [];
     if (cats.length === 0) {
-        wrap.innerHTML = '<div class="acc-text-sm acc-text-muted">Keine Kategorien definiert.</div>';
+        wrap.innerHTML = '<div class="bim-text-sm bim-text-muted">Keine Kategorien definiert.</div>';
         return;
     }
     cats.sort(function(a, b) { return a.sortOrder - b.sortOrder; });
     var html = '';
     cats.forEach(function(cat, i) {
         html += '<div class="config-list-item">';
-        html += '<input type="text" class="acc-input acc-input-sm" style="width:60px;" value="' + ACC.Utils.escapeHtml(cat.code) + '" onchange="updateCategory(' + i + ', \'code\', this.value)">';
-        html += '<input type="text" class="acc-input acc-input-sm" style="flex:1;" value="' + ACC.Utils.escapeHtml(cat.label) + '" placeholder="Kategorie-Name" onchange="updateCategory(' + i + ', \'label\', this.value)">';
-        html += '<button class="acc-btn-icon acc-btn-sm" onclick="removeCategory(' + i + ')" title="Entfernen">&times;</button>';
+        html += '<input type="text" class="bim-input bim-input-sm" style="width:60px;" value="' + BIM.Utils.escapeHtml(cat.code) + '" onchange="updateCategory(' + i + ', \'code\', this.value)">';
+        html += '<input type="text" class="bim-input bim-input-sm" style="flex:1;" value="' + BIM.Utils.escapeHtml(cat.label) + '" placeholder="Kategorie-Name" onchange="updateCategory(' + i + ', \'label\', this.value)">';
+        html += '<button class="bim-btn-icon bim-btn-sm" onclick="removeCategory(' + i + ')" title="Entfernen">&times;</button>';
         html += '</div>';
     });
     wrap.innerHTML = html;
@@ -256,7 +258,7 @@ function renderCategories() {
 function addCategory() {
     var cats = series.topicCategoryDefs;
     var code = String(cats.length + 1).padStart(2, '0');
-    cats.push({ id: ACC.Utils.uuid(), code: code, label: '', sortOrder: cats.length + 1 });
+    cats.push({ id: BIM.Utils.uuid(), code: code, label: '', sortOrder: cats.length + 1 });
     renderCategories();
     autoSave();
 }
@@ -278,26 +280,26 @@ function renderCustomFields() {
     var wrap = document.getElementById('customFieldsWrap');
     var fields = series.customFieldDefs || [];
     if (fields.length === 0) {
-        wrap.innerHTML = '<div class="acc-text-sm acc-text-muted">Keine benutzerdefinierten Felder.</div>';
+        wrap.innerHTML = '<div class="bim-text-sm bim-text-muted">Keine benutzerdefinierten Felder.</div>';
         return;
     }
     var html = '';
     fields.forEach(function(f, i) {
         html += '<div class="config-list-item">';
-        html += '<input type="text" class="acc-input acc-input-sm" style="flex:1;" value="' + ACC.Utils.escapeHtml(f.label) + '" placeholder="Feldname" onchange="updateCustomField(' + i + ', \'label\', this.value)">';
-        html += '<select class="acc-select acc-input-sm" style="width:100px;" onchange="updateCustomField(' + i + ', \'type\', this.value)">';
+        html += '<input type="text" class="bim-input bim-input-sm" style="flex:1;" value="' + BIM.Utils.escapeHtml(f.label) + '" placeholder="Feldname" onchange="updateCustomField(' + i + ', \'label\', this.value)">';
+        html += '<select class="bim-select bim-input-sm" style="width:100px;" onchange="updateCustomField(' + i + ', \'type\', this.value)">';
         ['text', 'date', 'number', 'select'].forEach(function(t) {
             html += '<option value="' + t + '"' + (f.type === t ? ' selected' : '') + '>' + t.charAt(0).toUpperCase() + t.slice(1) + '</option>';
         });
         html += '</select>';
-        html += '<button class="acc-btn-icon acc-btn-sm" onclick="removeCustomField(' + i + ')" title="Entfernen">&times;</button>';
+        html += '<button class="bim-btn-icon bim-btn-sm" onclick="removeCustomField(' + i + ')" title="Entfernen">&times;</button>';
         html += '</div>';
     });
     wrap.innerHTML = html;
 }
 
 function addCustomField() {
-    series.customFieldDefs.push({ id: ACC.Utils.uuid(), label: '', type: 'text', options: null });
+    series.customFieldDefs.push({ id: BIM.Utils.uuid(), label: '', type: 'text', options: null });
     renderCustomFields();
     autoSave();
 }
@@ -318,15 +320,15 @@ function renderStatusOptions() {
     var wrap = document.getElementById('statusOptionsWrap');
     var opts = series.statusOptions || [];
     if (opts.length === 0) {
-        wrap.innerHTML = '<div class="acc-text-sm acc-text-muted">Keine Statusoptionen definiert.</div>';
+        wrap.innerHTML = '<div class="bim-text-sm bim-text-muted">Keine Statusoptionen definiert.</div>';
         return;
     }
     var html = '';
     opts.forEach(function(o, i) {
         html += '<div class="config-list-item">';
-        html += '<input type="text" class="acc-input acc-input-sm" style="width:120px;" value="' + ACC.Utils.escapeHtml(o.key) + '" placeholder="Schlüssel" onchange="updateStatusOpt(' + i + ', \'key\', this.value)">';
-        html += '<input type="text" class="acc-input acc-input-sm" style="flex:1;" value="' + ACC.Utils.escapeHtml(o.label) + '" placeholder="Anzeige-Name" onchange="updateStatusOpt(' + i + ', \'label\', this.value)">';
-        html += '<button class="acc-btn-icon acc-btn-sm" onclick="removeStatusOpt(' + i + ')" title="Entfernen">&times;</button>';
+        html += '<input type="text" class="bim-input bim-input-sm" style="width:120px;" value="' + BIM.Utils.escapeHtml(o.key) + '" placeholder="Schlüssel" onchange="updateStatusOpt(' + i + ', \'key\', this.value)">';
+        html += '<input type="text" class="bim-input bim-input-sm" style="flex:1;" value="' + BIM.Utils.escapeHtml(o.label) + '" placeholder="Anzeige-Name" onchange="updateStatusOpt(' + i + ', \'label\', this.value)">';
+        html += '<button class="bim-btn-icon bim-btn-sm" onclick="removeStatusOpt(' + i + ')" title="Entfernen">&times;</button>';
         html += '</div>';
     });
     wrap.innerHTML = html;
@@ -354,24 +356,24 @@ function renderDefaultParticipants() {
     var wrap = document.getElementById('defaultParticipantsWrap');
     var parts = series.defaultParticipants || [];
     if (parts.length === 0) {
-        wrap.innerHTML = '<div class="acc-text-sm acc-text-muted">Keine Standard-Teilnehmer definiert.</div>';
+        wrap.innerHTML = '<div class="bim-text-sm bim-text-muted">Keine Standard-Teilnehmer definiert.</div>';
         return;
     }
-    var roleOptions = ACC.Utils.ATTENDEE_ROLES.map(function(r) {
-        return '<option value="' + ACC.Utils.escapeHtml(r) + '">' + ACC.Utils.escapeHtml(r) + '</option>';
+    var roleOptions = BIM.Utils.ATTENDEE_ROLES.map(function(r) {
+        return '<option value="' + BIM.Utils.escapeHtml(r) + '">' + BIM.Utils.escapeHtml(r) + '</option>';
     }).join('');
 
     var html = '';
     parts.forEach(function(p, i) {
         html += '<div class="config-list-item">';
-        html += '<input type="text" class="acc-input acc-input-sm" style="flex:1;" value="' + ACC.Utils.escapeHtml(p.name) + '" placeholder="Name" onchange="updateDefPart(' + i + ', \'name\', this.value)">';
-        html += '<input type="text" class="acc-input acc-input-sm" style="flex:1;" value="' + ACC.Utils.escapeHtml(p.company) + '" placeholder="Firma" onchange="updateDefPart(' + i + ', \'company\', this.value)">';
-        html += '<select class="acc-select acc-input-sm" style="width:160px;" onchange="updateDefPart(' + i + ', \'role\', this.value)"><option value="">Rolle...</option>' + roleOptions + '</select>';
-        html += '<select class="acc-select acc-input-sm" style="width:120px;" onchange="updateDefPart(' + i + ', \'participantType\', this.value)">';
+        html += '<input type="text" class="bim-input bim-input-sm" style="flex:1;" value="' + BIM.Utils.escapeHtml(p.name) + '" placeholder="Name" onchange="updateDefPart(' + i + ', \'name\', this.value)">';
+        html += '<input type="text" class="bim-input bim-input-sm" style="flex:1;" value="' + BIM.Utils.escapeHtml(p.company) + '" placeholder="Firma" onchange="updateDefPart(' + i + ', \'company\', this.value)">';
+        html += '<select class="bim-select bim-input-sm" style="width:160px;" onchange="updateDefPart(' + i + ', \'role\', this.value)"><option value="">Rolle...</option>' + roleOptions + '</select>';
+        html += '<select class="bim-select bim-input-sm" style="width:120px;" onchange="updateDefPart(' + i + ', \'participantType\', this.value)">';
         html += '<option value="organisator"' + (p.participantType === 'organisator' ? ' selected' : '') + '>Organisator</option>';
         html += '<option value="eingeladene"' + (p.participantType === 'eingeladene' ? ' selected' : '') + '>Eingeladene</option>';
         html += '</select>';
-        html += '<button class="acc-btn-icon acc-btn-sm" onclick="removeDefPart(' + i + ')" title="Entfernen">&times;</button>';
+        html += '<button class="bim-btn-icon bim-btn-sm" onclick="removeDefPart(' + i + ')" title="Entfernen">&times;</button>';
         html += '</div>';
     });
     wrap.innerHTML = html;
@@ -404,14 +406,14 @@ function removeDefPart(idx) {
 
 // ── INSTANCES ──
 async function loadInstances() {
-    instances = await ACC.MeetingStore.getInstancesForSeries(seriesId);
+    instances = await BIM.MeetingStore.getInstancesForSeries(seriesId);
     renderInstances();
 }
 
 function renderInstances() {
     var wrap = document.getElementById('instancesWrap');
     if (instances.length === 0) {
-        wrap.innerHTML = ACC.UI.renderEmptyState(
+        wrap.innerHTML = BIM.UI.renderEmptyState(
             'Noch keine Sitzungen',
             'Erstellen Sie die erste Sitzung dieser Serie.',
             'Neue Sitzung erstellen',
@@ -420,18 +422,18 @@ function renderInstances() {
         return;
     }
 
-    var html = '<table class="acc-table acc-table-hover">';
+    var html = '<table class="bim-table bim-table-hover">';
     html += '<thead><tr><th style="width:60px;">Nr.</th><th style="width:120px;">Datum</th><th>Ort</th><th style="width:100px;">Status</th><th style="width:160px;">Erstellt von</th><th style="width:60px;"></th></tr></thead><tbody>';
 
     instances.forEach(function(inst) {
         html += '<tr onclick="openInstance(\'' + inst.id + '\')">';
         html += '<td><strong>' + inst.instanceNumber + '</strong></td>';
-        html += '<td>' + ACC.Utils.formatDate(inst.date) + '</td>';
-        html += '<td>' + ACC.Utils.escapeHtml(inst.location || '—') + '</td>';
-        html += '<td>' + ACC.UI.renderInstanceStatusBadge(inst.status) + '</td>';
-        html += '<td class="acc-text-xs acc-text-muted">' + ACC.Utils.escapeHtml(inst.createdBy || '—') + '</td>';
+        html += '<td>' + BIM.Utils.formatDate(inst.date) + '</td>';
+        html += '<td>' + BIM.Utils.escapeHtml(inst.location || '—') + '</td>';
+        html += '<td>' + BIM.UI.renderInstanceStatusBadge(inst.status) + '</td>';
+        html += '<td class="bim-text-xs bim-text-muted">' + BIM.Utils.escapeHtml(inst.createdBy || '—') + '</td>';
         html += '<td style="text-align:right;">';
-        html += '<button class="acc-btn-icon acc-btn-sm" onclick="event.stopPropagation(); deleteInstance(\'' + inst.id + '\')" title="Löschen">&times;</button>';
+        html += '<button class="bim-btn-icon bim-btn-sm" onclick="event.stopPropagation(); deleteInstance(\'' + inst.id + '\')" title="Löschen">&times;</button>';
         html += '</td></tr>';
     });
     html += '</tbody></table>';
@@ -439,32 +441,32 @@ function renderInstances() {
 }
 
 function openInstance(id) {
-    ACC.Utils.navigateTo('instance-editor.html?seriesId=' + seriesId + '&instanceId=' + id);
+    BIM.Utils.navigateTo('instance-editor.html?seriesId=' + seriesId + '&instanceId=' + id);
 }
 
 async function createNewInstance() {
-    var instance = await ACC.MeetingStore.createInstance(seriesId, {});
-    ACC.UI.success('Sitzung #' + instance.instanceNumber + ' erstellt');
-    ACC.Utils.navigateTo('instance-editor.html?seriesId=' + seriesId + '&instanceId=' + instance.id);
+    var instance = await BIM.MeetingStore.createInstance(seriesId, {});
+    BIM.UI.success('Sitzung #' + instance.instanceNumber + ' erstellt');
+    BIM.Utils.navigateTo('instance-editor.html?seriesId=' + seriesId + '&instanceId=' + instance.id);
 }
 
 async function deleteInstance(id) {
-    var confirmed = await ACC.UI.confirmDelete('Möchten Sie diese Sitzung wirklich löschen?');
+    var confirmed = await BIM.UI.confirmDelete('Möchten Sie diese Sitzung wirklich löschen?');
     if (!confirmed) return;
-    await ACC.MeetingStore.deleteInstance(id);
-    ACC.UI.success('Sitzung gelöscht');
+    await BIM.MeetingStore.deleteInstance(id);
+    BIM.UI.success('Sitzung gelöscht');
     await loadInstances();
 }
 
 // ── NAV ──
-function goBack() { ACC.Utils.navigateTo('index.html'); }
+function goBack() { BIM.Utils.navigateTo('index.html'); }
 
 async function deleteSeries() {
-    var confirmed = await ACC.UI.confirmDelete('Möchten Sie diese Serie und alle zugehörigen Daten wirklich löschen?');
+    var confirmed = await BIM.UI.confirmDelete('Möchten Sie diese Serie und alle zugehörigen Daten wirklich löschen?');
     if (!confirmed) return;
-    await ACC.MeetingStore.deleteSeries(seriesId);
-    ACC.UI.success('Serie gelöscht');
-    ACC.Utils.navigateTo('index.html');
+    await BIM.MeetingStore.deleteSeries(seriesId);
+    BIM.UI.success('Serie gelöscht');
+    BIM.Utils.navigateTo('index.html');
 }
 
 init();

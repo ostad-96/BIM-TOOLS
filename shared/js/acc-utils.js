@@ -1,6 +1,6 @@
-var ACC = ACC || {};
+var BIM = BIM || {};
 
-ACC.Utils = {
+BIM.Utils = {
     uuid: function() {
         if (crypto.randomUUID) return crypto.randomUUID();
         return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {

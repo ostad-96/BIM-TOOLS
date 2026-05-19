@@ -1,21 +1,21 @@
-var ACC = ACC || {};
+var BIM = BIM || {};
 
-ACC.IndexedDBProvider = function(dbName) {
+BIM.IndexedDBProvider = function(dbName) {
     this.dbName = dbName;
     this.db = null;
     this.version = 3;
 };
 
-ACC.IndexedDBProvider.prototype = Object.create(ACC.StorageProvider.prototype);
+BIM.IndexedDBProvider.prototype = Object.create(BIM.StorageProvider.prototype);
 
-ACC.IndexedDBProvider.prototype.open = function() {
+BIM.IndexedDBProvider.prototype.open = function() {
     var self = this;
     return new Promise(function(resolve, reject) {
         var request = indexedDB.open(self.dbName, self.version);
 
         request.onblocked = function() {
             // Another tab has the old version open — force close it
-            console.warn('IndexedDB upgrade blocked. Close other ACC tabs and reload.');
+            console.warn('IndexedDB upgrade blocked. Close other BIM tabs and reload.');
             // Try to proceed anyway after a brief wait
             setTimeout(function() {
                 if (!self.db) {
@@ -138,12 +138,12 @@ ACC.IndexedDBProvider.prototype.open = function() {
     });
 };
 
-ACC.IndexedDBProvider.prototype._tx = function(store, mode) {
+BIM.IndexedDBProvider.prototype._tx = function(store, mode) {
     var tx = this.db.transaction(store, mode || 'readonly');
     return tx.objectStore(store);
 };
 
-ACC.IndexedDBProvider.prototype.getById = function(store, id) {
+BIM.IndexedDBProvider.prototype.getById = function(store, id) {
     var self = this;
     return new Promise(function(resolve, reject) {
         var request = self._tx(store).get(id);
@@ -152,7 +152,7 @@ ACC.IndexedDBProvider.prototype.getById = function(store, id) {
     });
 };
 
-ACC.IndexedDBProvider.prototype.getAll = function(store) {
+BIM.IndexedDBProvider.prototype.getAll = function(store) {
     var self = this;
     return new Promise(function(resolve, reject) {
         var request = self._tx(store).getAll();
@@ -161,7 +161,7 @@ ACC.IndexedDBProvider.prototype.getAll = function(store) {
     });
 };
 
-ACC.IndexedDBProvider.prototype.query = function(store, filter) {
+BIM.IndexedDBProvider.prototype.query = function(store, filter) {
     var self = this;
     return new Promise(function(resolve, reject) {
         var keys = Object.keys(filter || {});
@@ -192,7 +192,7 @@ ACC.IndexedDBProvider.prototype.query = function(store, filter) {
     });
 };
 
-ACC.IndexedDBProvider.prototype.create = function(store, entity) {
+BIM.IndexedDBProvider.prototype.create = function(store, entity) {
     var self = this;
     return new Promise(function(resolve, reject) {
         var request = self._tx(store, 'readwrite').add(entity);
@@ -201,7 +201,7 @@ ACC.IndexedDBProvider.prototype.create = function(store, entity) {
     });
 };
 
-ACC.IndexedDBProvider.prototype.update = function(store, entity) {
+BIM.IndexedDBProvider.prototype.update = function(store, entity) {
     var self = this;
     return new Promise(function(resolve, reject) {
         var request = self._tx(store, 'readwrite').put(entity);
@@ -210,7 +210,7 @@ ACC.IndexedDBProvider.prototype.update = function(store, entity) {
     });
 };
 
-ACC.IndexedDBProvider.prototype.remove = function(store, id) {
+BIM.IndexedDBProvider.prototype.remove = function(store, id) {
     var self = this;
     return new Promise(function(resolve, reject) {
         var request = self._tx(store, 'readwrite').delete(id);
@@ -219,7 +219,7 @@ ACC.IndexedDBProvider.prototype.remove = function(store, id) {
     });
 };
 
-ACC.IndexedDBProvider.prototype.count = function(store, filter) {
+BIM.IndexedDBProvider.prototype.count = function(store, filter) {
     var self = this;
     if (!filter || Object.keys(filter).length === 0) {
         return new Promise(function(resolve, reject) {
@@ -231,7 +231,7 @@ ACC.IndexedDBProvider.prototype.count = function(store, filter) {
     return self.query(store, filter).then(function(results) { return results.length; });
 };
 
-ACC.IndexedDBProvider.prototype.clear = function(store) {
+BIM.IndexedDBProvider.prototype.clear = function(store) {
     var self = this;
     return new Promise(function(resolve, reject) {
         var request = self._tx(store, 'readwrite').clear();

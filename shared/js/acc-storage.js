@@ -1,16 +1,16 @@
-var ACC = ACC || {};
+var BIM = BIM || {};
 
-ACC.StorageProvider = function() {};
-ACC.StorageProvider.prototype.getById = function(store, id) { throw new Error('Not implemented'); };
-ACC.StorageProvider.prototype.getAll = function(store) { throw new Error('Not implemented'); };
-ACC.StorageProvider.prototype.query = function(store, filter) { throw new Error('Not implemented'); };
-ACC.StorageProvider.prototype.create = function(store, entity) { throw new Error('Not implemented'); };
-ACC.StorageProvider.prototype.update = function(store, entity) { throw new Error('Not implemented'); };
-ACC.StorageProvider.prototype.remove = function(store, id) { throw new Error('Not implemented'); };
-ACC.StorageProvider.prototype.count = function(store, filter) { throw new Error('Not implemented'); };
-ACC.StorageProvider.prototype.clear = function(store) { throw new Error('Not implemented'); };
+BIM.StorageProvider = function() {};
+BIM.StorageProvider.prototype.getById = function(store, id) { throw new Error('Not implemented'); };
+BIM.StorageProvider.prototype.getAll = function(store) { throw new Error('Not implemented'); };
+BIM.StorageProvider.prototype.query = function(store, filter) { throw new Error('Not implemented'); };
+BIM.StorageProvider.prototype.create = function(store, entity) { throw new Error('Not implemented'); };
+BIM.StorageProvider.prototype.update = function(store, entity) { throw new Error('Not implemented'); };
+BIM.StorageProvider.prototype.remove = function(store, id) { throw new Error('Not implemented'); };
+BIM.StorageProvider.prototype.count = function(store, filter) { throw new Error('Not implemented'); };
+BIM.StorageProvider.prototype.clear = function(store) { throw new Error('Not implemented'); };
 
-ACC.StorageManager = {
+BIM.StorageManager = {
     _provider: null,
 
     init: function(provider) {
