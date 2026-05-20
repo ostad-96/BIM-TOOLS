@@ -9,7 +9,7 @@ BIM.PrintSampleData = {
         name: 'Firma AG',
         tagline: 'Engineering & Planung',
         address: 'Musterstrasse 12 · 8004 Zürich · firma.ag',
-        logo: '../../shared/assets/company-logo-placeholder.svg'
+        logo: '../../shared/assets/emch-berger-logo.gif'
     },
     project: {
         code: 'B3-SSW-VE02',
