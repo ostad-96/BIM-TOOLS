@@ -197,6 +197,7 @@ BIM.Auth = {
 
     login: function(username, password) {
         var self = this;
+        username = (username || '').trim().toLowerCase();
         return BIM.StorageManager.query('userProfiles', { username: username }).then(function(users) {
             if (users.length === 0) {
                 // Anti-enumeration: perform a dummy PBKDF2 hash to equalize timing
@@ -584,7 +585,7 @@ BIM.Auth = {
             name: data.name || '',
             company: data.company || '',
             email: data.email || '',
-            username: data.username,
+            username: (data.username || '').trim().toLowerCase(),
             passwordHash: null,
             mustSetPassword: true,
             role: data.role || 'viewer',
