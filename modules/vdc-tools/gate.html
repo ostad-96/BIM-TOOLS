@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VDC Manager erforderlich — BIM Tools</title>
+<link rel="stylesheet" href="../../shared/css/acc-variables.css">
+<link rel="stylesheet" href="../../shared/css/acc-base.css">
+<link rel="stylesheet" href="../../shared/css/acc-components.css">
+<style>
+body {
+    background: var(--bim-primary);
+    overflow: hidden;
+    margin: 0;
+    min-height: 100vh;
+}
+
+.gate-bg {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0;
+}
+.gate-bg canvas { width: 100%; height: 100%; }
+
+.gate-center {
+    position: relative; z-index: 1;
+    display: flex; align-items: center; justify-content: center;
+    min-height: 100vh; padding: 24px;
+}
+
+.gate-card {
+    background: var(--bim-white);
+    border-radius: 12px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    width: 100%; max-width: 420px;
+    overflow: hidden;
+    animation: cardIn 0.5s ease-out;
+}
+
+@keyframes cardIn {
+    from { opacity: 0; transform: translateY(20px) scale(0.97); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.gate-header {
+    padding: 28px 32px 20px;
+    text-align: center;
+}
+
+.gate-logo {
+    width: 64px; height: 64px;
+    margin: 0 auto 16px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    border-radius: 4px;
+    overflow: hidden;
+}
+.gate-logo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+.gate-icon {
+    width: 56px; height: 56px;
+    margin: 0 auto 16px;
+    background: #fef3c7;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+}
+.gate-icon svg { width: 28px; height: 28px; stroke: #d97706; }
+
+.gate-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--bim-text);
+    margin-bottom: 8px;
+    letter-spacing: -0.2px;
+}
+
+.gate-tool-name {
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--bim-primary);
+    background: var(--bim-primary-10);
+    display: inline-block;
+    padding: 3px 12px;
+    border-radius: 20px;
+    margin-bottom: 16px;
+}
+
+.gate-message {
+    font-size: 13px;
+    color: var(--bim-text-secondary);
+    line-height: 1.7;
+    padding: 0 32px 28px;
+    text-align: center;
+}
+
+.gate-footer {
+    padding: 14px 32px;
+    border-top: 1px solid var(--bim-border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.gate-back-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 8px 20px;
+    font-size: 12px; font-weight: 600;
+    color: var(--bim-primary);
+    background: var(--bim-primary-10);
+    border: none; border-radius: 6px;
+    cursor: pointer; transition: all 0.15s;
+    text-decoration: none;
+}
+.gate-back-btn:hover { background: var(--bim-primary-30); }
+.gate-back-btn svg { width: 14px; height: 14px; }
+
+.gate-vdc-badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 10px; font-weight: 500;
+    color: var(--bim-text-muted);
+    background: var(--bim-gray-100);
+    padding: 4px 10px;
+    border-radius: 20px;
+    letter-spacing: 0.3px;
+}
+.gate-vdc-badge .dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: #d97706;
+}
+</style>
+</head>
+<body>
+
+<div class="gate-bg"><canvas id="c"></canvas></div>
+
+<div class="gate-center">
+    <div class="gate-card">
+        <div class="gate-header">
+            <div class="gate-logo">
+                <img src="../../shared/assets/emch-berger-logo.gif" alt="Emch+Berger">
+            </div>
+            <div class="gate-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+                    <line x1="12" y1="9" x2="12" y2="13"/>
+                    <line x1="12" y1="17" x2="12.01" y2="17"/>
+                </svg>
+            </div>
+            <div id="toolBadge" class="gate-tool-name"></div>
+            <div class="gate-title">VDC Manager erforderlich</div>
+        </div>
+        <div class="gate-message">
+            Dieses Tool funktioniert nur innerhalb des VDC Managers (desite BIM).
+            Bitte öffnen Sie es als WebForm im VDC Manager.
+        </div>
+        <div class="gate-footer">
+            <a href="../../index.html" class="gate-back-btn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+                Zurück zum Hub
+            </a>
+            <span class="gate-vdc-badge"><span class="dot"></span> Nur VDC Manager</span>
+        </div>
+    </div>
+</div>
+
+<script>
+(function() {
+    var params = new URLSearchParams(window.location.search);
+    var tool = params.get('tool') || '';
+
+    var toolNames = {
+        'kollisionsmatrix': 'Kollisionsmatrix',
+        'agent': 'VDC Agent'
+    };
+
+    var toolFiles = {
+        'kollisionsmatrix': 'kollisionsmatrix.html',
+        'agent': 'agent.html'
+    };
+
+    // Show tool name badge
+    var badge = document.getElementById('toolBadge');
+    badge.textContent = toolNames[tool] || tool || 'VDC Tool';
+
+    // Check for VDC Manager environment
+    if (typeof vdcApp !== 'undefined') {
+        // Inside VDC Manager — redirect to the actual tool
+        var target = toolFiles[tool];
+        if (target) {
+            window.location.replace(target);
+        }
+        return;
+    }
+
+    // Not in VDC Manager — show the gate page (already visible)
+})();
+
+// ── Animated background ──
+var canvas = document.getElementById('c');
+var ctx = canvas.getContext('2d');
+var wrap = canvas.parentElement;
+var W, H;
+function resize() { W = canvas.width = wrap.offsetWidth; H = canvas.height = wrap.offsetHeight; }
+resize(); window.addEventListener('resize', resize);
+
+var particles = [];
+for (var i = 0; i < 40; i++) {
+    particles.push({
+        x: Math.random() * 2000,
+        y: Math.random() * 2000,
+        r: Math.random() * 1.5 + 0.5,
+        dx: (Math.random() - 0.5) * 0.3,
+        dy: (Math.random() - 0.5) * 0.3,
+        a: Math.random() * 0.3 + 0.1
+    });
+}
+
+function draw() {
+    ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = '#002a38';
+    ctx.fillRect(0, 0, W, H);
+    for (var i = 0; i < particles.length; i++) {
+        var p = particles[i];
+        p.x += p.dx; p.y += p.dy;
+        if (p.x < 0) p.x = W; if (p.x > W) p.x = 0;
+        if (p.y < 0) p.y = H; if (p.y > H) p.y = 0;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(255,255,255,' + p.a + ')';
+        ctx.fill();
+    }
+    // Draw subtle connecting lines
+    for (var i = 0; i < particles.length; i++) {
+        for (var j = i + 1; j < particles.length; j++) {
+            var dx = particles[i].x - particles[j].x;
+            var dy = particles[i].y - particles[j].y;
+            var dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist < 120) {
+                ctx.beginPath();
+                ctx.moveTo(particles[i].x, particles[i].y);
+                ctx.lineTo(particles[j].x, particles[j].y);
+                ctx.strokeStyle = 'rgba(255,255,255,' + (0.06 * (1 - dist / 120)) + ')';
+                ctx.stroke();
+            }
+        }
+    }
+    requestAnimationFrame(draw);
+}
+draw();
+</script>
+</body>
+</html>
