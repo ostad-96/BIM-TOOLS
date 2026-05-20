@@ -135,7 +135,7 @@ body {
 <div class="gate-bg"><canvas id="c"></canvas></div>
 
 <div class="gate-center">
-    <div class="gate-card">
+    <div class="gate-card" id="gateCard" style="display:none">
         <div class="gate-header">
             <div class="gate-logo">
                 <img src="../../shared/assets/emch-berger-logo.gif" alt="Emch+Berger">
@@ -204,7 +204,8 @@ body {
             redirect();
         } else if (attempts >= 10) {
             clearInterval(poll);
-            // Not in VDC Manager — gate page stays visible
+            // Not in VDC Manager — show the gate card
+            document.getElementById('gateCard').style.display = '';
         }
     }, 100);
 })();

@@ -324,6 +324,11 @@ async function deleteUser(id) {
         for (var i = 0; i < sessions.length; i++) {
             await BIM.StorageManager.remove('sessions', sessions[i].id);
         }
+        // Remove all activity logs for this user
+        var logs = await BIM.StorageManager.query('activityLogs', { userId: id });
+        for (var i = 0; i < logs.length; i++) {
+            await BIM.StorageManager.remove('activityLogs', logs[i].id);
+        }
         // Remove user profile
         await BIM.StorageManager.remove('userProfiles', id);
         BIM.Auth.logActivity(currentUser.id, currentUser.name, 'delete', 'user', id, u.name || u.username, 'Benutzer endgültig gelöscht');

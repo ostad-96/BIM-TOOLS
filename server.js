@@ -4,6 +4,8 @@
  *
  * Usage:  node server.js
  * Opens:  http://localhost:3000
+ *
+ * DB is cached in memory; writes are debounced and async for performance.
  */
 
 const http = require('http');
@@ -19,6 +21,62 @@ const ATT_DIR  = path.join(DATA_DIR, 'attachments');
 // Ensure data directories exist
 if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR);
 if (!fs.existsSync(ATT_DIR))  fs.mkdirSync(ATT_DIR);
+
+// ── In-memory DB cache ────────────────────────────────
+var _db = {};
+try {
+    if (fs.existsSync(DB_FILE)) _db = JSON.parse(fs.readFileSync(DB_FILE, 'utf8'));
+} catch(e) {
+    console.error('  Warning: could not parse db.json, starting with empty DB');
+    _db = {};
+}
+
+var _dbDirty = false;
+var _dbWriteTimer = null;
+var _dbWriting = false;
+
+function schedulePersist() {
+    _dbDirty = true;
+    if (_dbWriteTimer) return; // already scheduled
+    _dbWriteTimer = setTimeout(persistDb, 500);
+}
+
+function persistDb() {
+    _dbWriteTimer = null;
+    if (!_dbDirty || _dbWriting) return;
+    _dbWriting = true;
+    _dbDirty = false;
+    var data = JSON.stringify(_db);
+    var tmpFile = DB_FILE + '.tmp';
+    fs.writeFile(tmpFile, data, 'utf8', function(err) {
+        if (err) {
+            console.error('  DB write error:', err.message);
+            _dbDirty = true; // retry next cycle
+            _dbWriting = false;
+            return;
+        }
+        fs.rename(tmpFile, DB_FILE, function(err2) {
+            if (err2) {
+                console.error('  DB rename error:', err2.message);
+                _dbDirty = true;
+            }
+            _dbWriting = false;
+            // If more changes arrived while writing, schedule again
+            if (_dbDirty) schedulePersist();
+        });
+    });
+}
+
+// Flush on shutdown
+function flushAndExit() {
+    if (_dbDirty) {
+        try { fs.writeFileSync(DB_FILE, JSON.stringify(_db), 'utf8'); }
+        catch(e) { console.error('  Flush failed:', e.message); }
+    }
+    process.exit(0);
+}
+process.on('SIGTERM', flushAndExit);
+process.on('SIGINT', flushAndExit);
 
 const MIME = {
     '.html': 'text/html; charset=utf-8',
@@ -73,21 +131,18 @@ var server = http.createServer(async function(req, res) {
 
     // ── API: Database (bulk) ─────────────────────────────
     if (url === '/api/db' && method === 'GET') {
-        if (!fs.existsSync(DB_FILE)) return sendJSON(res, 200, {});
-        fs.readFile(DB_FILE, 'utf8', function(err, raw) {
-            if (err) return sendJSON(res, 500, { error: err.message });
-            try { sendJSON(res, 200, JSON.parse(raw)); }
-            catch(e) { sendJSON(res, 200, {}); }
-        });
-        return;
+        return sendJSON(res, 200, _db);
     }
 
     if (url === '/api/db' && method === 'PUT') {
         var body = await readBody(req);
-        fs.writeFile(DB_FILE, body, 'utf8', function(err) {
-            if (err) return sendJSON(res, 500, { error: err.message });
+        try {
+            _db = JSON.parse(body.toString('utf8'));
+            schedulePersist();
             sendJSON(res, 200, { ok: true });
-        });
+        } catch(e) {
+            sendJSON(res, 400, { error: 'Invalid JSON' });
+        }
         return;
     }
 
@@ -99,31 +154,27 @@ var server = http.createServer(async function(req, res) {
     if (storeMatch) {
         var store = storeMatch[1];
         var recId = storeMatch[2] || null;
-        var db = {};
-        try {
-            if (fs.existsSync(DB_FILE)) db = JSON.parse(fs.readFileSync(DB_FILE, 'utf8'));
-        } catch(e) {}
-        if (!Array.isArray(db[store])) db[store] = [];
+        if (!Array.isArray(_db[store])) _db[store] = [];
 
         if (method === 'POST' && !recId) {
             var body = JSON.parse((await readBody(req)).toString('utf8'));
-            db[store].push(body);
-            fs.writeFileSync(DB_FILE, JSON.stringify(db), 'utf8');
+            _db[store].push(body);
+            schedulePersist();
             return sendJSON(res, 201, body);
         }
 
         if (method === 'PUT' && recId) {
             var body = JSON.parse((await readBody(req)).toString('utf8'));
-            var idx = db[store].findIndex(function(r) { return r.id === recId; });
-            if (idx === -1) db[store].push(body);
-            else db[store][idx] = body;
-            fs.writeFileSync(DB_FILE, JSON.stringify(db), 'utf8');
+            var idx = _db[store].findIndex(function(r) { return r.id === recId; });
+            if (idx === -1) _db[store].push(body);
+            else _db[store][idx] = body;
+            schedulePersist();
             return sendJSON(res, 200, body);
         }
 
         if (method === 'DELETE' && recId) {
-            db[store] = db[store].filter(function(r) { return r.id !== recId; });
-            fs.writeFileSync(DB_FILE, JSON.stringify(db), 'utf8');
+            _db[store] = _db[store].filter(function(r) { return r.id !== recId; });
+            schedulePersist();
             return sendJSON(res, 200, { ok: true });
         }
 

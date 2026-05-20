@@ -314,6 +314,8 @@ BIM.Auth = {
                         return BIM.StorageManager.update('userProfiles', user);
                     }).then(function() {
                         self.logActivity(user.id, user.name, 'login', 'system', null, 'Anmeldung', '');
+                        // Clean stale sessions in background (non-blocking)
+                        self.cleanExpiredSessions().catch(function() {});
                         return user;
                     });
                 });
@@ -696,12 +698,30 @@ BIM.Auth = {
         });
     },
 
+    // ── Activity Log Pruning ─────────────────────────────────
+
+    /**
+     * Remove activity logs older than maxDays (default 90).
+     */
+    pruneActivityLogs: function(maxDays) {
+        maxDays = maxDays || 90;
+        var cutoff = new Date(Date.now() - maxDays * 24 * 60 * 60 * 1000).toISOString();
+        return BIM.StorageManager.getAll('activityLogs').then(function(logs) {
+            var old = logs.filter(function(l) { return l.timestamp < cutoff; });
+            return Promise.all(old.map(function(l) {
+                return BIM.StorageManager.remove('activityLogs', l.id);
+            }));
+        });
+    },
+
     // ── Initialization ────────────────────────────────────────
 
     init: function() {
         var self = this;
         return this.seedDefaultAdmin().then(function() {
             return self.cleanExpiredSessions();
+        }).then(function() {
+            return self.pruneActivityLogs(90);
         });
     }
 };
