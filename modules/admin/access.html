@@ -7,62 +7,31 @@
 <link rel="stylesheet" href="../../shared/css/acc-variables.css">
 <link rel="stylesheet" href="../../shared/css/acc-base.css">
 <link rel="stylesheet" href="../../shared/css/acc-components.css">
+<link rel="stylesheet" href="../../shared/css/acc-corporate.css">
 <link rel="stylesheet" href="css/admin.css">
 </head>
-<body style="opacity:0">
+<body class="corp" style="opacity:0">
 
-<div class="admin-layout">
-    <nav class="admin-sidebar">
-        <div class="admin-sidebar-header">
-            <div class="admin-sidebar-logo"><img src="../../shared/assets/emch-berger-logo.gif" alt="Logo"></div>
-            <div class="admin-sidebar-title">Administration</div>
-            <div class="admin-sidebar-subtitle">BIM Tools</div>
+<main class="app-page">
+    <div class="page-hero">
+        <div class="page-hero-l">
+            <div class="page-hero-eyebrow">Rechtevergabe</div>
+            <h1 class="page-hero-title">Zugriffsmatrix</h1>
+            <p class="page-hero-desc">Serien­zugriff pro Benutzer verwalten. Administratoren haben automatisch Zugriff auf alle Serien — leere Zuweisung bedeutet Zugriff auf alle.</p>
         </div>
-        <div class="admin-nav">
-            <a class="admin-nav-item" href="index.html">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
-                <span>Dashboard</span>
-            </a>
-            <a class="admin-nav-item" href="users.html">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
-                <span>Benutzer</span>
-            </a>
-            <a class="admin-nav-item" href="activity.html">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-                <span>Aktivitäten</span>
-            </a>
-            <a class="admin-nav-item active" href="access.html">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
-                <span>Zugriff</span>
-            </a>
+        <div class="page-hero-r">
+            <button class="btn btn-primary" onclick="saveAccess()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                Zugriff speichern
+            </button>
         </div>
-        <div class="admin-sidebar-footer">
-            <a class="admin-back-link" href="../../index.html">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline points="15 18 9 12 15 6"/></svg>
-                Zur Startseite
-            </a>
-        </div>
-    </nav>
+    </div>
 
-    <main class="admin-main">
-        <div class="admin-header">
-            <div>
-                <div class="admin-header-title">Zugriffmatrix</div>
-                <div class="admin-header-desc">Serienzugriff pro Benutzer verwalten. Administratoren haben automatisch Zugriff auf alle Serien. Leere Zuweisung = Zugriff auf alle Serien.</div>
-            </div>
-        </div>
-
-        <div class="admin-content">
-            <div id="matrixInfo" style="margin-bottom:16px;font-size:12px;color:var(--bim-text-muted);"></div>
-            <div class="access-matrix-wrap">
-                <div id="matrixWrap"></div>
-            </div>
-            <div style="margin-top:16px;text-align:right;">
-                <button class="bim-btn bim-btn-primary" onclick="saveAccess()">Zugriff speichern</button>
-            </div>
-        </div>
-    </main>
-</div>
+    <div id="matrixInfo" style="margin-bottom:14px;font-size:12px;color:var(--c-ink-4);"></div>
+    <div class="access-matrix-wrap" style="background:var(--c-surface); border:1px solid var(--c-line); border-radius:14px; box-shadow:var(--el-1); overflow:hidden;">
+        <div id="matrixWrap"></div>
+    </div>
+</main>
 
 <script src="../../shared/js/acc-utils.js"></script>
 <script src="../../shared/js/acc-storage.js"></script>
@@ -83,6 +52,16 @@ async function init() {
     if (!currentUser) return;
     if (!BIM.Auth.canAccessAdmin(currentUser)) { window.location.href = '../../index.html'; return; }
     document.body.style.opacity = '1';
+
+    BIM.UI.installTopBar({
+        crumbs: [
+            { label: 'BIM Tools', href: '../../index.html' },
+            { label: 'Administration', href: 'index.html' },
+            { label: 'Zugriff', here: true }
+        ],
+        user: currentUser, loginHref: '../../login.html', brandHref: '../../index.html', subtitle: 'Administration'
+    });
+    BIM.UI.installAdminSubnav('access');
 
     allUsers = await BIM.Auth.getAllUsers();
     allSeries = await BIM.StorageManager.getAll('meetingSeries');

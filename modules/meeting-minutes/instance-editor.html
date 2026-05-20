@@ -7,29 +7,108 @@
 <link rel="stylesheet" href="../../shared/css/acc-variables.css">
 <link rel="stylesheet" href="../../shared/css/acc-base.css">
 <link rel="stylesheet" href="../../shared/css/acc-components.css">
+<link rel="stylesheet" href="../../shared/css/acc-corporate.css">
 <link rel="stylesheet" href="css/meeting-minutes.css">
 </head>
-<body class="entering" style="opacity:0">
+<body class="corp" style="opacity:0" data-ready="">
+
+<!-- ════════ Tweaks panel ════════ -->
+<style>
+.ie-tweaks-toggle {
+    position: fixed; right: 22px; bottom: 80px; z-index: 99;
+    background: var(--c-brand); color: #fff; border: 0;
+    width: 46px; height: 46px; border-radius: 50%;
+    cursor: pointer; box-shadow: 0 8px 22px rgba(0, 59, 77, 0.32);
+    display: flex; align-items: center; justify-content: center;
+    transition: transform .12s var(--ease);
+}
+.ie-tweaks-toggle:hover { transform: scale(1.05); }
+.ie-tweaks-toggle.hidden { display: none; }
+.ie-tweaks-toggle svg { width: 20px; height: 20px; }
+.ie-tweaks {
+    position: fixed; right: 22px; bottom: 80px; z-index: 100;
+    width: 290px; background: #fff;
+    border: 1px solid var(--c-line); border-radius: 12px;
+    box-shadow: var(--el-3); overflow: hidden; display: none;
+}
+.ie-tweaks.open { display: block; }
+.ie-tweaks-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 14px; background: var(--c-brand); color: #fff;
+}
+.ie-tweaks-head h3 { font-size: 12px; font-weight: 600; letter-spacing: 0.6px; text-transform: uppercase; margin: 0; font-family: var(--f-display); }
+.ie-tweaks-close { background: transparent; color: #fff; border: 0; width: 22px; height: 22px; border-radius: 4px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.ie-tweaks-close:hover { background: rgba(255,255,255,0.15); }
+.ie-tweaks-body { padding: 14px; }
+.ie-tweaks-section { margin-bottom: 14px; }
+.ie-tweaks-section:last-child { margin-bottom: 0; }
+.ie-tweaks-label { font-size: 10px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--c-ink-3); margin-bottom: 6px; display: flex; justify-content: space-between; }
+.ie-tweaks-label .val { color: var(--c-brand); font-variant-numeric: tabular-nums; text-transform: none; letter-spacing: 0; }
+.ie-tweaks-seg { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; background: var(--c-paper-deep); padding: 3px; border-radius: 7px; }
+.ie-tweaks-seg button { border: 0; background: transparent; padding: 6px 4px; border-radius: 5px; font-size: 11px; font-weight: 500; color: var(--c-ink-2); cursor: pointer; transition: background .12s var(--ease), color .12s var(--ease); }
+.ie-tweaks-seg button:hover { color: var(--c-ink); }
+.ie-tweaks-seg button.active { background: #fff; color: var(--c-brand); font-weight: 600; box-shadow: 0 1px 2px rgba(0,0,0,0.08); }
+.ie-tweaks-range { width: 100%; accent-color: var(--c-brand); }
+.ie-tweaks input[type="range"] { pointer-events: auto !important; }
+.ie-tweaks button { pointer-events: auto !important; }
+</style>
+
+<button class="ie-tweaks-toggle" id="ieTweaksToggle" title="Anpassen" aria-label="Tweaks öffnen">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="3"/>
+        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+    </svg>
+</button>
+
+<div class="ie-tweaks" id="ieTweaks">
+    <div class="ie-tweaks-head">
+        <h3>Tweaks</h3>
+        <button class="ie-tweaks-close" id="ieTweaksClose" aria-label="Schliessen">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+    </div>
+    <div class="ie-tweaks-body">
+        <div class="ie-tweaks-section">
+            <div class="ie-tweaks-label">Ecken-Stil <span class="val" id="ieRadiusValLabel">Soft</span></div>
+            <div class="ie-tweaks-seg" id="ieRadiusPreset">
+                <button data-preset="sharp">Kantig</button>
+                <button data-preset="subtle">Subtil</button>
+                <button data-preset="soft" class="active">Soft</button>
+                <button data-preset="pillow">Weich</button>
+            </div>
+        </div>
+        <div class="ie-tweaks-section">
+            <div class="ie-tweaks-label">Karten-Radius <span class="val" id="ieCardRadiusLabel">14 px</span></div>
+            <input type="range" class="ie-tweaks-range" id="ieCardRadiusSlider" min="0" max="28" step="1" value="14">
+        </div>
+        <div class="ie-tweaks-section">
+            <div class="ie-tweaks-label">Eingabe-Radius <span class="val" id="ieInputRadiusLabel">8 px</span></div>
+            <input type="range" class="ie-tweaks-range" id="ieInputRadiusSlider" min="0" max="24" step="1" value="8">
+        </div>
+    </div>
+</div>
 
 <div class="page-transition"><div class="slide"></div><div class="slide-accent"></div></div>
 
-<div class="bim-topbar">
-    <div class="bim-topbar-left">
-        <button class="bim-btn-icon" onclick="goBack()" title="Zurück">&#8592;</button>
-        <div>
-            <div class="bim-topbar-title" id="topbarTitle">Sitzung</div>
-            <div class="bim-topbar-subtitle" id="topbarSubtitle">Besprechungsprotokoll &middot; BIM Tools</div>
+<div style="max-width:960px; margin:0 auto; padding:22px 24px 6px;">
+    <div class="page-hero" style="margin-bottom:14px; padding-bottom:14px;">
+        <div class="page-hero-l">
+            <div class="page-hero-eyebrow" id="heroEyebrow">Besprechungsprotokoll</div>
+            <h1 class="page-hero-title" id="heroTitle">Sitzung</h1>
+            <p class="page-hero-desc" id="heroDesc">Teilnehmer erfassen, Diskussionspunkte verwalten und Aktualisierungen festhalten.</p>
         </div>
-    </div>
-    <div class="bim-flex-center bim-gap-2">
-        <div class="user-selector">
-            <span>Benutzer:</span>
-            <select id="userSelect" class="bim-select bim-input-sm" style="width:200px;" onchange="switchUser(this.value)">
-                <option value="">— Kein Benutzer —</option>
-            </select>
-            <button class="bim-btn-icon bim-btn-sm" onclick="addNewUser()" title="Neuen Benutzer anlegen">+</button>
+        <div class="page-hero-r">
+            <div class="hstack" style="font-size:12px; color:var(--c-ink-3); gap:6px;">
+                <span class="muted">Als</span>
+                <select id="userSelect" class="select bim-input-sm" style="width:180px; padding:5px 10px; min-height:30px;" onchange="switchUser(this.value)">
+                    <option value="">— Kein Benutzer —</option>
+                </select>
+                <button class="icon-btn" onclick="addNewUser()" title="Neuen Benutzer anlegen" style="width:30px; height:30px;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                </button>
+            </div>
+            <span id="autoSaveLabel" class="muted" style="font-size:12px;"></span>
         </div>
-        <span id="autoSaveLabel" class="bim-text-xs bim-text-muted"></span>
     </div>
 </div>
 
@@ -129,7 +208,7 @@
 <div class="editor-footer">
     <button class="bim-btn bim-btn-secondary" onclick="goBack()">Zurück</button>
     <div class="editor-footer-spacer"></div>
-    <button class="bim-btn bim-btn-secondary" onclick="openPrintView()">Druckansicht</button>
+    <button class="bim-btn bim-btn-secondary" onclick="openPrintView(event)">Druckansicht</button>
     <button class="bim-btn bim-btn-secondary" onclick="createNextInstance()">Neue Sitzung</button>
     <button class="bim-btn bim-btn-primary" onclick="saveInstance()">Speichern</button>
 </div>
@@ -163,7 +242,32 @@ async function init() {
     await BIM.Auth.init();
     currentUser = await BIM.Auth.requireAuth('../../login.html');
     if (!currentUser) return;
+
+    // ── Role-aware gating BEFORE revealing the page ──
+    if (!BIM.Auth.canEdit(currentUser)) {
+        // Viewer: disable inputs early so they don't render as editable for one frame
+        // (scope to the editor area only — leave the tweaks panel interactive)
+        document.querySelectorAll('main input, main select, main textarea, main [contenteditable], #tab-meta input, #tab-meta select, #tab-meta textarea, #tab-discussion input, #tab-discussion textarea, #tab-overview input, #tab-overview textarea').forEach(function(el) {
+            if (el.closest('.ie-tweaks, .se-tweaks, .hub-tweaks, .mm-tweaks, [data-tweak-panel]')) return;
+            el.disabled = true;
+            if (el.hasAttribute('contenteditable')) el.setAttribute('contenteditable', 'false');
+        });
+    }
+
     document.body.style.opacity = '1';
+    document.body.removeAttribute('data-ready');
+
+    BIM.UI.installTopBar({
+        crumbs: [
+            { label: 'BIM Tools', href: '../../index.html' },
+            { label: 'Sitzungsprotokolle', href: 'index.html' },
+            { label: 'Serie', href: 'series-editor.html?id=' + encodeURIComponent(seriesId || '') },
+            { label: 'Sitzung', here: true }
+        ],
+        user: currentUser,
+        loginHref: '../../login.html',
+        brandHref: '../../index.html'
+    });
 
     if (!seriesId || !instanceId) { BIM.UI.error('Fehlende Parameter'); return; }
     if (!BIM.Auth.canAccessSeries(currentUser, seriesId)) {
@@ -196,13 +300,15 @@ async function init() {
         selectCategory(series.topicCategoryDefs[0].id);
     }
 
-    // Viewer read-only mode: disable all editing controls
+    // Viewer read-only mode: disable all editing controls (scoped — leave tweaks/topbar alive)
     if (!BIM.Auth.canEdit(currentUser)) {
         document.querySelectorAll('input, select, textarea, [contenteditable]').forEach(function(el) {
+            if (el.closest('.ie-tweaks, .se-tweaks, .hub-tweaks, .mm-tweaks, .app-top, [data-tweak-panel]')) return;
             el.disabled = true;
             el.removeAttribute('contenteditable');
         });
         document.querySelectorAll('.bim-btn-primary, .bim-btn-danger, .bim-btn-icon, .rt-toolbar').forEach(function(el) {
+            if (el.closest('.ie-tweaks, .se-tweaks, .hub-tweaks, .mm-tweaks, .app-top')) return;
             el.style.display = 'none';
         });
     }
@@ -266,8 +372,16 @@ function loadFormData() {
 }
 
 function updateTopbar() {
-    document.getElementById('topbarTitle').textContent = 'Besprechung ' + instance.instanceNumber + ': ' + (series.title || '');
-    document.getElementById('topbarSubtitle').textContent = (series.code ? series.code + ' · ' : '') + 'Sitzungsprotokoll · BIM Tools';
+    document.getElementById('heroTitle').textContent = 'Besprechung ' + instance.instanceNumber + ': ' + (series.title || '');
+    document.getElementById('heroEyebrow').textContent = (series.code ? series.code + ' · ' : '') + 'Sitzungsprotokoll';
+    // Update the "Serie" breadcrumb with the actual series code/title
+    var crumbs = document.querySelectorAll('.app-crumbs a');
+    if (crumbs.length >= 3) {
+        var serieLabel = series.code || series.title || 'Serie';
+        crumbs[2].textContent = serieLabel;
+        crumbs[2].setAttribute('href', 'series-editor.html?id=' + encodeURIComponent(seriesId));
+        crumbs[2].title = series.title || series.code || '';
+    }
 }
 
 function collectFields() {
@@ -861,8 +975,88 @@ function updateDescriptionRT(itemId, el) {
 // ── NAV ──
 function goBack() { BIM.Utils.navigateTo('series-editor.html?id=' + seriesId); }
 
-function openPrintView() {
-    window.open('meeting-view.html?seriesId=' + seriesId + '&instanceId=' + instanceId, '_blank');
+function openPrintView(ev) {
+    // Show a small inline picker so the user chooses a template before navigating.
+    // Clicking outside the picker or pressing Escape dismisses it.
+    var existing = document.getElementById('printTemplatePicker');
+    if (existing) { existing.remove(); return; }
+
+    var btn = ev && ev.currentTarget;
+    var rect = btn ? btn.getBoundingClientRect() : { left: window.innerWidth/2 - 130, top: window.innerHeight/2 - 100 };
+
+    var picker = document.createElement('div');
+    picker.id = 'printTemplatePicker';
+    picker.style.cssText = [
+        'position:fixed',
+        'left:' + Math.max(12, rect.left - 60) + 'px',
+        'bottom:' + Math.max(12, (window.innerHeight - rect.top) + 8) + 'px',
+        'z-index:300',
+        'width:280px',
+        'background:#fff',
+        'border:1px solid var(--c-line,#e6e3dc)',
+        'border-radius:12px',
+        'box-shadow:0 12px 28px rgba(15,28,38,0.18), 0 2px 4px rgba(15,28,38,0.08)',
+        'overflow:hidden',
+        'animation:ptpIn .15s ease-out'
+    ].join(';');
+    picker.innerHTML =
+        '<div style="padding:10px 14px;background:#003B4D;color:#fff;font-size:12px;font-weight:600;letter-spacing:0.6px;text-transform:uppercase;font-family:var(--f-display,inherit);">Druckvorlage wählen</div>' +
+        '<div style="padding:10px;">' +
+            templateOption('acc',       'ACC-Stil',  'Forma-Imitation, zweispaltig') +
+            templateOption('klassisch', 'Klassisch', 'Banker-Grau, serifenlastig') +
+            templateOption('sidebar',   'Sidebar',   'Executive, schlicht & modern') +
+        '</div>';
+    document.body.appendChild(picker);
+
+    // Animation keyframes (one-shot)
+    if (!document.getElementById('ptpKeyframes')) {
+        var kf = document.createElement('style');
+        kf.id = 'ptpKeyframes';
+        kf.textContent = '@keyframes ptpIn { from { opacity:0; transform: translateY(6px);} to { opacity:1; transform:none;} }';
+        document.head.appendChild(kf);
+    }
+
+    function close() {
+        if (picker.parentNode) picker.parentNode.removeChild(picker);
+        document.removeEventListener('keydown', onKey);
+        document.removeEventListener('mousedown', onOutside, true);
+    }
+    function onKey(e) { if (e.key === 'Escape') close(); }
+    function onOutside(e) {
+        if (!picker.contains(e.target) && e.target !== btn) close();
+    }
+    setTimeout(function() {
+        document.addEventListener('keydown', onKey);
+        document.addEventListener('mousedown', onOutside, true);
+    }, 0);
+
+    picker.querySelectorAll('[data-tpl]').forEach(function(opt) {
+        opt.addEventListener('click', function() {
+            var tpl = opt.getAttribute('data-tpl');
+            close();
+            window.location.href = 'print-preview.html?seriesId=' + encodeURIComponent(seriesId) +
+                '&instanceId=' + encodeURIComponent(instanceId) +
+                '&template=' + encodeURIComponent(tpl);
+        });
+    });
+}
+
+function templateOption(key, label, desc) {
+    return '<button data-tpl="' + key + '" style="' +
+        'display:flex;align-items:center;gap:10px;width:100%;text-align:left;' +
+        'background:transparent;border:1px solid transparent;border-radius:8px;' +
+        'padding:9px 10px;cursor:pointer;color:var(--c-ink,#0e1719);' +
+        'font-family:inherit;transition:background .12s ease, border-color .12s ease;" ' +
+        'onmouseover="this.style.background=\'var(--c-brand-tint,#f2f5f6)\';this.style.borderColor=\'var(--c-line,#e6e3dc)\'" ' +
+        'onmouseout="this.style.background=\'transparent\';this.style.borderColor=\'transparent\'">' +
+            '<span style="flex-shrink:0;width:28px;height:28px;display:flex;align-items:center;justify-content:center;background:var(--c-brand-soft,#e6ecef);color:var(--c-brand,#003B4D);border-radius:7px;">' +
+                '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>' +
+            '</span>' +
+            '<span style="flex:1;min-width:0;">' +
+                '<span style="display:block;font-size:13px;font-weight:600;">' + BIM.Utils.escapeHtml(label) + '</span>' +
+                '<span style="display:block;font-size:11px;color:var(--c-ink-3,#5d676e);margin-top:1px;">' + BIM.Utils.escapeHtml(desc) + '</span>' +
+            '</span>' +
+        '</button>';
 }
 
 async function createNextInstance() {
@@ -872,6 +1066,101 @@ async function createNextInstance() {
     BIM.UI.success('Sitzung #' + inst.instanceNumber + ' erstellt');
     BIM.Utils.navigateTo('instance-editor.html?seriesId=' + seriesId + '&instanceId=' + inst.id);
 }
+
+// ── Tweaks: corner radius variants ──
+var IE_TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+    "radiusPreset": "soft",
+    "cardRadiusPx": 14,
+    "inputRadiusPx": 8
+}/*EDITMODE-END*/;
+var IE_PRESETS = {
+    sharp:  { card: 0,  input: 0,  label: 'Kantig' },
+    subtle: { card: 6,  input: 4,  label: 'Subtil' },
+    soft:   { card: 14, input: 8,  label: 'Soft' },
+    pillow: { card: 24, input: 14, label: 'Weich' }
+};
+var ieTweaks = Object.assign({}, IE_TWEAK_DEFAULTS);
+try { var s = localStorage.getItem('bim_ie_tweaks'); if (s) ieTweaks = Object.assign(ieTweaks, JSON.parse(s)); } catch (_) {}
+
+function applyIeTweaks() {
+    var c = ieTweaks.cardRadiusPx, ip = ieTweaks.inputRadiusPx;
+    document.querySelectorAll('.bim-card, .editor-section').forEach(function(el) { el.style.borderRadius = c + 'px'; });
+    document.querySelectorAll('.bim-input, .bim-select, .bim-textarea, .input, .select, .textarea, .bim-btn, .btn').forEach(function(el) { el.style.borderRadius = ip + 'px'; });
+    document.querySelectorAll('.user-chip').forEach(function(el) { el.style.borderRadius = ip + 'px'; });
+    document.querySelectorAll('.bim-btn-icon, .icon-btn').forEach(function(el) { el.style.borderRadius = Math.max(0, ip - 1) + 'px'; });
+    document.querySelectorAll('.disc-item, .disc-card, .participant-row, .upload-zone, .attachment-item, .bim-table').forEach(function(el) { el.style.borderRadius = c + 'px'; });
+    document.getElementById('ieCardRadiusLabel').textContent = c + ' px';
+    document.getElementById('ieInputRadiusLabel').textContent = ip + ' px';
+    var p = IE_PRESETS[ieTweaks.radiusPreset];
+    document.getElementById('ieRadiusValLabel').textContent = p ? p.label : 'Eigen';
+    document.querySelectorAll('#ieRadiusPreset button').forEach(function(b) {
+        b.classList.toggle('active', b.dataset.preset === ieTweaks.radiusPreset);
+    });
+    document.getElementById('ieCardRadiusSlider').value = c;
+    document.getElementById('ieInputRadiusSlider').value = ip;
+}
+function persistIeTweaks() {
+    try { localStorage.setItem('bim_ie_tweaks', JSON.stringify(ieTweaks)); } catch (_) {}
+    if (window.parent) window.parent.postMessage({type:'__edit_mode_set_keys', edits: ieTweaks}, '*');
+}
+function setIePreset(name) {
+    var p = IE_PRESETS[name]; if (!p) return;
+    ieTweaks.radiusPreset = name;
+    ieTweaks.cardRadiusPx = p.card;
+    ieTweaks.inputRadiusPx = p.input;
+    applyIeTweaks(); persistIeTweaks();
+}
+
+(function initIeTweaks() {
+    var toggle = document.getElementById('ieTweaksToggle');
+    var panel  = document.getElementById('ieTweaks');
+    var closeB = document.getElementById('ieTweaksClose');
+    function open()  { panel.classList.add('open'); toggle.classList.add('hidden'); if (window.parent) window.parent.postMessage({type:'__edit_mode_available'}, '*'); }
+    function close() { panel.classList.remove('open'); toggle.classList.remove('hidden'); if (window.parent) window.parent.postMessage({type:'__edit_mode_dismissed'}, '*'); }
+    toggle.addEventListener('click', open);
+    closeB.addEventListener('click', close);
+    window.addEventListener('message', function(e) {
+        if (!e.data || typeof e.data !== 'object') return;
+        if (e.data.type === '__activate_edit_mode')   open();
+        if (e.data.type === '__deactivate_edit_mode') close();
+    });
+    if (window.parent) window.parent.postMessage({type:'__edit_mode_available'}, '*');
+
+    document.querySelectorAll('#ieRadiusPreset button').forEach(function(b) {
+        b.addEventListener('click', function() { setIePreset(b.dataset.preset); });
+    });
+    document.getElementById('ieCardRadiusSlider').addEventListener('input', function(e) {
+        ieTweaks.cardRadiusPx = parseInt(e.target.value, 10);
+        ieTweaks.radiusPreset = 'custom';
+        applyIeTweaks(); persistIeTweaks();
+    });
+    document.getElementById('ieInputRadiusSlider').addEventListener('input', function(e) {
+        ieTweaks.inputRadiusPx = parseInt(e.target.value, 10);
+        ieTweaks.radiusPreset = 'custom';
+        applyIeTweaks(); persistIeTweaks();
+    });
+})();
+
+// Re-apply tweaks after dynamic renders (participants, discussion items, attachments…)
+// Throttled, ignores attribute mutations to avoid feedback loop.
+var _ieScheduled = false;
+function _ieSchedule() {
+    if (_ieScheduled) return;
+    _ieScheduled = true;
+    requestAnimationFrame(function() { _ieScheduled = false; applyIeTweaks(); });
+}
+var _ieMo = new MutationObserver(function(muts) {
+    for (var i = 0; i < muts.length; i++) {
+        if (muts[i].type === 'childList' && (muts[i].addedNodes.length || muts[i].removedNodes.length)) {
+            _ieSchedule();
+            return;
+        }
+    }
+});
+setTimeout(function() {
+    _ieMo.observe(document.body, { childList: true, subtree: true });
+    applyIeTweaks();
+}, 120);
 
 init();
 </script>

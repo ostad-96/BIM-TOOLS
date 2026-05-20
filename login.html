@@ -2,215 +2,101 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Anmelden — BIM Tools</title>
 <link rel="stylesheet" href="shared/css/acc-variables.css">
 <link rel="stylesheet" href="shared/css/acc-base.css">
 <link rel="stylesheet" href="shared/css/acc-components.css">
+<link rel="stylesheet" href="shared/css/acc-corporate.css">
 <style>
-body { background: var(--bim-primary); overflow: hidden; }
-
-.login-bg {
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0;
-}
-.login-bg canvas { width: 100%; height: 100%; }
-
-.login-center {
-    position: relative; z-index: 1;
-    display: flex; align-items: center; justify-content: center;
-    min-height: 100vh; padding: 20px;
-}
-
-.login-card {
-    width: 380px; background: var(--bim-white);
-    border-radius: var(--bim-radius-xl);
-    box-shadow: 0 25px 60px rgba(0,0,0,0.3), 0 0 0 1px rgba(255,255,255,0.05);
-    overflow: hidden;
-    animation: cardIn 0.5s ease-out;
-}
-
-@keyframes cardIn {
-    from { opacity: 0; transform: translateY(20px) scale(0.97); }
-    to   { opacity: 1; transform: translateY(0) scale(1); }
-}
-
-.login-header {
-    padding: 32px 32px 24px;
-    text-align: center;
-}
-.login-logo {
-    width: 72px; height: 72px; margin: 0 auto 16px;
-    border-radius: var(--bim-radius-md);
-    box-shadow: var(--bim-shadow-md);
-    overflow: hidden;
-}
-.login-logo img { width: 100%; height: 100%; object-fit: cover; }
-
-.login-title {
-    font-size: 18px; font-weight: 700; color: var(--bim-text);
-    letter-spacing: -0.3px;
-}
-.login-subtitle {
-    font-size: 12px; color: var(--bim-text-muted); margin-top: 4px;
-    text-transform: uppercase; letter-spacing: 1px; font-weight: 500;
-}
-
-.login-body {
-    padding: 0 32px 32px;
-}
-
-.login-field {
-    margin-bottom: 16px;
-}
-.login-field label {
-    display: block; font-size: 11px; font-weight: 600;
-    color: var(--bim-text-secondary); text-transform: uppercase;
-    letter-spacing: 0.5px; margin-bottom: 6px;
-}
-.login-field input {
-    width: 100%; padding: 10px 14px;
-    border: 1px solid var(--bim-border); border-radius: var(--bim-radius-md);
-    font-size: 14px; color: var(--bim-text);
-    background: var(--bim-gray-50);
-    transition: all var(--bim-transition-fast);
-}
-.login-field input:focus {
-    outline: none; border-color: var(--bim-primary);
-    box-shadow: 0 0 0 3px rgba(0,59,77,0.1);
-    background: var(--bim-white);
-}
-.login-field input::placeholder { color: var(--bim-text-muted); }
-
-.login-btn {
-    width: 100%; padding: 11px 20px;
-    background: var(--bim-primary); color: var(--bim-text-inverse);
-    border: none; border-radius: var(--bim-radius-md);
-    font-size: 14px; font-weight: 600; cursor: pointer;
-    transition: all var(--bim-transition-fast);
-    margin-top: 8px;
-}
-.login-btn:hover:not(:disabled) { background: var(--bim-primary-light); }
-.login-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-
-.login-error {
-    display: none; padding: 8px 12px;
-    background: var(--bim-danger-light); color: var(--bim-danger);
-    border-radius: var(--bim-radius-md); font-size: 12px; font-weight: 500;
-    margin-bottom: 12px; text-align: center;
-}
-.login-error.visible { display: block; animation: shake 0.4s ease; }
-
-@keyframes shake {
-    0%, 100% { transform: translateX(0); }
-    20%, 60% { transform: translateX(-6px); }
-    40%, 80% { transform: translateX(6px); }
-}
-
-.login-footer {
-    padding: 14px 32px;
-    background: var(--bim-gray-50);
-    border-top: 1px solid var(--bim-border);
-    text-align: center;
-    font-size: 10px; color: var(--bim-text-muted);
-    letter-spacing: 0.3px;
-}
-
-.pw-requirements {
-    font-size: 11px; color: var(--bim-text-muted);
-    margin-bottom: 14px; line-height: 1.5;
-}
-.pw-requirements strong { color: var(--bim-text-secondary); }
-
-.pw-strength {
-    height: 4px; border-radius: 2px; background: var(--bim-gray-200);
-    margin-bottom: 14px; overflow: hidden;
-}
-.pw-strength-bar {
-    height: 100%; width: 0; border-radius: 2px;
-    transition: width 0.3s ease, background 0.3s ease;
-}
+html, body { background: var(--c-brand); }
 </style>
 </head>
-<body>
+<body class="corp">
 
-<div class="login-bg">
+<div class="auth-stage">
     <canvas id="c"></canvas>
-</div>
 
-<div class="login-center" id="loginCenter" style="display:none">
-    <!-- ═══ Login Card ═══ -->
-    <div class="login-card" id="loginCard">
-        <div class="login-header">
-            <div class="login-logo">
-                <img src="shared/assets/emch-berger-logo.gif" alt="Emch+Berger">
-            </div>
-            <div class="login-title">Bauprojekt-Koordination</div>
-            <div class="login-subtitle">BIM Tools</div>
-        </div>
+    <div class="auth-shell" id="authShell" style="display:none">
 
-        <div class="login-body">
-            <div id="loginError" class="login-error"></div>
-
-            <div class="login-field">
-                <label for="username">Benutzername</label>
-                <input type="text" id="username" placeholder="Benutzername eingeben" autocomplete="username" autofocus>
+        <!-- ═══ Brand aside ═══ -->
+        <aside class="auth-aside">
+            <div class="brand">
+                <div class="mark">BT</div>
+                <div>
+                    <div>BIM Tools</div>
+                    <div style="font-size:10.5px; font-weight:500; opacity:0.7; letter-spacing:0.06em; text-transform:uppercase;">Bauprojekt-Koordination</div>
+                </div>
             </div>
 
-            <div class="login-field" id="passwordField">
-                <label for="password">Passwort</label>
-                <input type="password" id="password" placeholder="Passwort eingeben" autocomplete="current-password">
+            <div style="position:relative; z-index:1;">
+                <div class="headline">Ein Ort für jede Besprechung, Kollision und Entscheidung.</div>
+                <p class="lede">Sitzungsprotokolle, Issuemanagement und BIM-Werkzeuge — koordiniert in einer Oberfläche, geteilt mit dem ganzen Team.</p>
             </div>
 
-            <button class="login-btn" id="loginBtn" onclick="doLogin()">Anmelden</button>
-        </div>
-
-        <div class="login-footer">
-            &copy; 2026 Emch+Berger GmbH &middot; BIM Tools v1.0
-        </div>
-    </div>
-
-    <!-- ═══ Password Setup Card (first login) ═══ -->
-    <div class="login-card" id="setupCard" style="display:none;">
-        <div class="login-header">
-            <div class="login-logo">
-                <img src="shared/assets/emch-berger-logo.gif" alt="Emch+Berger">
+            <div class="meta-row">
+                <div><span class="k">Plattform</span>Version 1.0</div>
+                <div><span class="k">Verfügbarkeit</span>Web · Tablet · Mobil</div>
             </div>
-            <div class="login-title">Passwort erstellen</div>
-            <div class="login-subtitle">Erstanmeldung</div>
-        </div>
+        </aside>
 
-        <div class="login-body">
-            <div id="setupError" class="login-error"></div>
+        <!-- ═══ Form pane ═══ -->
+        <section class="auth-form">
+            <!-- Login card -->
+            <div id="loginCard">
+                <div class="auth-eyebrow">Anmelden</div>
+                <h1 class="auth-title">Willkommen zurück</h1>
+                <p class="auth-sub">Melden Sie sich mit Ihrem Konto an, um fortzufahren.</p>
 
-            <p style="font-size:13px; color:var(--bim-text-secondary); margin-bottom:18px; text-align:center;">
-                Willkommen, <strong id="setupDisplayName"></strong>.<br>
-                Bitte erstellen Sie Ihr Passwort.
-            </p>
+                <div id="loginError" class="auth-err"></div>
 
-            <div class="login-field">
-                <label for="setupPw1">Neues Passwort</label>
-                <input type="password" id="setupPw1" placeholder="Neues Passwort" autocomplete="new-password" oninput="updateStrength()">
-            </div>
+                <div class="field">
+                    <label class="field-label" for="username">Benutzername</label>
+                    <input type="text" id="username" class="input" placeholder="z. B. ahuber" autocomplete="username" autofocus>
+                </div>
 
-            <div class="pw-strength">
-                <div class="pw-strength-bar" id="strengthBar"></div>
+                <div class="field" id="passwordField">
+                    <label class="field-label" for="password">Passwort</label>
+                    <input type="password" id="password" class="input" placeholder="••••••••" autocomplete="current-password">
+                </div>
+
+                <button class="btn btn-primary btn-lg" id="loginBtn" onclick="doLogin()" style="width:100%; margin-top:6px;">Anmelden</button>
+
+                <p class="auth-footnote">&copy; 2026 BIM Tools · Bauprojekt-Koordination</p>
             </div>
 
-            <div class="login-field">
-                <label for="setupPw2">Passwort best&auml;tigen</label>
-                <input type="password" id="setupPw2" placeholder="Passwort wiederholen" autocomplete="new-password">
+            <!-- First-login setup -->
+            <div id="setupCard" style="display:none">
+                <div class="auth-eyebrow">Erstanmeldung</div>
+                <h1 class="auth-title">Passwort festlegen</h1>
+                <p class="auth-sub">
+                    Willkommen, <strong id="setupDisplayName" style="color:var(--c-ink);"></strong>.
+                    Bitte erstellen Sie Ihr persönliches Passwort.
+                </p>
+
+                <div id="setupError" class="auth-err"></div>
+
+                <div class="field">
+                    <label class="field-label" for="setupPw1">Neues Passwort</label>
+                    <input type="password" id="setupPw1" class="input" placeholder="Neues Passwort" autocomplete="new-password" oninput="updateStrength()">
+                </div>
+
+                <div class="auth-strength"><div class="auth-strength-bar" id="strengthBar"></div></div>
+
+                <div class="field">
+                    <label class="field-label" for="setupPw2">Passwort best&auml;tigen</label>
+                    <input type="password" id="setupPw2" class="input" placeholder="Passwort wiederholen" autocomplete="new-password">
+                </div>
+
+                <p class="field-hint" style="margin: -6px 0 16px;">
+                    Mindestens 8 Zeichen · Gross- und Kleinbuchstaben · 1 Ziffer · 1 Sonderzeichen
+                </p>
+
+                <button class="btn btn-primary btn-lg" id="setupBtn" onclick="doSetupPassword()" style="width:100%;">Passwort festlegen</button>
+
+                <p class="auth-footnote">&copy; 2026 BIM Tools · Bauprojekt-Koordination</p>
             </div>
-
-            <div class="pw-requirements">
-                <strong>Anforderungen:</strong> Mind. 8 Zeichen, Gross- und Kleinbuchstaben, mindestens eine Ziffer und ein Sonderzeichen.
-            </div>
-
-            <button class="login-btn" id="setupBtn" onclick="doSetupPassword()">Passwort festlegen</button>
-        </div>
-
-        <div class="login-footer">
-            &copy; 2026 Emch+Berger GmbH &middot; BIM Tools v1.0
-        </div>
+        </section>
     </div>
 </div>
 
@@ -222,7 +108,7 @@ body { background: var(--bim-primary); overflow: hidden; }
 <script src="shared/js/acc-auth.js"></script>
 <script src="shared/js/acc-ui.js"></script>
 <script>
-// ── Canvas animation ──
+// ── Background canvas (subtle particle field) ──
 var canvas = document.getElementById('c');
 var ctx = canvas.getContext('2d');
 var W, H;
@@ -230,11 +116,11 @@ function resize() { W = canvas.width = window.innerWidth; H = canvas.height = wi
 resize(); window.addEventListener('resize', resize);
 
 var nodes = [];
-for (var i = 0; i < 80; i++) {
+for (var i = 0; i < 60; i++) {
     nodes.push({
         x: Math.random()*2000, y: Math.random()*1200,
-        vx: (Math.random()-0.5)*0.4, vy: (Math.random()-0.5)*0.4,
-        r: Math.random()*1.8+0.6, pulse: Math.random()*Math.PI*2
+        vx: (Math.random()-0.5)*0.25, vy: (Math.random()-0.5)*0.25,
+        r: Math.random()*1.4+0.4, pulse: Math.random()*Math.PI*2
     });
 }
 function draw(t) {
@@ -246,23 +132,22 @@ function draw(t) {
         if (n.y < 0 || n.y > H) n.vy *= -1;
         for (var j = i+1; j < nodes.length; j++) {
             var m = nodes[j], dx = n.x-m.x, dy = n.y-m.y, dist = Math.sqrt(dx*dx+dy*dy);
-            if (dist < 140) {
+            if (dist < 130) {
                 ctx.beginPath(); ctx.moveTo(n.x,n.y); ctx.lineTo(m.x,m.y);
-                ctx.strokeStyle='rgba(255,255,255,'+(0.12*(1-dist/140))+')'; ctx.stroke();
+                ctx.strokeStyle='rgba(255,255,255,'+(0.10*(1-dist/130))+')'; ctx.stroke();
             }
         }
-        var pr = n.r + Math.sin(t/1000+n.pulse)*0.5;
+        var pr = n.r + Math.sin(t/1200+n.pulse)*0.35;
         ctx.beginPath(); ctx.arc(n.x,n.y,pr,0,Math.PI*2);
-        ctx.fillStyle='rgba(255,255,255,0.3)'; ctx.fill();
+        ctx.fillStyle='rgba(255,255,255,0.25)'; ctx.fill();
     }
     requestAnimationFrame(draw);
 }
 draw(0);
 
-// ── State ──
+// ── Auth init ──
 var _setupUserId = null;
 
-// ── Auth init ──
 var db = new BIM.AutoStorageProvider();
 BIM.StorageManager.init(db).then(function() {
     return BIM.Auth.init();
@@ -270,29 +155,23 @@ BIM.StorageManager.init(db).then(function() {
     return BIM.Auth.checkAlreadyLoggedIn('index.html');
 }).then(function(redirected) {
     if (!redirected) {
-        document.getElementById('loginCenter').style.display = '';
+        document.getElementById('authShell').style.display = 'grid';
     }
 });
 
-// ── Login ──
 function doLogin() {
-    var btn = document.getElementById('loginBtn');
-    var errEl = document.getElementById('loginError');
+    var btn  = document.getElementById('loginBtn');
     var user = document.getElementById('username').value.trim();
     var pass = document.getElementById('password').value;
 
-    if (!user) {
-        showError('loginError', 'Bitte Benutzername eingeben.');
-        return;
-    }
+    if (!user) { showError('loginError', 'Bitte Benutzername eingeben.'); return; }
 
     btn.disabled = true;
-    btn.textContent = 'Wird geprüft...';
-    errEl.classList.remove('visible');
+    btn.textContent = 'Wird geprüft …';
+    document.getElementById('loginError').classList.remove('show');
 
     BIM.Auth.login(user, pass).then(function(result) {
         if (result && result.mustSetPassword) {
-            // First login or forced password reset — show setup card
             _setupUserId = result.userId;
             document.getElementById('setupDisplayName').textContent = result.name || result.username;
             document.getElementById('loginCard').style.display = 'none';
@@ -308,31 +187,19 @@ function doLogin() {
     });
 }
 
-// ── First-login password setup ──
 function doSetupPassword() {
     var btn = document.getElementById('setupBtn');
     var pw1 = document.getElementById('setupPw1').value;
     var pw2 = document.getElementById('setupPw2').value;
 
-    if (!pw1) {
-        showError('setupError', 'Bitte ein Passwort eingeben.');
-        return;
-    }
-    if (pw1 !== pw2) {
-        showError('setupError', 'Die Passwörter stimmen nicht überein.');
-        return;
-    }
+    if (!pw1) { showError('setupError', 'Bitte ein Passwort eingeben.'); return; }
+    if (pw1 !== pw2) { showError('setupError', 'Die Passwörter stimmen nicht überein.'); return; }
 
-    // Client-side policy validation
     var validation = BIM.Auth.validatePassword(pw1);
-    if (!validation.valid) {
-        showError('setupError', validation.errors[0]);
-        return;
-    }
+    if (!validation.valid) { showError('setupError', validation.errors[0]); return; }
 
     btn.disabled = true;
-    btn.textContent = 'Wird gespeichert...';
-
+    btn.textContent = 'Wird gespeichert …';
     BIM.Auth.setInitialPassword(_setupUserId, pw1).then(function() {
         window.location.href = 'index.html';
     }).catch(function(err) {
@@ -342,7 +209,6 @@ function doSetupPassword() {
     });
 }
 
-// ── Password strength meter ──
 function updateStrength() {
     var pw = document.getElementById('setupPw1').value;
     var bar = document.getElementById('strengthBar');
@@ -353,42 +219,26 @@ function updateStrength() {
     if (/[a-z]/.test(pw)) score++;
     if (/[0-9]/.test(pw)) score++;
     if (/[^A-Za-z0-9]/.test(pw)) score++;
-
     var pct = Math.min(100, Math.round(score / 6 * 100));
-    var color = pct < 40 ? '#e53e3e' : pct < 70 ? '#f59e0b' : '#22c55e';
+    var color = pct < 40 ? '#9b1c1c' : pct < 70 ? '#b45309' : '#14694a';
     bar.style.width = pct + '%';
     bar.style.background = color;
 }
 
-// ── Helpers ──
-function showError(elId, msg) {
-    var el = document.getElementById(elId);
+function showError(id, msg) {
+    var el = document.getElementById(id);
     el.textContent = msg;
-    el.classList.remove('visible');
+    el.classList.remove('show');
     void el.offsetWidth;
-    el.classList.add('visible');
+    el.classList.add('show');
 }
 
-// Enter key handlers
-document.getElementById('password').addEventListener('keydown', function(e) {
-    if (e.key === 'Enter') doLogin();
-});
+document.getElementById('password').addEventListener('keydown', function(e) { if (e.key === 'Enter') doLogin(); });
 document.getElementById('username').addEventListener('keydown', function(e) {
-    if (e.key === 'Enter') {
-        var passField = document.getElementById('password');
-        if (passField.offsetParent !== null) {
-            passField.focus();
-        } else {
-            doLogin();
-        }
-    }
+    if (e.key === 'Enter') { document.getElementById('password').focus(); }
 });
-document.getElementById('setupPw1').addEventListener('keydown', function(e) {
-    if (e.key === 'Enter') document.getElementById('setupPw2').focus();
-});
-document.getElementById('setupPw2').addEventListener('keydown', function(e) {
-    if (e.key === 'Enter') doSetupPassword();
-});
+document.getElementById('setupPw1').addEventListener('keydown', function(e) { if (e.key === 'Enter') document.getElementById('setupPw2').focus(); });
+document.getElementById('setupPw2').addEventListener('keydown', function(e) { if (e.key === 'Enter') doSetupPassword(); });
 </script>
 </body>
 </html>

@@ -66,15 +66,15 @@ node server.js
 Opens at http://localhost:3000. Default login: admin (set password on first login).
 
 ### Production (Hetzner server)
-Deployed at `116.203.251.83:3000` via systemd service (`acc.service`). SSH key at `~/.ssh/acc-server`.
+Deployed at `http://116.203.251.83` (port 80) via systemd service (`bim-tools.service`). SSH key at `~/.ssh/bim-tools-server`.
 
 ```
-ssh -i ~/.ssh/acc-server root@116.203.251.83
-systemctl restart acc    # restart server
-journalctl -u acc -f     # view logs
+ssh -i ~/.ssh/bim-tools-server root@116.203.251.83
+systemctl restart bim-tools    # restart server
+journalctl -u bim-tools -f     # view logs
 ```
 
-Database: `/root/acc/data/db.json` — copy this file to back up everything.
+Database: `/root/bim-tools/data/db.json` — copy this file to back up everything.
 
 ## Server API
 

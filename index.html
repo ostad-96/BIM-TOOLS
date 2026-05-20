@@ -2,271 +2,322 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>BIM Tools — Bauprojekt-Koordination</title>
 <link rel="stylesheet" href="shared/css/acc-variables.css">
 <link rel="stylesheet" href="shared/css/acc-base.css">
 <link rel="stylesheet" href="shared/css/acc-components.css">
+<link rel="stylesheet" href="shared/css/acc-corporate.css">
 <style>
-.hub-banner {
-    position: relative; height: 130px; background: var(--bim-primary); overflow: hidden;
+.hub-greeting {
+    font-family: var(--f-display);
+    font-size: 13px; font-weight: 500;
+    color: var(--c-ink-3);
+    letter-spacing: 0;
 }
-.hub-banner canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
-.hub-banner-content {
-    position: relative; z-index: 1; height: 100%;
-    display: flex; align-items: flex-end; justify-content: space-between;
-    padding: 16px 32px 16px 180px;
-}
-.hub-title { font-size: 16px; font-weight: 700; color: var(--bim-white); letter-spacing: 0.5px; text-transform: uppercase; }
-.hub-subtitle { font-size: 10px; color: rgba(255,255,255,0.7); font-weight: 400; margin-top: 2px; letter-spacing: 0.5px; text-transform: uppercase; }
-.hub-version {
-    font-size: 10px; font-weight: 500; color: rgba(255,255,255,0.8);
-    background: rgba(255,255,255,0.15); padding: 3px 10px; border-radius: 20px; align-self: flex-end;
-}
-.hub-logo {
-    position: absolute; top: 55px; left: 40px; z-index: 10;
-    width: 110px; height: 110px; box-shadow: 0 3px 16px rgba(0,0,0,0.2);
-    background: var(--bim-white); border-radius: 4px;
-}
-.hub-logo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.hub-greeting strong { color: var(--c-ink); font-weight: 600; }
 
-.hub-main { max-width: 720px; padding: 80px 36px 60px 50px; }
-.hub-section-label {
-    font-size: 10px; font-weight: 600; text-transform: uppercase;
-    letter-spacing: 1.2px; color: var(--bim-primary); margin-bottom: 5px;
+.hub-feature-strip {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px;
+    background: linear-gradient(135deg, var(--c-brand-dark) 0%, var(--c-brand) 100%);
+    color: #fff;
+    border-radius: var(--r-lg);
+    padding: 22px 24px;
+    margin-bottom: 28px;
+    position: relative; overflow: hidden;
 }
-.hub-section-title { font-size: 21px; font-weight: 700; margin-bottom: 4px; letter-spacing: -0.3px; }
-.hub-section-desc { font-size: 13px; color: var(--bim-text-secondary); margin-bottom: 20px; line-height: 1.6; }
+.hub-feature-strip::after {
+    content: ''; position: absolute; right: -100px; top: -100px;
+    width: 320px; height: 320px;
+    background: radial-gradient(circle, rgba(255,255,255,0.10) 0%, transparent 70%);
+    pointer-events: none;
+}
+.hub-feature-l { grid-column: 1 / -1; margin-bottom: 4px; position: relative; z-index: 1; }
+.hub-feature-l .ey {
+    font-size: 11px; font-weight: 600;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    color: rgba(255,255,255,0.6);
+    margin-bottom: 6px;
+}
+.hub-feature-l .ti {
+    font-family: var(--f-display);
+    font-size: 22px; font-weight: 600;
+    letter-spacing: -0.012em;
+    text-wrap: balance;
+    max-width: 540px;
+}
+.hub-feature-stat {
+    position: relative; z-index: 1;
+    padding-right: 14px;
+}
+.hub-feature-stat .v {
+    font-family: var(--f-display);
+    font-size: 26px; font-weight: 600;
+    letter-spacing: -0.018em;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+    margin-bottom: 4px;
+}
+.hub-feature-stat .k {
+    font-size: 11px; font-weight: 500;
+    color: rgba(255,255,255,0.66);
+    text-transform: uppercase; letter-spacing: 0.06em;
+}
 
-.module-list {
-    display: flex; flex-direction: column; gap: 1px;
-    background: var(--bim-border); border: 1px solid var(--bim-border); border-radius: 8px; overflow: hidden;
+@media (max-width: 640px) {
+    .hub-feature-strip { padding: 18px; }
+    .hub-feature-l .ti { font-size: 18px; }
+    .hub-feature-stat .v { font-size: 22px; }
 }
-.module-item {
-    display: flex; align-items: center; gap: 14px; padding: 14px 18px;
-    background: var(--bim-white); cursor: pointer; transition: background 0.15s; position: relative;
-}
-.module-item:hover { background: var(--bim-primary-10); }
-.module-item:hover .module-arrow { opacity: 1; transform: translateX(0); }
-.module-item:hover .module-icon-wrap { background: var(--bim-primary-30); }
-.module-item:hover .module-icon-wrap svg { stroke: var(--bim-primary); }
-
-.module-item.disabled { cursor: not-allowed; }
-.module-item.disabled:hover { background: var(--bim-white); }
-.module-item.disabled:hover .module-icon-wrap { background: var(--bim-gray-100); }
-.module-item.disabled:hover .module-icon-wrap svg { stroke: var(--bim-gray-300); }
-
-.module-icon-wrap {
-    width: 36px; height: 36px; flex-shrink: 0;
-    display: flex; align-items: center; justify-content: center;
-    background: var(--bim-primary-10); border-radius: 6px; transition: background 0.2s;
-}
-.module-icon-wrap svg { width: 18px; height: 18px; transition: stroke 0.2s; }
-.module-item.disabled .module-icon-wrap { background: var(--bim-gray-100); }
-.module-item.disabled .module-icon-wrap svg { stroke: var(--bim-gray-300); }
-
-.module-text { flex: 1; }
-.module-label { font-weight: 600; font-size: 13px; }
-.module-item.disabled .module-label { color: var(--bim-gray-400); }
-.module-desc { font-size: 11px; color: var(--bim-text-muted); margin-top: 2px; }
-.module-item.disabled .module-desc { color: var(--bim-gray-300); }
-
-.module-status {
-    font-size: 9px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.8px;
-    padding: 2px 8px; border-radius: 20px; flex-shrink: 0;
-}
-.module-status.active { color: var(--bim-primary); background: var(--bim-primary-10); }
-.module-status.soon { color: var(--bim-text-muted); background: var(--bim-gray-100); }
-
-.module-arrow {
-    flex-shrink: 0; opacity: 0; transform: translateX(-6px);
-    transition: all 0.2s; color: var(--bim-primary);
-}
-.module-arrow svg { width: 15px; height: 15px; }
-.module-item.disabled .module-arrow { display: none; }
-
-/* User indicator */
-.user-indicator {
-    position: fixed; top: 16px; right: 24px; z-index: 100;
-    display: flex; align-items: center; gap: 10px;
-}
-.user-pill {
-    display: flex; align-items: center; gap: 8px;
-    padding: 6px 14px 6px 10px;
-    background: var(--bim-white); border: 1px solid var(--bim-border);
-    border-radius: var(--bim-radius-full); box-shadow: var(--bim-shadow-sm);
-    font-size: 12px; font-weight: 500; color: var(--bim-text);
-}
-.user-avatar {
-    width: 26px; height: 26px; border-radius: 50%;
-    background: var(--bim-primary); color: var(--bim-white);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 11px; font-weight: 700;
-}
-.user-role-dot {
-    display: inline-block; width: 7px; height: 7px; border-radius: 50%;
-    margin-left: 2px;
-}
-.user-logout-btn {
-    width: 30px; height: 30px; border-radius: 50%;
-    border: 1px solid var(--bim-border); background: var(--bim-white);
-    display: flex; align-items: center; justify-content: center;
-    cursor: pointer; transition: all 0.15s; box-shadow: var(--bim-shadow-sm);
-}
-.user-logout-btn:hover { background: var(--bim-danger-light); border-color: var(--bim-danger); }
-.user-logout-btn svg { width: 14px; height: 14px; }
 </style>
 </head>
-<body class="entering" style="opacity:0">
+<body class="corp" style="opacity:0">
 
-<div class="page-transition"><div class="slide"></div><div class="slide-accent"></div></div>
+<!-- ════════ Tweaks panel ════════ -->
+<style>
+.hub-tweaks-toggle {
+    position: fixed; right: 22px; bottom: 22px; z-index: 99;
+    background: var(--c-brand); color: #fff; border: 0;
+    width: 46px; height: 46px; border-radius: 50%;
+    cursor: pointer; box-shadow: 0 8px 22px rgba(0, 59, 77, 0.32);
+    display: flex; align-items: center; justify-content: center;
+    transition: transform .12s var(--ease);
+}
+.hub-tweaks-toggle:hover { transform: scale(1.05); }
+.hub-tweaks-toggle.hidden { display: none; }
+.hub-tweaks-toggle svg { width: 20px; height: 20px; }
+.hub-tweaks {
+    position: fixed; right: 22px; bottom: 22px; z-index: 100;
+    width: 290px; background: #fff;
+    border: 1px solid var(--c-line); border-radius: 12px;
+    box-shadow: var(--el-3); overflow: hidden;
+    display: none;
+}
+.hub-tweaks.open { display: block; }
+.hub-tweaks-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 14px;
+    background: var(--c-brand); color: #fff;
+}
+.hub-tweaks-head h3 { font-size: 12px; font-weight: 600; letter-spacing: 0.6px; text-transform: uppercase; margin: 0; font-family: var(--f-display); }
+.hub-tweaks-close { background: transparent; color: #fff; border: 0; width: 22px; height: 22px; border-radius: 4px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.hub-tweaks-close:hover { background: rgba(255,255,255,0.15); }
+.hub-tweaks-body { padding: 14px; }
+.hub-tweaks-section { margin-bottom: 14px; }
+.hub-tweaks-section:last-child { margin-bottom: 0; }
+.hub-tweaks-label { font-size: 10px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--c-ink-3); margin-bottom: 6px; display: flex; justify-content: space-between; }
+.hub-tweaks-label .val { color: var(--c-brand); font-variant-numeric: tabular-nums; text-transform: none; letter-spacing: 0; }
+.hub-tweaks-seg { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; background: var(--c-paper-deep); padding: 3px; border-radius: 7px; }
+.hub-tweaks-seg button { border: 0; background: transparent; padding: 6px 4px; border-radius: 5px; font-size: 11px; font-weight: 500; color: var(--c-ink-2); cursor: pointer; transition: background .12s var(--ease), color .12s var(--ease); }
+.hub-tweaks-seg button:hover { color: var(--c-ink); }
+.hub-tweaks-seg button.active { background: #fff; color: var(--c-brand); font-weight: 600; box-shadow: 0 1px 2px rgba(0,0,0,0.08); }
+.hub-tweaks-range { width: 100%; accent-color: var(--c-brand); }
+</style>
 
-<div id="userIndicator" class="user-indicator" style="display:none"></div>
+<button class="hub-tweaks-toggle" id="hubTweaksToggle" title="Anpassen" aria-label="Tweaks öffnen">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="3"/>
+        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+    </svg>
+</button>
 
-<div class="hub-banner">
-    <canvas id="c"></canvas>
-    <div class="hub-banner-content">
-        <div>
-            <div class="hub-title">Bauprojekt-Koordination</div>
-            <div class="hub-subtitle">BIM Tools</div>
+<div class="hub-tweaks" id="hubTweaks">
+    <div class="hub-tweaks-head">
+        <h3>Tweaks</h3>
+        <button class="hub-tweaks-close" id="hubTweaksClose" aria-label="Schliessen">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+    </div>
+    <div class="hub-tweaks-body">
+        <div class="hub-tweaks-section">
+            <div class="hub-tweaks-label">Ecken-Stil <span class="val" id="radiusValLabel">Soft</span></div>
+            <div class="hub-tweaks-seg" id="radiusPreset">
+                <button data-preset="sharp">Kantig</button>
+                <button data-preset="subtle">Subtil</button>
+                <button data-preset="soft" class="active">Soft</button>
+                <button data-preset="pillow">Weich</button>
+            </div>
         </div>
-        <span class="hub-version">v1.0</span>
+        <div class="hub-tweaks-section">
+            <div class="hub-tweaks-label">Kachel-Radius <span class="val" id="radiusPxLabel">14 px</span></div>
+            <input type="range" class="hub-tweaks-range" id="radiusSlider" min="0" max="28" step="1" value="14">
+        </div>
+        <div class="hub-tweaks-section">
+            <div class="hub-tweaks-label">Icon-Radius <span class="val" id="iconRadiusLabel">9 px</span></div>
+            <input type="range" class="hub-tweaks-range" id="iconRadiusSlider" min="0" max="24" step="1" value="9">
+        </div>
     </div>
 </div>
 
-<div class="hub-logo">
-    <img src="shared/assets/emch-berger-logo.gif" alt="Emch+Berger">
-</div>
+<!-- ════════ Top bar ════════ -->
+<header class="app-top">
+    <div class="app-top-inner">
+        <a href="index.html" class="app-top-brand">
+            <div class="app-top-mark">BT</div>
+            <div>
+                <div class="app-top-name">BIM Tools</div>
+                <div class="app-top-sub">Bauprojekt-Koordination</div>
+            </div>
+        </a>
 
-<main class="hub-main">
-    <div class="hub-section-label">Module</div>
-    <h2 class="hub-section-title">Projektmanagement</h2>
-    <div class="bim-divider bim-mb-4"></div>
-    <p class="hub-section-desc">
-        Wählen Sie ein Modul für die Verwaltung und Koordination Ihres Bauprojekts.
-    </p>
+        <nav class="app-crumbs" aria-label="Navigation">
+            <span class="here">Startseite</span>
+        </nav>
 
-    <div class="module-list">
-        <div class="module-item" onclick="BIM.Utils.navigateTo('modules/meeting-minutes/index.html')">
-            <div class="module-icon-wrap">
-                <svg viewBox="0 0 24 24" fill="none" stroke="#003B4D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/>
+        <div class="app-top-right" id="userArea"></div>
+    </div>
+</header>
+
+<!-- ════════ Page ════════ -->
+<main class="app-page">
+
+    <div class="hub-feature-strip">
+        <div class="hub-feature-l">
+            <div class="ey">Willkommen</div>
+            <div class="ti" id="welcomeHeadline">Ein zentraler Ort für jedes Bauprojekt</div>
+        </div>
+        <div class="hub-feature-stat"><div class="v" id="statSeries">—</div><div class="k">Serien</div></div>
+        <div class="hub-feature-stat"><div class="v" id="statInstances">—</div><div class="k">Sitzungen</div></div>
+        <div class="hub-feature-stat"><div class="v" id="statOpen">—</div><div class="k">Offene Themen</div></div>
+        <div class="hub-feature-stat"><div class="v" id="statTodayDate">—</div><div class="k" id="statTodayKey">Heute</div></div>
+    </div>
+
+    <!-- ════ Projektmanagement ════ -->
+    <div class="section-h">
+        <h2 class="section-h-title">Projektmanagement</h2>
+        <span class="section-h-sub">Koordination & Dokumentation</span>
+    </div>
+
+    <div class="module-grid" id="pmGrid">
+        <a class="module-tile" href="modules/meeting-minutes/index.html">
+            <span class="module-tile-tag active">Aktiv</span>
+            <div class="module-tile-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="4" width="18" height="17" rx="2"/>
+                    <line x1="8" y1="2" x2="8" y2="6"/>
+                    <line x1="16" y1="2" x2="16" y2="6"/>
+                    <line x1="3" y1="10" x2="21" y2="10"/>
+                    <line x1="7" y1="14" x2="13" y2="14"/>
+                    <line x1="7" y1="17" x2="11" y2="17"/>
                 </svg>
             </div>
-            <div class="module-text">
-                <div class="module-label">Sitzungsprotokolle</div>
-                <div class="module-desc">Besprechungen, Tagesordnungen und Massnahmen verwalten</div>
+            <div>
+                <div class="module-tile-label">Sitzungsprotokolle</div>
+                <div class="module-tile-desc">Besprechungsserien, Tagesordnungen und chronologische Nachverfolgung</div>
             </div>
-            <span class="module-status active">Aktiv</span>
-            <div class="module-arrow">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+            <div class="module-tile-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></div>
+        </a>
+
+        <div class="module-tile disabled">
+            <span class="module-tile-tag soon">Bald</span>
+            <div class="module-tile-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="9"/>
+                    <line x1="12" y1="8" x2="12" y2="12"/>
+                    <circle cx="12" cy="16" r="0.5" fill="currentColor"/>
+                </svg>
+            </div>
+            <div>
+                <div class="module-tile-label">Issuemanagement</div>
+                <div class="module-tile-desc">Pendenzenverwaltung, Aufgaben­zuweisung und Nachverfolgung</div>
             </div>
         </div>
 
-        <div class="module-item disabled">
-            <div class="module-icon-wrap">
-                <svg viewBox="0 0 24 24" fill="none" stroke="#c0c5ce" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
-                </svg>
-            </div>
-            <div class="module-text">
-                <div class="module-label">Issuemanagement</div>
-                <div class="module-desc">Pendenzenverwaltung und Nachverfolgung</div>
-            </div>
-            <span class="module-status soon">Bald</span>
-        </div>
-
-        <div class="module-item disabled">
-            <div class="module-icon-wrap">
-                <svg viewBox="0 0 24 24" fill="none" stroke="#c0c5ce" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <div class="module-tile disabled">
+            <span class="module-tile-tag soon">Bald</span>
+            <div class="module-tile-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/>
                 </svg>
             </div>
-            <div class="module-text">
-                <div class="module-label">Dokumentenmanagement</div>
-                <div class="module-desc">Planlieferungen und Dokumentenablage</div>
+            <div>
+                <div class="module-tile-label">Dokumentenmanagement</div>
+                <div class="module-tile-desc">Planlieferungen, Versions­geschichte und Dokumentenablage</div>
             </div>
-            <span class="module-status soon">Bald</span>
         </div>
 
-        <div class="module-item disabled">
-            <div class="module-icon-wrap">
-                <svg viewBox="0 0 24 24" fill="none" stroke="#c0c5ce" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/>
+        <div class="module-tile disabled">
+            <span class="module-tile-tag soon">Bald</span>
+            <div class="module-tile-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                    <path d="M2 17l10 5 10-5"/>
+                    <path d="M2 12l10 5 10-5"/>
                 </svg>
             </div>
-            <div class="module-text">
-                <div class="module-label">BIM-Koordination</div>
-                <div class="module-desc">Modellkoordination und Kollisionsprüfung</div>
+            <div>
+                <div class="module-tile-label">BIM-Koordination</div>
+                <div class="module-tile-desc">Modell­koordination, Kollisions­prüfungen und Freigabe­läufe</div>
             </div>
-            <span class="module-status soon">Bald</span>
         </div>
 
-        <div class="module-item" id="adminModule" style="display:none" onclick="BIM.Utils.navigateTo('modules/admin/index.html')">
-            <div class="module-icon-wrap" style="background:var(--bim-role-admin-bg)">
-                <svg viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M12 15c-4 0-7 2-7 4v1h14v-1c0-2-3-4-7-4z"/><circle cx="12" cy="8" r="4"/><path d="M20 8v4m2-2h-4"/>
+        <a class="module-tile" id="adminModule" href="modules/admin/index.html" style="display:none">
+            <span class="module-tile-tag admin">Admin</span>
+            <div class="module-tile-icon" style="background:#ede9fe; color:#7c3aed;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 15c-4 0-7 2-7 4v1h14v-1c0-2-3-4-7-4z"/>
+                    <circle cx="12" cy="8" r="4"/>
+                    <path d="M20 8v4m2-2h-4"/>
                 </svg>
             </div>
-            <div class="module-text">
-                <div class="module-label">Administration</div>
-                <div class="module-desc">Benutzer, Zugriffsrechte und Aktivitätsprotokolle verwalten</div>
+            <div>
+                <div class="module-tile-label">Administration</div>
+                <div class="module-tile-desc">Benutzer­verwaltung, Zugriffsrechte und Aktivitäts­protokoll</div>
             </div>
-            <span class="module-status" style="color:var(--bim-role-admin);background:var(--bim-role-admin-bg)">Admin</span>
-            <div class="module-arrow">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-            </div>
-        </div>
+            <div class="module-tile-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></div>
+        </a>
     </div>
 
-    <div style="margin-top: 36px;"></div>
-    <div class="hub-section-label">VDC Manager</div>
-    <h2 class="hub-section-title">BIM-Modellwerkzeuge</h2>
-    <div class="bim-divider bim-mb-4"></div>
-    <p class="hub-section-desc">
-        Werkzeuge für die Arbeit mit BIM-Modellen im VDC Manager (desite BIM).
-    </p>
+    <!-- ════ VDC Manager ════ -->
+    <div class="section-h" style="margin-top:36px;">
+        <h2 class="section-h-title">VDC Manager</h2>
+        <span class="section-h-sub">desite BIM · Modellwerkzeuge</span>
+    </div>
 
-    <div class="module-list">
-        <div class="module-item" onclick="BIM.Utils.navigateTo('modules/vdc-tools/gate.html?tool=kollisionsmatrix')">
-            <div class="module-icon-wrap">
-                <svg viewBox="0 0 24 24" fill="none" stroke="#003B4D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><line x1="10" y1="6.5" x2="14" y2="6.5"/><line x1="6.5" y1="10" x2="6.5" y2="14"/>
+    <div class="module-grid">
+        <a class="module-tile" href="modules/vdc-tools/gate.html?tool=kollisionsmatrix">
+            <span class="module-tile-tag active">Aktiv</span>
+            <div class="module-tile-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="3" width="7" height="7" rx="1"/>
+                    <rect x="14" y="3" width="7" height="7" rx="1"/>
+                    <rect x="3" y="14" width="7" height="7" rx="1"/>
+                    <rect x="14" y="14" width="7" height="7" rx="1"/>
+                    <line x1="10" y1="6.5" x2="14" y2="6.5"/>
+                    <line x1="6.5" y1="10" x2="6.5" y2="14"/>
                 </svg>
             </div>
-            <div class="module-text">
-                <div class="module-label">Kollisionsmatrix</div>
-                <div class="module-desc">Kollisionsprüfung zwischen BIM-Modellen konfigurieren und durchführen</div>
+            <div>
+                <div class="module-tile-label">Kollisionsmatrix</div>
+                <div class="module-tile-desc">Kollisions­prüfung zwischen BIM-Modellen konfigurieren und durchführen</div>
             </div>
-            <span class="module-status active">Aktiv</span>
-            <div class="module-arrow">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-            </div>
-        </div>
+            <div class="module-tile-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></div>
+        </a>
 
-        <div class="module-item" onclick="BIM.Utils.navigateTo('modules/vdc-tools/gate.html?tool=agent')">
-            <div class="module-icon-wrap">
-                <svg viewBox="0 0 24 24" fill="none" stroke="#003B4D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M12 2a4 4 0 014 4v1a4 4 0 01-8 0V6a4 4 0 014-4z"/><path d="M8 10v1a4 4 0 008 0v-1"/><line x1="12" y1="15" x2="12" y2="19"/><line x1="8" y1="19" x2="16" y2="19"/><circle cx="9" cy="6" r="0.5" fill="#003B4D"/><circle cx="15" cy="6" r="0.5" fill="#003B4D"/>
+        <a class="module-tile" href="modules/vdc-tools/gate.html?tool=agent">
+            <span class="module-tile-tag active">Aktiv</span>
+            <div class="module-tile-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="6" y="3" width="12" height="11" rx="2.5"/>
+                    <circle cx="10" cy="8.5" r="1" fill="currentColor"/>
+                    <circle cx="14" cy="8.5" r="1" fill="currentColor"/>
+                    <line x1="9" y1="12" x2="15" y2="12"/>
+                    <line x1="12" y1="14" x2="12" y2="17"/>
+                    <line x1="8" y1="20" x2="16" y2="20"/>
+                    <line x1="3" y1="9" x2="6" y2="9"/>
+                    <line x1="18" y1="9" x2="21" y2="9"/>
                 </svg>
             </div>
-            <div class="module-text">
-                <div class="module-label">VDC Agent</div>
-                <div class="module-desc">KI-gestützter Assistent für BIM-Modellabfragen</div>
+            <div>
+                <div class="module-tile-label">VDC Agent</div>
+                <div class="module-tile-desc">KI-gestützter Assistent für Modellabfragen und Element­auswertung</div>
             </div>
-            <span class="module-status active">Aktiv</span>
-            <div class="module-arrow">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-            </div>
-        </div>
+            <div class="module-tile-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></div>
+        </a>
     </div>
 
 </main>
-
-<footer class="bim-footer">
-    <span>&copy; 2026 Emch+Berger GmbH</span>
-    <span>BIM Tools</span>
-</footer>
 
 <script src="shared/js/acc-utils.js"></script>
 <script src="shared/js/acc-storage.js"></script>
@@ -284,84 +335,159 @@
     }).then(function() {
         return BIM.Auth.getCurrentUser();
     }).then(function(user) {
-        if (!user || user.status !== 'active') {
-            window.location.href = 'login.html';
-            return;
-        }
-        // Force password setup if needed
-        if (user.mustSetPassword || user.passwordHash === null) {
-            window.location.href = 'login.html';
-            return;
-        }
-        // Show page
+        if (!user || user.status !== 'active') { window.location.href = 'login.html'; return; }
+        if (user.mustSetPassword || user.passwordHash === null) { window.location.href = 'login.html'; return; }
+
         document.body.style.opacity = '1';
 
-        // Build user indicator
+        // Greeting headline
+        var hour = new Date().getHours();
+        var greet = hour < 11 ? 'Guten Morgen' : hour < 18 ? 'Guten Tag' : 'Guten Abend';
+        var firstName = (user.name || user.username || '').split(' ')[0] || '';
+        document.getElementById('welcomeHeadline').textContent = greet + (firstName ? ', ' + firstName + '.' : '.');
+
+        // User chip
         var initials = (user.name || user.username || '?').split(' ').map(function(w){return w[0];}).join('').toUpperCase().slice(0,2);
-        var roleColor = user.role === 'admin' ? 'var(--bim-role-admin)' : user.role === 'editor' ? 'var(--bim-role-editor)' : 'var(--bim-role-viewer)';
-        var ind = document.getElementById('userIndicator');
+        var role = (user.role || 'viewer').toLowerCase();
+        var ind = document.getElementById('userArea');
         ind.innerHTML =
-            '<div class="user-pill">' +
-                '<div class="user-avatar">' + initials + '</div>' +
+            '<button class="user-chip" onclick="BIM.UI.showPasswordChangeModal()" title="Profil & Passwort">' +
+                '<span class="avatar">' + initials + '</span>' +
                 '<span>' + BIM.Utils.escapeHtml(user.name || user.username) + '</span>' +
-                '<span class="user-role-dot" style="background:' + roleColor + '" title="' + BIM.Auth.getRoleLabel(user.role) + '"></span>' +
-            '</div>' +
-            '<button class="user-logout-btn" onclick="BIM.UI.showPasswordChangeModal()" title="Passwort ändern" style="margin-right:2px;">' +
-                '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16">' +
-                    '<rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/>' +
-                '</svg>' +
+                '<span class="role-dot ' + role + '" title="' + BIM.Auth.getRoleLabel(user.role) + '"></span>' +
             '</button>' +
-            '<button class="user-logout-btn" onclick="doLogout()" title="Abmelden">' +
+            '<button class="icon-btn danger" onclick="doLogout()" title="Abmelden" aria-label="Abmelden">' +
                 '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
                     '<path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>' +
                 '</svg>' +
             '</button>';
-        ind.style.display = 'flex';
 
-        // Show admin module if admin
+        if (typeof applyHubTweaks === 'function') applyHubTweaks();
+
         if (BIM.Auth.canAccessAdmin(user)) {
-            document.getElementById('adminModule').style.display = 'flex';
+            document.getElementById('adminModule').style.display = '';
         }
 
-        // Log view
+        // Stats from storage
+        loadStats();
+
         BIM.Auth.logActivity(user.id, user.name, 'view', 'system', null, 'Hub', '');
     });
 })();
 
-function doLogout() {
-    BIM.Auth.logout().then(function() {
-        window.location.href = 'login.html';
-    });
-}
+async function loadStats() {
+    try {
+        var series = await BIM.StorageManager.getAll('meetingSeries');
+        var instances = await BIM.StorageManager.getAll('meetingInstances');
+        var items = await BIM.StorageManager.getAll('discussionItems');
+        var open = (items || []).filter(function(it) { return it.status === 'offen' || it.status === 'laufend'; }).length;
 
-var canvas = document.getElementById('c');
-var ctx = canvas.getContext('2d');
-var banner = canvas.parentElement;
-var W, H;
-function resize() { W = canvas.width = banner.offsetWidth; H = canvas.height = banner.offsetHeight; }
-resize(); window.addEventListener('resize', resize);
-
-var nodes = [];
-for (var i = 0; i < 50; i++) {
-    nodes.push({ x: Math.random()*W, y: Math.random()*H, vx: (Math.random()-0.5)*0.3, vy: (Math.random()-0.5)*0.3, r: Math.random()*1.5+0.8, pulse: Math.random()*Math.PI*2 });
-}
-function draw(t) {
-    ctx.clearRect(0,0,W,H);
-    for (var i = 0; i < nodes.length; i++) {
-        var n = nodes[i];
-        n.x += n.vx; n.y += n.vy;
-        if (n.x < 0 || n.x > W) n.vx *= -1;
-        if (n.y < 0 || n.y > H) n.vy *= -1;
-        for (var j = i+1; j < nodes.length; j++) {
-            var m = nodes[j], dx = n.x-m.x, dy = n.y-m.y, dist = Math.sqrt(dx*dx+dy*dy);
-            if (dist < 120) { ctx.beginPath(); ctx.moveTo(n.x,n.y); ctx.lineTo(m.x,m.y); ctx.strokeStyle='rgba(255,255,255,'+(0.15*(1-dist/120))+')'; ctx.stroke(); }
-        }
-        var pr = n.r + Math.sin(t/1000+n.pulse)*0.4;
-        ctx.beginPath(); ctx.arc(n.x,n.y,pr,0,Math.PI*2); ctx.fillStyle='rgba(255,255,255,0.35)'; ctx.fill();
+        document.getElementById('statSeries').textContent = (series || []).length;
+        document.getElementById('statInstances').textContent = (instances || []).length;
+        document.getElementById('statOpen').textContent = open;
+    } catch (e) {
+        document.getElementById('statSeries').textContent = '0';
+        document.getElementById('statInstances').textContent = '0';
+        document.getElementById('statOpen').textContent = '0';
     }
-    requestAnimationFrame(draw);
+    // Today's date in stat slot
+    var d = new Date();
+    var months = ['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'];
+    document.getElementById('statTodayDate').textContent = d.getDate() + '. ' + months[d.getMonth()];
+    document.getElementById('statTodayKey').textContent = d.toLocaleDateString('de-DE', { weekday: 'long' });
 }
-draw(0);
+
+function doLogout() {
+    BIM.Auth.logout().then(function() { window.location.href = 'login.html'; });
+}
+
+// ── Tweaks: corner radius variants ──
+var HUB_TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "radiusPreset": "custom",
+  "radiusPx": 0,
+  "iconRadiusPx": 0,
+  "inputRadiusPx": 0,
+  "template": "acc",
+  "accent": "#003B4D",
+  "logoDataUrl": "data:image\/gif;base64,R0lGODdhWAJYAtUAAAQCBISChERCRMTCxCQiJKSipGRiZOTi5BQSFJSSlFRSVNTS1DQyNLSytHRydPTy9AwKDIyKjExKTMzKzCwqLKyqrGxqbOzq7BwaHJyanFxaXNza3Dw6PLy6vHx6fPz6\/AQGBISGhERGRMTGxCQmJKSmpGRmZOTm5BQWFJSWlFRWVNTW1DQ2NLS2tHR2dPT29AwODIyOjExOTMzOzCwuLKyurGxubOzu7BweHJyenFxeXNze3Dw+PLy+vHx+fPz+\/CwAAAAAWAJYAgAG\/kCAcEgsGo\/IpHLJbDqf0Kh0Sq1ar9isdsvter\/gsHhMLpvP6LR6zW673\/C4fE6v2+\/4vH7P7\/v\/gIGCg4SFhoeIiYqLjI2Oj5CRkpOUlZaXmJmam5ydnp+goaKjpKWmp6ipqqusra6vsLGys7S1tre4ubq7vL2+v8DBwsPExcbHyMnKy8zNzs\/Q0dLT1NXW19jZ2tvc3d7f4OHi4+Tl5ufo6err7O3u7\/Dx8vP09fb3+Pn6+\/z9\/v8AAwocSLCgwYMIEypcyLChw4cQI0qcSLGixYsYM2rcyLGjx48gQ4ocSbKkyZMoU6pcybKly5cwY8qcSbOmzZs4c+rcybOn\/s+fQIMKHUq0qNGjSJMqXcq0qdOnUKNKnUq1qtWrWLNq3cq1q9evYMOKHUu2rNmzaNOqXcu2rdu3cOPKnUu3rt27ePPq3cu3r9+\/gAMLHky4sOHDiBMrXsy4sePHkCNLnky5suXLmDNr3sy5s+fPoEOLHk26tOnTqFOrXs26tevXsGPLnk27tu3buHPr3s27t+\/fwIMLH068uPHjyJMrX868ufPn0KNLn069uvXr2LNr3869u\/fv4MOLH0++vPnz6NOrX8++vfv38OPLn0+\/vv37+PPr38+\/v\/\/\/AAYo4IAEFmjggQgmqOCCDDbo4IMQRijhhBRWaOGFGGao4YYc\/nbo4YcghijiiCSWaOKJKKao4oostujiizDGKOOMNNZo44045qjjjjz26OOPQAYp5JBEFmnkkUgmqeSSTDbp5JNQRinllFRWaeWVWGap5ZZcdunll2CGKeaYZJbpFwoYoIBDmhikuSaabrIZJ5xqylknnW+2eaeeec7Jp515grASCIACKihVM\/yg6KKMNuroo5BGKumkjnKwEguU8lDVBJR26umnoCqqqUocUCpAVYmGquqqoVqqEqaTjjoVp6zWaiuksqJU6qSnInrrr8C6mhKskuYaFa3AJruqsSbtKmmvU42g7LStXpopqtRm2ymzJTkbKbRSpartuI9ySxKx\/pGa2xSy5LarKLgneQspvFCx6y656oqELq7YTnoDm2gGDPDAAhdM8MEGJ3wwBCvJ+yi9T9n76A1n7VvuppQ+cJbDjkLslLSTamyWxY7mu5TEjlJsFseNetyUuJGqXBbJjZqsFMqNilwWy4y6zBTOjOpMFs2M2pwUyJLKTBbPi\/q81AKUKj0W0YsajRTQiwo9FtPvVoV0pFqLRbWoGPu7sallJ13xtb6GfDavaYO9dqxxQyq1JyhQIIIJAeTQQQs5OCADAzDAAQILOjgQQwk99NBADin44IAOJAyCAQ0yGBBACi30UEIMNsjAAgZncP2D00rAQAAPCvBAek5f2\/0J\/gQqlHBBpxcMkIMNKJwBgw05bPCCpzuEwAIfFPgww\/CdvjBDBDIUHsbYP1gNAAgqLD7CBcwv+sIOugcgAMOC8OCCBy6cnz765zswDtRub4KCAS10H+oHFaB+BQMlPFDrBSmQwaHmwIIYnOBWE4iBBAa4BdOhDgE6aID9mtcDBzAAED4IGQO9gTVFha0PCtiBCHewgAXMYAYmHMEEeocEEQzgA8nagQtYuIXfwQ9YBzDBBtfAgxzcgFo53KEVqKeu3w1ggqu6QQCEaIcMSuoBTNRG7CY2CAVQqnJG0MENp4U\/CWSBAzlAIrBu4AHpqYEGLWhXELXgwCNAwAe3m9YJ\/nTAByeCLYrZ6OAP7tYHFVCKAkQAgQN2cK8WIKAKMCjAvR7ggTSQoAb3UtQar0DEIsDAAz8c1wSEdQcPTOoFeMSGHj\/IBytOCosAYEEmI3kBGUyBA4SM5A96QEMxoCADMJSlJK2HhDYOwQWrbFcJDnmHAMQvHDCTnSD8eEohSECM7koA+ZoAAjvq8gTHE0MAoBnJEIRSCZW8HiR1eQBOzsGTknrBNL8xyir+EQA64Ka7VpDNJZBAj+P6gPu+gIA06hJSE0BlFNqIgmRG8gUWaOIxwTFFR11gEMyUFAkckMt\/MuoDLliCCfxn0UZVwAs0iGVHHfUAA0yBiAw44Eh\/\/lCDb6LBmo8CpTgMStJBaIBSigTVAiLgAAUIgAJ604ADIrCBWrWAicbUaQRs0DqgSkADLojBAWpVAy6oQJ7pnEAFfKABGlDgqS6IwAwqGqoCSMF0MeBopz7wPAeo4Kd6U4ALAtADsnpqBYCUQ1LlNtOouTNZB0gADZjAgwQE81Md2GEIPnWACAx2CQJIgVpBVVUsgCACqwLgAzWQg6mWNQrUsyukLpABDRBTCRCQQQKK+qkLPBYO6LyjONq5TGBNQAFRAIEGWAuqxBJhr5MawAKhQDuaTqqyVQBBB1SVAf1ZMgKinVQIoGC6TkXgtFBwwGEldYDXvQGmjpJpOPT4\/lBBmLJWE\/BiFXTAW08lYAg26JRwrSCDLXaqBFYoQag6IFApkGC5oGqkE6gX3NdOAQM5+NQKaskG8DZKnbPNGERrdQNXZmGjoNIUCbB6AdxmQQNYbZQKqOACUB1AvVjQQBw9pQEnVBdSLzBpFgSgUkoNwKVicHDQxmFcRvGxlKzaQV61oMpPbQAGA5jUBvp7BR6smFIXYHATRBBdSHlgnVjAQAM+9QELL4HAj1oAk62AAgBTqgNvAO6joNjXhf4hoqCaAA68QACRUqqDK\/QCCdp73CjgYLuRkrEXbDBZSZ0Au71cVQawrAUPVLlRHmZDbGGMY2qQ16aqmgCjtYCA\/hXYdtNZQACfJTViJ4DAvpIygRgoUONJmfXLqno1GCzQqR2Augw6zto4aBuI83rqAnMOAwUADaoLILoLNCh0pC5gxiWMs1OCDgMDlA0pLycaVDOoNBVyOikftCHXHrx1HjNGgnKTgALlRre5z73udLt73eqG97vNHW96vzsJcKbUB5xrhXzfj5dU8HekSr0EgUMqoWWgcqcODc5ij7kLp6bUC7ybBnD\/gJTb6PFKQ\/VjAPiaUgImQwxqldEyJMBT+F0CCDzdqQygQQeekvURXqwoa4uBBNRulMxf+kltSwOfG\/crEgz+qAGgYdTyPQMIkO6oEzDBAJ7Kdhoy4Cmb\/hMBzD9oAM8pdUE1THrNuw76rzr+cUmZcwwyWFU9y0D0Rp09kJ4NGQHUAIMnR+oATHzxB+Z+BgjY\/VEBWIOaw+vzaGhc7LjDt6eQe4aGSmrnZXB8o0J+hBJ3iuBpMIGnEG4EML83DTAP7hq+XtMII57CSbipvvmOBqz\/4APBRgMPOjWCJECA2Dp3g+QZhfeZN0\/KZWB5pD4gbjBYHMLjPT3qkVD2R+WADUmOOfShnITFrt4NL+b81e\/LBgdQKtJnsDjGtQF05adM8ZRCceY\/xe8uaH5SHzj29XLuUTjsflEn2GF1288FDDxaURGgBsdXeNBweOanTEfQfI2Sf2wA\/gP\/tygH0AYIEGLcknad0nVuEHqUsk\/bNykMyAb+FCkrIIBuxkEHqCod13aK8nlsoF+UEoBt8GyRMl1GwG2SgmZw4HcLt0GmA4NsoIGQ8gHNVgaklzME+AwGeIKNQnaUsnZqoICNYmBPSCkfVQQg0GrfIgfWhzYd+CxugABXlAaDZ4SmJykfkAIZkAFomIZriIYpkANsGIdvGIdqCIdqKId2eIdzeId6aIc+aAQq+AND6Ej6Jn9nQAOUonVFMHuUEoFygAOeUnJDYDpDtgYgQH+Kon5EqEFt9kQTNilvAIYlmAYoQCkpRwQp0CkpQAdJ2AJFQD3AhwZ29ijaVwZj\/hg0R+gMetRxeqCCjtgGIPCAv9iAD3iKQzCLkKKJb1CEJMVAXMNmbtBBNHgGzOg9udgMBjh+eaB6kTIDcICFjlJ7b\/B3udeF6TSIbsAAnmJgYzOMbCCDj1KF4ceJyWc25jUpC3CNWYBqjeKKb8B0iyKPQmB5k4KDdICMtEgEXHMAhngGLhgpE1Bx9MhQElZbzRSNkyKQbHB4xggAqbiBdvCRGWmO\/OIGDwkp3mgEILCSLNmSLvmSMPmSt5g1DCMoNnk9N3mT17OTNpmTOykM\/LiEfyVRb3B4jLeRk9KR8FiSdKA6BPCUUBmVBIADsQcAvtQGJxlmRuB3D3ADD\/CV\/mD5lV7ZlWEZlmM5lmUZYmR5A2zZlV7Jlm\/plm75lnQZl2zpbb\/Aa4AQiJW4BvenkWsgfJCyc0kohYQQTliJj0YAA0qoLIGXlxUZCIH4cGdweIroBoenkXEnKaxnCFfZgoppSQ\/YmJ7ymL5wf3v0iUSJkZICmGrAkUUwmj\/QkICAmGxgg1ppSSFGmpRimr0QlDsmCNwYKX2pBh10lGsAnIpijKWYMfooB5+5BlnpKAtgBAggm7wpKXjpC7s4lJFCmWaQmXBweDKHiEKHCLa5BrhJnYuJndkJKb7JC3r5ZmGoe5NymW0gnkNggUqmCNGpBtPZKNUpmu9ZK9PYC6jJ\/ot5AIWLUpxpoJ+YmZREIAGd4o6FkJ4AGppE4IAFyirxuQvz6QeT+QbHCQfK+QPGSAGJlwj\/mQYByigDuqHu2aGMcqC8kI3eCSngWQYd5JoP6mpE0Jw9lwgY6qIaOgQcSqOh8qG60J0WKSkOigaWOZ4jSQSeQpt\/0KJo8KKLkpIyqqRLCgwh2gfDqaNFWaVucKIdCZCM0pkXyjZtsJ4C2p5gCip\/yAsJmqOPsqNkUKJn2ppFgE8Y6JlcmJiS4qVDAAIeEAA+EACM+qiN+qiS2qiU6qiRWqmN2gPwFwEBEAKQaqmgiqmg+qmVyqgA9wonenGqSZx\/Gik+KqVASgRL\/vkwRAqnt3mktjiR7BSZgMCgisKnY3B\/+ImUgEoEJ9ebLFqooCkpMWoG1ago4kWR9iiZ9ZmfaNoGaloE3mdjtUo3JomrZCB+z6kMYwpkkxKlZ+CnEVqsQ0ACa4WObYADKqACMlCv9Gqv9SoDKlBLWuqQ4DoG4lqGMbOqZsqarkqlj2cESdhiczCTjdKZRbql\/yoGz\/oDyAcOOCqc1UqskTKsawChQ7CFCTsHghkpzWqVyiqdExsGDquqAgsp2ogHvvoD6GoGPWqiEloE6kh9cqCi1vWKtqqeKwsGFRut35CnT\/qdrQopyPma1zoEbLoomOcGLds0RdCvZsClinKy\/mTQsjF7DeW6BzMLrGLwlwgbKZAHAMc6KREZByWLgEMQsWcgpzCaBkU7rsmQsdR6rkv7KB7rtOxKBIyYsmsAhJLSkSgLN996qBL5RHiLDGGrB2NLok+bnDlrBJsZKQbZgOAIKXQEtN5qqCbbuLJVj56YtAXbBupqrYFLBPF1gW6wth7IaFhbBlr7A4iKa0NqunwVCGX6KDVbBiDLsZDyqgjpKJubBjSAnQwLusXyBrfLtWPgtY97DJG7oBvrl\/d5toOJfpSynWkQfZQijkZQu2QQvXb7ScV3DQaooHgwout6sG9woq8KAEn4AaeKBQQJf2+XSkGrBnS7KNKbY6PI\/g3XK7PvZLBMy72PgrgT6iknEItggHPSd21euLiju3WRYrQmWMB7AL+qW7mAK79JIL4FiQaa2jxV6bzp8gYBvLViqKsdfLq9lr0jDCl\/+6OHuwSDSykJgAIIAK9bkGCeompJYL5jgL5ocLed2Lt7mcAh3LqWK8VGULGMwqRcAAJE3Ck5HLf\/a6TMSrowW73GcMB38LuOQrZhYJQM7CgObARb5ing6wVbDGUSLARILAZKPI+O+7Jgd48X2QZm27eOUr9DAAFvGylYfAUoMKtZCGuhu6wZTI3q68elt7dQSsiN0sVncKJpewQkgHtufMdSoAKZOyl3asGPLLooGcM0\/oyxEnduBJBusyzLtHzLtpzLFFDL70YA6ubL5QbMJMDLwSyV6zS5ChyPbVx\/TkChn\/ICLvCcKFABoZKPTSC3ZvDCPzDAYcDEvFunlUIEIEy8j9K0OkzCTWBxjrIDVvcEIABMoXIBbnrEhAvG3SjGf\/zN4MwonDSzwdunInzO3QsFIxcqE+AAK8wEGnC8kgJsT4DNZaDN3Gx8lYxM+wwpnDTOH7u98xvQSqABM7ooB00CUQQCMpACnUspJzDPSpDHYbDHZiB+YXfR4TwEGm2cfabJjGLISMAAUftEK1ADIaADOmADEZADPbCbkHIALN1wkayyYazBY9zENK0oGQ3F\/uRcyMu801SAAil8enh1VvUssVHNxxtMxsVQfgXKSWjcKGoMBsIKB4nM1VUguyv1AUt0Ul9M1pNsBtRryRfdzzYs0Mqs0wF5BQow15E0Ak3dBC4NBjC9iem0vtaQhDR61XybzI7CyeHp0dmV0uTyALUoBRBNBhLtyk68q1XNz0SAzFEcKeYMq1Q8BRDgApioLB+QAQkt1orLyrlJyemE1sSg1u+J2avJuujMBvTLBQgQArdtKwtgA0IMWns9t0P7BQEbDiPwAdzd3d793eAd3uI93uRd3uPdz+b91l+w3eTN02QwVuT9xlaAAzbwQsryAgXQv1XAAeadv1xQAOWd\/rtk4GjkfQPCPQwwgABBrOAJ3uAM\/uAOnuALvuAR\/uAUfuETXuESvuEXzuEwwEAgUOEZjqVlIOIcfuBQoOEQTtlUgAE60AIh7WMloAEsnlsejuE56OAjDgPT\/QUgsONBLOHfAQMKUAALQI6PcgIJMFxm4uMEwAIaYAMhkAEB4AEWoAIKwAL\/3ORc3uVe\/uVgHuZiPuZkXuZmfuZonuZqvuZs7h8EQANeFedwTgPt1m5yPucU4FUsQAMMQAN73ud\/7ud8Luh9zgAkgAI9fiWo+U8fcAMnMAM9EAMCgOI6Qtwd9QAlYACk3CSWfXo1wH9FYulitwAmUONEsuhKeAER\/kDpLyLqyjcDu50knd6Y5fQks96YD\/C5TOLqJ2ijSMLrJ7jIQ0JeLuAAxX7sxp7syL7syt7szB5WJTAABxDjiiLsQWKAE\/0FKCACAWBmn+LrRKJH2S4GPEDc1u4jerQBb6ADz80oIoAk2A4HBGDCSsbqJKJHI2g4mOUpMXAkBpjvcUDNa2WYQCLuc4AApwwpRhfqlKLucyACnxLrPRLvdCDwIEkkFD8HOCCb5Csk6W4HVasoEr8jGT8H7topHBgk+H4HXy0pqzjsDX8HhgspyfsjBm8HBFCh4R7zdzCaxDckJX+QnbLl\/Yc5fMM5J9QBGRACoeM6pm4HaEIDAiAC\/jpgATogADiQ6HmAAiRA9SYgAhSw6YOgOjygAjagAjxAAFrvBzCAAzTAAyKgARZgAgJAAiQeCzdvB\/gE6lMAA5wlyo7yAR1gAyNfB37fP2Z4ATNQAymgAWLPBhhgAwXQAyvwANH1AJCeApo+CPRdAB1Q+dH1AZivOxZQ+HZg0ihthjcwAy2QATrQ2K7w8XfA0IxC8FuAAiYgQQjkArYfBzhgAknNKhvQ+I9PBpGP6o4yAyHAA0+\/BjTgAanajS5A9G0AAzpQAe3+KAeQAyZg+qeAmuPOBlcKBiaw3dSyACFw91DgAxuwA+3\/\/u7v\/h1vBCLQ8r8yA+CXBvSN\/CFT\/gO6ngRAoDvtNkRjcbMCAZhN5xMaBXBCu98Vm9Vut5sQSxoWO2tHMxIVZlQ+XPcbuzHBxnX7HZ\/X32fw62ovcA\/H7+pCcEzGqpDR7cEFAhEqxu9ESmWiURNrx2RJUg8jp22zcUJEzMbvgw60SaSvVHMCzNUpFg4jSqBFtvHCo9V2mLiYCfdtw3jYgnHGmKHH13dDY5gSztIJxGRjevPER3i5CSXm5buxgUSqGe4j0pWgN72xhoB4oVDXSQW5\/s2LGPzIFTQoJpOfBQcRjWDUgBiKEgBljeDgCtubQ69OUNT0QIFBEAFueGQUAwEUE6vGBUKQwiSjFxHigfrHhSCJ\/psxt3xwwRAo0IRwlAXNQ6FRjGE2SPFsVKJmoIxutEFI0dQpnBCfiIFwcCGrnxs6nqh611KPi5Jh4Vyw4EqfH34y1rJ1UwGtUb2SHCrceydBI2ugIEy0y2gFBURTuVjiseKwnwFphsGgF5nLhxBOzL5hJQiBNMxvWuTFs1OLrhhYR2NJ\/Bc2orhwFsYOQ6LRDlc4UJeq++2GBEGMt1zwwbp1lhMCbBHo3brEJ3eeTY9hsCg5lw00ZBeKlp3LA7K2ydsZmqx8lMt+HIAS8FvTixYOJDDA0QQDDRkWGjzw5SGQwMCb5gMTQGHhgAG5mAyAlc7aQwd0fHlggBJi8MAA\/gN8yKCCESQsBSRBnjNEQS4iSA\/FKPqiLcUmZPglqj06+ygCHmIMgwqwNqmAqzuIA+iDCQpIwQMLVDDBgxgK6AA5TT5ARRAF\/PvmggkayCCDAlqYYEpqSJgxs+qk+HGVCQJgoUcoYJAgAchK2WyP2Zz64IINBpjghC7TsaHFPs9zA5AWcdCxEB8kyUCWAijTA4UKSllhUTsE9GgBB+4TAwEDVizlAnb2cODDTTZIQIZLoQCBAB0yIPQjRB+8AwXRNinBVDwYGKCU0vQYUZYLUuAAhRsRIEDTb57sM0Vei0pxPTheSEmQEEpZgAdQVGC1kBHSFIPMRBXLg4AQ9Gxk\/gVo8QBTpgRqwUOGBnj6zA4IeNViBeYQ0QBbybYVY157QrqDAB+8keUBT5El708uaksPBJgaOVGQFzeB0xUUOtgkBTy61aQB7gTBIQdZOsiDh1ALeSAEgvagwVGP4K3DsEY+cGBfPWBwuJEE8pDzmwbwCcSEjkrZQcyDGUq4CxQpcNOZG++gAD44bvh3mJE2MdCOjQs5AEpQbi1FKTsG3bFWRATgmUCnoUAXjgMuIkYDk+EYz45+35jAXkRgCGDcQnow2rZN3Vg4Nq\/kfuOBn\/eAALtCFjC4GAn6duODdbnt2VxbcGak8jpAsPsCqm0BYVJj1XZChCbd6EDlYWgY\/riQDxi4A20nAyCGhNrnBhw2pLUg\/C8JmG5EdD2ahWOA010hQehCTmg9Cq3fAHAZFSYfvA5XGRkAelukTAeeMXCI+g2dC0LAXUYOiDQMu7V4oOvKCtjkhsx5B0rZv3DQIAb3r4A4ENIiV9FcwYDDcUFbY5BeT4RTEAo0zg98CgPb3FAD5YGCBAkikJhgoDsuZIAhEBge8uzgQThMQHHGYIomcnA\/vfhOOTGIgAxpOEMb1hCHN9RhDmOQghasIF+aGEDN6kAD1W3hACk0iACOqIX2XK4UWDMICz5StiYYsREgZAgONCiLl0Vhc36ACFBIcL0t3G4M\/vvBBggoCRVs\/qJaLhRKiXgyAPvloQaNuMHsjGIAGEGRhUGZTiEqIIWY+UGLQCFA8zbxxSdQoIlZGMEFiaGCSF7hAd27BYi+dZAwwiFQcjyI4OhoLOoJggOaGIxeQsYIikVvE8A7yPwa0ckmEOCSP2gBEZfBADNSJwx5ZMTz9rLAH2RMDCbkggqMAsMtMFOUBlFmKRmxAcsFQlZ+GAFsEEC+LTygOqVbhRIPAoMu+gGNTvikdu7IkDeWwpFNoCLx\/gIC2L3DipvUhPmCgoEgcmGM0SSHM6lZiBxQcgwikBkf\/zJIOIQNlo14ZVDeWYhlMQEFl3wBQ\/ciztiZJptwGBlsIMmIAiRT\/hMHaCMxKLiFZwmUHKQsaCPSKYl+QRQ28\/pAPgHgUTdcoJ1Ha4THmCBAP5zyLxA450d3ITPI7cUBjeDoE+z2lr\/cc3cwNQZBZ+qGCUx1DxX1wwOCGpRUMiKRTzCmBP\/CA5o2AQYHzMIMEFoQATQyLzI1UXlwVYgahGGaV5BlUCRWiIBqdRhc7aobCqDJuiUlPSGlXPd8WhxeHqSvfgilCxjxNvK0jHM3KuwqHBsUt3ZWCv2SgW0y+w7EFkONi73CCwJw2SgQQBO2jM1ZCyFFJyyQn7DRQSN+xquRlocGTrrRIeFQAhQFFplQCOwByDNcRryWGIqVLaCuWQeHvmEA\/imSLEAj6ofu6gUBcs3CanFZiPPChrnA3IZ6sxDH8rQ0C9SNwrwmupe4Xhe7ttDudjPjAds2YbxcKJ5t7spUtVo0PaCFw1vwe4XjpmeesYvRaFmEIhj8Egue1acfdPsXWvohwAImcDo6gFAU\/KJPetXCKpsgvZ+URwKMOFFr3bBg8vCYci3Rnh8M0KJ1bgGATpjmYPeS40Kk2BWxXTEWOmBb6\/q1TxFghHMf7IcGkgcDjKhBRsd6YKN8N0xP+OcWeAobDrvhok3gVU1tQ98fQBkUXN0ACvjcZz\/\/GdCBFjQKCMABBVggADJuRAeKlr5CPDFFbw5PS6T3Xr3A4JIz\/kCzFoLrYc6N47QQbhECGvFUAEzTt7ZhpBvwLAk9xwYHDghsBcWA6UaIOD0vZsSXmSC90hrFm1m4gDDhEL8UAbkn49CySZE1QjcYiqqF8PFfuNpqRHCVyUZhARt8AWkoKJQRDzCzUbDqhiT3lCUogiDlVlFXvXjAwUxYtxtSnZ4j\/066hcB1bBKcBWuLSNTlIUArN\/GC915ZMgcjOBz++tuxpuhiAAnvwXgrXwBAwM5XIGqKHFTmaJMYRQtn9b\/3wKts\/0UDIEai0+Atkwuc4OUxh\/nMZV5zmt\/c5jnHOc1zuU0nVBYL2kiPDjxQ9KL7wANIN3p8t4DTFkEg3oTg\/pwHXOACqled6j5AOtJDEICuB8AHXw+B1pPuAhuc3Qcu0DrZww52sXsd7FoHuhZawqtfB0UCRj960vVO8j1gu0+5K8W5mXDvKW9CvzX2w0ZEqYFC0A1ZI3pZqA+fjqlO8+5+f+2r+wSBfmemxMSu\/DRe0COtCV2OnPUDWFMk+szURNKj30TejrEPzWve5Afz\/Cae8QRFy74QmdMa4+UoPfa1aNkWrzDw4VBkJdv+9iTnVSg7P+AfXHOpzNcER08vUKZn4QO8q3D4iqp9X9DZ7tEnOecPhoNcXqGmIFC5+bewWsW3RaC\/Rz2yEJ5mJoic\/gqh0zBP\/f4N8ABH9RiB\/nB0LQA1wbe6L5rKTQsS72DEyv8AIOIa8CE+LhcK0NryB3BAYNZ2Cq7eTwPZCgAgUJRWbQtOrjxiDwte5vM0MAsmrgkI0APx7AABxwKzigmCjQazwNtUUI5GxAXJQwHSjQlcLwgXhAPfIPNy0IVyj3cwDrKaQAKbUAgdDv+i6Xi0QDcAx\/FeBQAMTwt9Ts6gTwoDjP0AR8JOyAlm0El+4APq0A4\/4AXyUA\/3cA8f4AJi7gAOYAcEcQM2YAFmYAIQURETkRFnYARGYAB6YABaoANawP6YYO5+YP\/uBwC14AV4p+OCrAkSUAsR6AlwcA2xiwp5pwcdgSu+bws8gABw\/mAWa5EWEQADEAABYIAXYQACQOAXkUVrKNCFAmAVxm0vjEoUmSAUEQdLbCgEuu7ris4GHMABqvEarREbq9EATCBDdAAcNUADVEABZEABREAC0FEd05EdRUAAOAAeWYAB5JEFaIACaMAWWyf9UhG7uIr6jEbqGEFxjOmkWi0Tic+FNi0LSixFTmwZAQDc\/KD0\/g0V+VGr2tBoIOD98iaqqsnahk+gktAPpi09COplkAK1PlANLRKmdpB3WNAN6KYVLzDFiNCFGKBQAAcI6bAmGNAPrKrVKpIlowkE76dfbmwKNIHXAmwYBSrM\/ODCWiS52s0JMq6QVFIuhvIiHUeO\/mYtyWCSC5CKYarRA0IgAlIgBXKgBBqgByRxBpzv\/jQCppxNC24AGQVJw5wgA4nCaHgRA3AAB0iABThABERABlRAB2is9rJSKwVqFXln\/n7glTIRC\/6mRUSyEDYuBRcPpqRn39LjC7Xgi5qRctosNlbgkgry+RizMUUJIw\/GJ9kDdWSmrP4CFvNrEvyAGF2o4tyg09Ljv5SQCUiNEeASRaayEKBpxKCwNaPp937gCJFLEyBP\/hoB8sgDAuavhbpMLmEq+yaQ\/z7tCRSrBfpEGT3j+ISyOQFnmv7xYFqOEYqnE7ngKtMDBrXgEuPyp7RqPrPA2MpDDumwJTpyrNyN\/iGyUAtscDndIArXE2ECDnDsBtcwUyLvkhyY8PVyswsFKiLfICrJAzfE0wkCciRTBDn9AClXswMd9H5c8mBCtNSeIDgLYSlhAwMy7kPRrW20qjrfwdRiwyHJsAnocgvSijz6UwsYch9ZFHCeM86QxRjJJQre8A0skzySzw\/qbTM3VKCClLzSgwQyTkChwAfC7Uf3ggNyaTeZQD2ZtEWWjHdIwATFkglKihHsCzZgYCevIAyh4CARi\/LeAE9j4zZFEy0wYP7KkzxAQLu8bUFxwk0B5zVbJECxgKeQtAbJY\/muQDH1kwvWVI6QTQt6zzY6NN6c4Dzf4Dr3gjTdAFQB\/mBJIzXGILRP+i\/hpAAHxJT2Lg0sRzUMQBKxnAxFbQME5s0znAYB1kzYatMgUGBPr2BVb3AlZTVFJjU9JEBMrwAoy+tW\/8LR\/CA\/uXM\/X4tXHkAzjcIMe0JtSLG5YgNDFYaIYpVaUcRayQNbN+EBjs8JUEBM6ZQh4LNbuZULEFKgZhIMmXUZxhCvpAAElDULtjUoFJZGUYo15xVFijLSsvUKfhMKonTX9IIH3u8zPRWJsAsEvnMLdkkvaEBjryCemmBTf+AFRpYcMOBZf0BB92taLfZB\/eBJiRVLZUZfnwACevV9ztQYFkmiFIgzscuPtswoSMBhHzIKEFQLiOkg\/mYRB\/bSWSyNTXeWZ2PDSVMEB56TC5wuDEK2ERYAYUEBBaw2U5mWS3lUu+rTIJhng8SAiRohgRgCUx+2DuQ1bGOjXo0CB2IgMkWzQWP2B2agbQUBBMz2Bw7g7poywFBgaq+gAQxUD3jAaIVTCgi0EHTFIP4WC7YzjcB2cPcCY9uqBkwQyfTAS99gBZBWEkDgW\/1gUKUgEzdRq9TWGWwXEXQAdpMNZjSBbckBBgo1C1agjdp0dV+IVoECBDggBT7XsPaAUTXhBLw2EFiASLnAUX+1aVOsVd3gBsIVFG4GSAhIBDVhBxhSEmQAe7HgAeQXCgQ3eqVXs2jxLwETB\/43\/oABWIALmIAPGDAxgARioAVGYAMS94Q4lwnGphEeAAVvdzU0QTXr4E\/xzHSpjJwCQQZQFp7aiAAy9wpOgCRthnnBTznrAHr3Fygk1\/z2DBGAl1xeWHs1wFjdAG0BaVyhbHvjIwUaFAp4oFJFtA4aTBNaQHjrQAgaKVrbR3VlWKhKEQsuwDTtQAFadgB21w4MoIefTQ8y8VW1CgNI2A1eoAD+s9Z0wPp+YCdfth3gKQQkGCL95wNWOApi2IoNQsqmbAO2+A5IAG4VxgEyjwZ8YIzdAGKzpnzxDAHi2BBywABIYF9AgAVsoAVa9gcKAGBpsg4kB0RKQAVczARCEw4e\/sB7dbZi\/zgoKPnwauBx7QB9pqEFTEACWAAHEAAEEIAEeMAAUkCNPYOPxySS8QwE3rWCN6AHKrEDRuAAincLFdJlV6oJSCB8V7kEDGCXe\/mXcYAHVMAHZFkTWQ+GqxiWBwqLCc8WPNZYIJi7hiOZWy1oFeQFBuN8YxCb4Sp3p0GeB4eQU0ud13mrtDCfDeJ7SuQDDGwx6rnVTICaY+IC1kV0RRkPyrSUGtqmCtqgiSGQZ+oBUIIhSIBrW2MA8NdHILrVRKCY2WIFUmifXbaWoUACUDgrBiCEd8ajP1rFGnAmhpYcJGDWPOIFtHQPgPX2YMAHcJoiZqIlrJknJQEG\/iLAk+vhAR45EPTXpw+a\/g4gAIT6ICzgZtPBOIwYiAfWAxHAqjGjAkJYquk4D3CghSniA3IArQGrp7va1bTvAypgV\/O0rbPiAGygn+tAqQsQAygzHSaAZsfvsHGEhn1hJvKaX\/aarwVhBB6Aszvbsz8btENbtEebtDn7AlZgAlpgSCwgsg0CByyASUxiBTTAQjm4ElKRBHLAqaupU58grls7DDSgBya6LTygpmkHszNbufMABTTgdb9hBgIAnW2BA7zRArzRBK67G43kd6GZEr\/buzsgB2oGBCRAt8FnAHyAASgprvF4DDKlP+rhAxrABNy7DhQgu7cbu7W7vpfb\/r+XYU0KoAd2QOU+oAccYKd5tjfdoE\/DoLwzoKwnNwNkoKbhmQsafBkgQAVKIMJ\/4AFM+bj\/W8S1CgYoQAA0wAMCwAZ0QAEEgAEIIMSZNDYpZ9xMnOgSoAZmIBAnoAIiwAFUgAMsGwAw1UoZwsRRPAIqYAA24AaSYAQqoAISIAIEwL5H3MqvXJSeVcjJQZU3Fsu\/HMytXLFoFjYaeXzDHM3T\/I9ndwsaDkWE9Q3UV83nnM4tdlM\/4Fxjg1cGus773M8tksywzD4LIUf\/3NAPnR+ZGfym2ChQ4KV7G9EjXdJvD86dJbCN4nMK4QaqfNI73dMBp3418YnJ4Z+5ILo+\/h3VU\/217vkNDoDPbQEFMKCuyVzVa93WWyTTcyPBl+GD3fnWfx3YywMHQv0HduDVD0Udgl3Zl708OCBbb8AFavsOHmNtY5zZrx3bA+FpU0qHbYECurwuRz3bx53ck1oWFsAFjp1hdaAFTPAFarTc413e98DCZaYHdACTGUUEcqBlH+DS5x3gA14Mtp2yZ6AEfEAFBIACKAMEBHM\/EqAHiH0CVVrgK97iu\/hdTGIDdt3iO17gBSCgMWMCrN3jS57ZcaDUGdoDON3kWx7Yr6WgBkDcXZ7mxx0G2Hw0LLjmd97kiRo8\/nrLeV7ogZ0FEmC3p6FSxHrolz7eQUABGoC4\/hdPXZie6lseBQwgBzYg6l22AyJAAli+6sM+2FFABSJgBh4glz7gBDrABTgA7MUe7pkdGIdlMCVABwygxTmAAjDAF+Pe7\/8e8ANf8Aef8Avf8A8f8RNf8Ref8Rvf8R8f8iNf8ief8ivf8i8f8zNf8zef8zvf8z8f9ENf9Eef9Evf9E8f9VNf9Vef9Vvf9V8f9mNf9mef9mvf9m8f93Nf93ef93vf938f+INf+Ief+Ivf+I8f+ZNf+Zef+Zvf+Z8f+qNf+qef+qvf+q8f+7Nf+7ef+7vf+78f\/MNf\/Mef\/Mvf\/M8f\/dNf\/def\/dvf\/d8f\/uNf\/uef\/uvf\/u8f\/\/NfnP\/3n\/\/73\/\/\/HwgAwiGxaDwik8ols+l8QqPSKbVqvWKz2i236\/2Cw+IxuWw+o9PqNbvtfsPj8jm9br\/j8\/o9v+\/\/AwYKDhIWGh4iJiouMjY6PkJGSk5SVlpeYmZqbnJ2en6ChoqOkpaanqKmqq6ytrq+wsbKztLW2t7i5uru8vb6\/gIHCw8TFxsfIycrLzM3Oz9DR0tPU1dbXw8FAQA7",
+  "cardRadiusPx": 0
+}/*EDITMODE-END*/;
+var PRESETS = {
+    sharp:  { px: 0,  icon: 0,  label: 'Kantig' },
+    subtle: { px: 6,  icon: 4,  label: 'Subtil' },
+    soft:   { px: 14, icon: 9,  label: 'Soft' },
+    pillow: { px: 24, icon: 16, label: 'Weich' }
+};
+var hubTweaks = Object.assign({}, HUB_TWEAK_DEFAULTS);
+try { var saved = localStorage.getItem('bim_hub_tweaks'); if (saved) hubTweaks = Object.assign(hubTweaks, JSON.parse(saved)); } catch (_) {}
+
+function applyHubTweaks() {
+    var px = hubTweaks.radiusPx, icon = hubTweaks.iconRadiusPx;
+    document.documentElement.style.setProperty('--r-lg', px + 'px');
+    document.documentElement.style.setProperty('--r-md', Math.max(0, icon) + 'px');
+    document.querySelectorAll('.hub-feature-strip').forEach(function(el) { el.style.borderRadius = px + 'px'; });
+    document.querySelectorAll('.module-tile').forEach(function(el) { el.style.borderRadius = px + 'px'; });
+    document.querySelectorAll('.module-tile-icon').forEach(function(el) { el.style.borderRadius = icon + 'px'; });
+    document.querySelectorAll('.module-tile-tag').forEach(function(el) { el.style.borderRadius = Math.max(0, Math.min(999, px + 6)) + 'px'; });
+    document.querySelectorAll('.user-chip').forEach(function(el) { el.style.borderRadius = icon + 'px'; });
+    document.querySelectorAll('.icon-btn').forEach(function(el) { el.style.borderRadius = Math.max(0, icon - 1) + 'px'; });
+    document.getElementById('radiusPxLabel').textContent = px + ' px';
+    document.getElementById('iconRadiusLabel').textContent = icon + ' px';
+    var preset = PRESETS[hubTweaks.radiusPreset];
+    document.getElementById('radiusValLabel').textContent = preset ? preset.label : 'Eigen';
+    document.querySelectorAll('#radiusPreset button').forEach(function(b) {
+        b.classList.toggle('active', b.dataset.preset === hubTweaks.radiusPreset);
+    });
+    document.getElementById('radiusSlider').value = px;
+    document.getElementById('iconRadiusSlider').value = icon;
+}
+function persistHubTweaks() {
+    try { localStorage.setItem('bim_hub_tweaks', JSON.stringify(hubTweaks)); } catch (_) {}
+    if (window.parent) window.parent.postMessage({type:'__edit_mode_set_keys', edits: hubTweaks}, '*');
+}
+function setHubPreset(name) {
+    var p = PRESETS[name]; if (!p) return;
+    hubTweaks.radiusPreset = name;
+    hubTweaks.radiusPx = p.px;
+    hubTweaks.iconRadiusPx = p.icon;
+    applyHubTweaks(); persistHubTweaks();
+}
+
+(function initHubTweaks() {
+    var toggle = document.getElementById('hubTweaksToggle');
+    var panel  = document.getElementById('hubTweaks');
+    var closeB = document.getElementById('hubTweaksClose');
+
+    function open()  { panel.classList.add('open'); toggle.classList.add('hidden'); if (window.parent) window.parent.postMessage({type:'__edit_mode_available'}, '*'); }
+    function close() { panel.classList.remove('open'); toggle.classList.remove('hidden'); if (window.parent) window.parent.postMessage({type:'__edit_mode_dismissed'}, '*'); }
+
+    toggle.addEventListener('click', open);
+    closeB.addEventListener('click', close);
+
+    window.addEventListener('message', function(e) {
+        if (!e.data || typeof e.data !== 'object') return;
+        if (e.data.type === '__activate_edit_mode')   open();
+        if (e.data.type === '__deactivate_edit_mode') close();
+    });
+    if (window.parent) window.parent.postMessage({type:'__edit_mode_available'}, '*');
+
+    document.querySelectorAll('#radiusPreset button').forEach(function(b) {
+        b.addEventListener('click', function() { setHubPreset(b.dataset.preset); });
+    });
+    document.getElementById('radiusSlider').addEventListener('input', function(e) {
+        hubTweaks.radiusPx = parseInt(e.target.value, 10);
+        hubTweaks.radiusPreset = 'custom';
+        applyHubTweaks(); persistHubTweaks();
+    });
+    document.getElementById('iconRadiusSlider').addEventListener('input', function(e) {
+        hubTweaks.iconRadiusPx = parseInt(e.target.value, 10);
+        hubTweaks.radiusPreset = 'custom';
+        applyHubTweaks(); persistHubTweaks();
+    });
+
+    // Apply once at load
+    setTimeout(applyHubTweaks, 50);
+})();
 </script>
 </body>
 </html>

@@ -166,6 +166,7 @@ body {
 <div class="no-print-bar">
     <span style="font-size:13px; font-weight:500;">Druckvorschau — Besprechungsprotokoll</span>
     <div style="display:flex; gap:8px;">
+        <button onclick="window.location.href='print-preview.html' + (instanceId ? '?instanceId=' + encodeURIComponent(instanceId) : '')" style="background:rgba(255,255,255,0.05);border-style:dashed;" title="Mit Vorlage drucken">Vorlagen…</button>
         <button onclick="window.print()">&#128424; Drucken / PDF</button>
         <button onclick="history.back()">Zurück</button>
     </div>
@@ -300,7 +301,7 @@ function render(data, allInstances) {
     // Block: cover header (first page only, logo)
     addBlock(measure, '<div class="cover-header">'
         + '<div class="cover-header-left">' + esc(headerCode) + '</div>'
-        + '<div><img src="../../shared/assets/emch-berger-logo.gif" alt="Emch+Berger" class="cover-logo"></div>'
+        + '<div><img src="../../shared/assets/company-logo-placeholder.svg" alt="Emch+Berger" class="cover-logo"></div>'
         + '</div>');
 
     // Block: title

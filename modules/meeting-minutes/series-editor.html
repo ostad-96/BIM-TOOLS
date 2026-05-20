@@ -7,23 +7,104 @@
 <link rel="stylesheet" href="../../shared/css/acc-variables.css">
 <link rel="stylesheet" href="../../shared/css/acc-base.css">
 <link rel="stylesheet" href="../../shared/css/acc-components.css">
+<link rel="stylesheet" href="../../shared/css/acc-corporate.css">
 <link rel="stylesheet" href="css/meeting-minutes.css">
 </head>
-<body class="entering" style="opacity:0">
+<body class="corp" style="opacity:0" data-ready="">
+
+<!-- ════════ Tweaks panel ════════ -->
+<style>
+.se-tweaks-toggle {
+    position: fixed; right: 22px; bottom: 80px; z-index: 99;
+    background: var(--c-brand); color: #fff; border: 0;
+    width: 46px; height: 46px; border-radius: 50%;
+    cursor: pointer; box-shadow: 0 8px 22px rgba(0, 59, 77, 0.32);
+    display: flex; align-items: center; justify-content: center;
+    transition: transform .12s var(--ease);
+}
+.se-tweaks-toggle:hover { transform: scale(1.05); }
+.se-tweaks-toggle.hidden { display: none; }
+.se-tweaks-toggle svg { width: 20px; height: 20px; }
+.se-tweaks {
+    position: fixed; right: 22px; bottom: 80px; z-index: 100;
+    width: 290px; background: #fff;
+    border: 1px solid var(--c-line); border-radius: 12px;
+    box-shadow: var(--el-3); overflow: hidden; display: none;
+}
+.se-tweaks.open { display: block; }
+.se-tweaks-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 14px; background: var(--c-brand); color: #fff;
+}
+.se-tweaks-head h3 { font-size: 12px; font-weight: 600; letter-spacing: 0.6px; text-transform: uppercase; margin: 0; font-family: var(--f-display); }
+.se-tweaks-close { background: transparent; color: #fff; border: 0; width: 22px; height: 22px; border-radius: 4px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.se-tweaks-close:hover { background: rgba(255,255,255,0.15); }
+.se-tweaks-body { padding: 14px; }
+.se-tweaks-section { margin-bottom: 14px; }
+.se-tweaks-section:last-child { margin-bottom: 0; }
+.se-tweaks-label { font-size: 10px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--c-ink-3); margin-bottom: 6px; display: flex; justify-content: space-between; }
+.se-tweaks-label .val { color: var(--c-brand); font-variant-numeric: tabular-nums; text-transform: none; letter-spacing: 0; }
+.se-tweaks-seg { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; background: var(--c-paper-deep); padding: 3px; border-radius: 7px; }
+.se-tweaks-seg button { border: 0; background: transparent; padding: 6px 4px; border-radius: 5px; font-size: 11px; font-weight: 500; color: var(--c-ink-2); cursor: pointer; transition: background .12s var(--ease), color .12s var(--ease); }
+.se-tweaks-seg button:hover { color: var(--c-ink); }
+.se-tweaks-seg button.active { background: #fff; color: var(--c-brand); font-weight: 600; box-shadow: 0 1px 2px rgba(0,0,0,0.08); }
+.se-tweaks-range { width: 100%; accent-color: var(--c-brand); }
+/* Always interactive, even if the page disabled inputs elsewhere */
+.se-tweaks input[type="range"] { pointer-events: auto !important; }
+.se-tweaks button { pointer-events: auto !important; }
+</style>
+
+<button class="se-tweaks-toggle" id="seTweaksToggle" title="Anpassen" aria-label="Tweaks öffnen">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="3"/>
+        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+    </svg>
+</button>
+
+<div class="se-tweaks" id="seTweaks">
+    <div class="se-tweaks-head">
+        <h3>Tweaks</h3>
+        <button class="se-tweaks-close" id="seTweaksClose" aria-label="Schliessen">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+    </div>
+    <div class="se-tweaks-body">
+        <div class="se-tweaks-section">
+            <div class="se-tweaks-label">Ecken-Stil <span class="val" id="seRadiusValLabel">Soft</span></div>
+            <div class="se-tweaks-seg" id="seRadiusPreset">
+                <button data-preset="sharp">Kantig</button>
+                <button data-preset="subtle">Subtil</button>
+                <button data-preset="soft" class="active">Soft</button>
+                <button data-preset="pillow">Weich</button>
+            </div>
+        </div>
+        <div class="se-tweaks-section">
+            <div class="se-tweaks-label">Karten-Radius <span class="val" id="seCardRadiusLabel">14 px</span></div>
+            <input type="range" class="se-tweaks-range" id="seCardRadiusSlider" min="0" max="28" step="1" value="14">
+        </div>
+        <div class="se-tweaks-section">
+            <div class="se-tweaks-label">Eingabe-Radius <span class="val" id="seInputRadiusLabel">8 px</span></div>
+            <input type="range" class="se-tweaks-range" id="seInputRadiusSlider" min="0" max="24" step="1" value="8">
+        </div>
+    </div>
+</div>
 
 <div class="page-transition"><div class="slide"></div><div class="slide-accent"></div></div>
 
-<div class="bim-topbar">
-    <div class="bim-topbar-left">
-        <button class="bim-btn-icon" onclick="goBack()" title="Zurück">&#8592;</button>
-        <div>
-            <div class="bim-topbar-title" id="topbarTitle">Neue Serie</div>
-            <div class="bim-topbar-subtitle" id="topbarSubtitle">Besprechungsserie &middot; BIM Tools</div>
+<div class="app-page-stub" id="stubHero" style="max-width:960px; margin:0 auto; padding:22px 24px 6px;">
+    <div class="page-hero" style="margin-bottom:14px; padding-bottom:14px;">
+        <div class="page-hero-l">
+            <div class="page-hero-eyebrow" id="heroEyebrow">Besprechungsserie</div>
+            <h1 class="page-hero-title" id="heroTitle">Neue Serie</h1>
+            <p class="page-hero-desc" id="heroDesc">Konfigurieren Sie Kategorien, benutzerdefinierte Felder, Vorlage-Teilnehmer und Standards.</p>
         </div>
-    </div>
-    <div class="bim-flex-center bim-gap-2">
-        <span id="autoSaveLabel" class="bim-text-xs bim-text-muted"></span>
-        <button class="bim-btn bim-btn-primary bim-btn-sm" onclick="createNewInstance()">+ Neue Sitzung</button>
+        <div class="page-hero-r">
+            <span id="autoSaveLabel" class="muted" style="font-size:12px;"></span>
+            <button class="btn btn-primary" onclick="createNewInstance()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                Neue Sitzung
+            </button>
+        </div>
     </div>
 </div>
 
@@ -137,7 +218,28 @@ async function init() {
     await BIM.Auth.init();
     currentUser = await BIM.Auth.requireAuth('../../login.html');
     if (!currentUser) return;
+
+    // ── Role-aware tab gating — applied BEFORE revealing the page,
+    //    so Betrachter never sees a flash of the Einstellungen tab ──
+    if (!BIM.Auth.canEditSeriesSettings(currentUser)) {
+        var settingsTab = document.querySelector('[data-tab="settings"]');
+        if (settingsTab) settingsTab.style.display = 'none';
+        switchTab('instances');
+    }
+
     document.body.style.opacity = '1';
+    document.body.removeAttribute('data-ready');
+
+    BIM.UI.installTopBar({
+        crumbs: [
+            { label: 'BIM Tools', href: '../../index.html' },
+            { label: 'Sitzungsprotokolle', href: 'index.html' },
+            { label: 'Serie', here: true }
+        ],
+        user: currentUser,
+        loginHref: '../../login.html',
+        brandHref: '../../index.html'
+    });
 
     populateTypeDropdown();
 
@@ -150,13 +252,8 @@ async function init() {
     series = await BIM.MeetingStore.getSeriesById(seriesId);
     if (!series) { BIM.UI.error('Serie nicht gefunden'); return; }
 
-    // Restrict editors/viewers from settings
+    // Hide save/delete buttons for editors/viewers
     if (!BIM.Auth.canEditSeriesSettings(currentUser)) {
-        // Hide settings tab, show only instances
-        var settingsTab = document.querySelector('[data-tab="settings"]');
-        if (settingsTab) settingsTab.style.display = 'none';
-        switchTab('instances');
-        // Hide delete and save buttons
         var footerDanger = document.querySelector('.bim-btn-danger');
         if (footerDanger) footerDanger.style.display = 'none';
         var footerSave = document.querySelector('.editor-footer .bim-btn-primary');
@@ -196,8 +293,14 @@ function loadFormData() {
 function updateTopbar() {
     var title = document.getElementById('fTitle').value || 'Neue Serie';
     var code = document.getElementById('fCode').value;
-    document.getElementById('topbarTitle').textContent = title;
-    document.getElementById('topbarSubtitle').textContent = (code ? code + ' · ' : '') + 'Besprechungsserie · BIM Tools';
+    document.getElementById('heroTitle').textContent = title;
+    document.getElementById('heroEyebrow').textContent = code ? 'Serie · ' + code : 'Besprechungsserie';
+    // Update the "Serie" breadcrumb label with the actual series code (fallback to title)
+    var here = document.querySelector('.app-crumbs .here');
+    if (here) {
+        here.textContent = code || title;
+        here.title = title || code || '';
+    }
 }
 
 function collectFields() {
@@ -468,6 +571,111 @@ async function deleteSeries() {
     BIM.UI.success('Serie gelöscht');
     BIM.Utils.navigateTo('index.html');
 }
+
+// ── Tweaks: corner radius variants ──
+var SE_TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "radiusPreset": "custom",
+  "cardRadiusPx": 0,
+  "inputRadiusPx": 0,
+  "radiusPx": 0,
+  "iconRadiusPx": 0,
+  "template": "acc",
+  "accent": "#003B4D",
+  "logoDataUrl": "data:image\/gif;base64,R0lGODdhWAJYAtUAAAQCBISChERCRMTCxCQiJKSipGRiZOTi5BQSFJSSlFRSVNTS1DQyNLSytHRydPTy9AwKDIyKjExKTMzKzCwqLKyqrGxqbOzq7BwaHJyanFxaXNza3Dw6PLy6vHx6fPz6\/AQGBISGhERGRMTGxCQmJKSmpGRmZOTm5BQWFJSWlFRWVNTW1DQ2NLS2tHR2dPT29AwODIyOjExOTMzOzCwuLKyurGxubOzu7BweHJyenFxeXNze3Dw+PLy+vHx+fPz+\/CwAAAAAWAJYAgAG\/kCAcEgsGo\/IpHLJbDqf0Kh0Sq1ar9isdsvter\/gsHhMLpvP6LR6zW673\/C4fE6v2+\/4vH7P7\/v\/gIGCg4SFhoeIiYqLjI2Oj5CRkpOUlZaXmJmam5ydnp+goaKjpKWmp6ipqqusra6vsLGys7S1tre4ubq7vL2+v8DBwsPExcbHyMnKy8zNzs\/Q0dLT1NXW19jZ2tvc3d7f4OHi4+Tl5ufo6err7O3u7\/Dx8vP09fb3+Pn6+\/z9\/v8AAwocSLCgwYMIEypcyLChw4cQI0qcSLGixYsYM2rcyLGjx48gQ4ocSbKkyZMoU6pcybKly5cwY8qcSbOmzZs4c+rcybOn\/s+fQIMKHUq0qNGjSJMqXcq0qdOnUKNKnUq1qtWrWLNq3cq1q9evYMOKHUu2rNmzaNOqXcu2rdu3cOPKnUu3rt27ePPq3cu3r9+\/gAMLHky4sOHDiBMrXsy4sePHkCNLnky5suXLmDNr3sy5s+fPoEOLHk26tOnTqFOrXs26tevXsGPLnk27tu3buHPr3s27t+\/fwIMLH068uPHjyJMrX868ufPn0KNLn069uvXr2LNr3869u\/fv4MOLH0++vPnz6NOrX8++vfv38OPLn0+\/vv37+PPr38+\/v\/\/\/AAYo4IAEFmjggQgmqOCCDDbo4IMQRijhhBRWaOGFGGao4YYc\/nbo4YcghijiiCSWaOKJKKao4oostujiizDGKOOMNNZo44045qjjjjz26OOPQAYp5JBEFmnkkUgmqeSSTDbp5JNQRinllFRWaeWVWGap5ZZcdunll2CGKeaYZJbpFwoYoIBDmhikuSaabrIZJ5xqylknnW+2eaeeec7Jp515grASCIACKihVM\/yg6KKMNuroo5BGKumkjnKwEguU8lDVBJR26umnoCqqqUocUCpAVYmGquqqoVqqEqaTjjoVp6zWaiuksqJU6qSnInrrr8C6mhKskuYaFa3AJruqsSbtKmmvU42g7LStXpopqtRm2ymzJTkbKbRSpartuI9ySxKx\/pGa2xSy5LarKLgneQspvFCx6y656oqELq7YTnoDm2gGDPDAAhdM8MEGJ3wwBCvJ+yi9T9n76A1n7VvuppQ+cJbDjkLslLSTamyWxY7mu5TEjlJsFseNetyUuJGqXBbJjZqsFMqNilwWy4y6zBTOjOpMFs2M2pwUyJLKTBbPi\/q81AKUKj0W0YsajRTQiwo9FtPvVoV0pFqLRbWoGPu7sallJ13xtb6GfDavaYO9dqxxQyq1JyhQIIIJAeTQQQs5OCADAzDAAQILOjgQQwk99NBADin44IAOJAyCAQ0yGBBACi30UEIMNsjAAgZncP2D00rAQAAPCvBAek5f2\/0J\/gQqlHBBpxcMkIMNKJwBgw05bPCCpzuEwAIfFPgww\/CdvjBDBDIUHsbYP1gNAAgqLD7CBcwv+sIOugcgAMOC8OCCBy6cnz765zswDtRub4KCAS10H+oHFaB+BQMlPFDrBSmQwaHmwIIYnOBWE4iBBAa4BdOhDgE6aID9mtcDBzAAED4IGQO9gTVFha0PCtiBCHewgAXMYAYmHMEEeocEEQzgA8nagQtYuIXfwQ9YBzDBBtfAgxzcgFo53KEVqKeu3w1ggqu6QQCEaIcMSuoBTNRG7CY2CAVQqnJG0MENp4U\/CWSBAzlAIrBu4AHpqYEGLWhXELXgwCNAwAe3m9YJ\/nTAByeCLYrZ6OAP7tYHFVCKAkQAgQN2cK8WIKAKMCjAvR7ggTSQoAb3UtQar0DEIsDAAz8c1wSEdQcPTOoFeMSGHj\/IBytOCosAYEEmI3kBGUyBA4SM5A96QEMxoCADMJSlJK2HhDYOwQWrbFcJDnmHAMQvHDCTnSD8eEohSECM7koA+ZoAAjvq8gTHE0MAoBnJEIRSCZW8HiR1eQBOzsGTknrBNL8xyir+EQA64Ka7VpDNJZBAj+P6gPu+gIA06hJSE0BlFNqIgmRG8gUWaOIxwTFFR11gEMyUFAkckMt\/MuoDLliCCfxn0UZVwAs0iGVHHfUAA0yBiAw44Eh\/\/lCDb6LBmo8CpTgMStJBaIBSigTVAiLgAAUIgAJ604ADIrCBWrWAicbUaQRs0DqgSkADLojBAWpVAy6oQJ7pnEAFfKABGlDgqS6IwAwqGqoCSMF0MeBopz7wPAeo4Kd6U4ALAtADsnpqBYCUQ1LlNtOouTNZB0gADZjAgwQE81Md2GEIPnWACAx2CQJIgVpBVVUsgCACqwLgAzWQg6mWNQrUsyukLpABDRBTCRCQQQKK+qkLPBYO6LyjONq5TGBNQAFRAIEGWAuqxBJhr5MawAKhQDuaTqqyVQBBB1SVAf1ZMgKinVQIoGC6TkXgtFBwwGEldYDXvQGmjpJpOPT4\/lBBmLJWE\/BiFXTAW08lYAg26JRwrSCDLXaqBFYoQag6IFApkGC5oGqkE6gX3NdOAQM5+NQKaskG8DZKnbPNGERrdQNXZmGjoNIUCbB6AdxmQQNYbZQKqOACUB1AvVjQQBw9pQEnVBdSLzBpFgSgUkoNwKVicHDQxmFcRvGxlKzaQV61oMpPbQAGA5jUBvp7BR6smFIXYHATRBBdSHlgnVjAQAM+9QELL4HAj1oAk62AAgBTqgNvAO6joNjXhf4hoqCaAA68QACRUqqDK\/QCCdp73CjgYLuRkrEXbDBZSZ0Au71cVQawrAUPVLlRHmZDbGGMY2qQ16aqmgCjtYCA\/hXYdtNZQACfJTViJ4DAvpIygRgoUONJmfXLqno1GCzQqR2Augw6zto4aBuI83rqAnMOAwUADaoLILoLNCh0pC5gxiWMs1OCDgMDlA0pLycaVDOoNBVyOikftCHXHrx1HjNGgnKTgALlRre5z73udLt73eqG97vNHW96vzsJcKbUB5xrhXzfj5dU8HekSr0EgUMqoWWgcqcODc5ij7kLp6bUC7ybBnD\/gJTb6PFKQ\/VjAPiaUgImQwxqldEyJMBT+F0CCDzdqQygQQeekvURXqwoa4uBBNRulMxf+kltSwOfG\/crEgz+qAGgYdTyPQMIkO6oEzDBAJ7Kdhoy4Cmb\/hMBzD9oAM8pdUE1THrNuw76rzr+cUmZcwwyWFU9y0D0Rp09kJ4NGQHUAIMnR+oATHzxB+Z+BgjY\/VEBWIOaw+vzaGhc7LjDt6eQe4aGSmrnZXB8o0J+hBJ3iuBpMIGnEG4EML83DTAP7hq+XtMII57CSbipvvmOBqz\/4APBRgMPOjWCJECA2Dp3g+QZhfeZN0\/KZWB5pD4gbjBYHMLjPT3qkVD2R+WADUmOOfShnITFrt4NL+b81e\/LBgdQKtJnsDjGtQF05adM8ZRCceY\/xe8uaH5SHzj29XLuUTjsflEn2GF1288FDDxaURGgBsdXeNBweOanTEfQfI2Sf2wA\/gP\/tygH0AYIEGLcknad0nVuEHqUsk\/bNykMyAb+FCkrIIBuxkEHqCod13aK8nlsoF+UEoBt8GyRMl1GwG2SgmZw4HcLt0GmA4NsoIGQ8gHNVgaklzME+AwGeIKNQnaUsnZqoICNYmBPSCkfVQQg0GrfIgfWhzYd+CxugABXlAaDZ4SmJykfkAIZkAFomIZriIYpkANsGIdvGIdqCIdqKId2eIdzeId6aIc+aAQq+AND6Ej6Jn9nQAOUonVFMHuUEoFygAOeUnJDYDpDtgYgQH+Kon5EqEFt9kQTNilvAIYlmAYoQCkpRwQp0CkpQAdJ2AJFQD3AhwZ29ijaVwZj\/hg0R+gMetRxeqCCjtgGIPCAv9iAD3iKQzCLkKKJb1CEJMVAXMNmbtBBNHgGzOg9udgMBjh+eaB6kTIDcICFjlJ7b\/B3udeF6TSIbsAAnmJgYzOMbCCDj1KF4ceJyWc25jUpC3CNWYBqjeKKb8B0iyKPQmB5k4KDdICMtEgEXHMAhngGLhgpE1Bx9MhQElZbzRSNkyKQbHB4xggAqbiBdvCRGWmO\/OIGDwkp3mgEILCSLNmSLvmSMPmSt5g1DCMoNnk9N3mT17OTNpmTOykM\/LiEfyVRb3B4jLeRk9KR8FiSdKA6BPCUUBmVBIADsQcAvtQGJxlmRuB3D3ADD\/CV\/mD5lV7ZlWEZlmM5lmUZYmR5A2zZlV7Jlm\/plm75lnQZl2zpbb\/Aa4AQiJW4BvenkWsgfJCyc0kohYQQTliJj0YAA0qoLIGXlxUZCIH4cGdweIroBoenkXEnKaxnCFfZgoppSQ\/YmJ7ymL5wf3v0iUSJkZICmGrAkUUwmj\/QkICAmGxgg1ppSSFGmpRimr0QlDsmCNwYKX2pBh10lGsAnIpijKWYMfooB5+5BlnpKAtgBAggm7wpKXjpC7s4lJFCmWaQmXBweDKHiEKHCLa5BrhJnYuJndkJKb7JC3r5ZmGoe5NymW0gnkNggUqmCNGpBtPZKNUpmu9ZK9PYC6jJ\/ot5AIWLUpxpoJ+YmZREIAGd4o6FkJ4AGppE4IAFyirxuQvz6QeT+QbHCQfK+QPGSAGJlwj\/mQYByigDuqHu2aGMcqC8kI3eCSngWQYd5JoP6mpE0Jw9lwgY6qIaOgQcSqOh8qG60J0WKSkOigaWOZ4jSQSeQpt\/0KJo8KKLkpIyqqRLCgwh2gfDqaNFWaVucKIdCZCM0pkXyjZtsJ4C2p5gCip\/yAsJmqOPsqNkUKJn2ppFgE8Y6JlcmJiS4qVDAAIeEAA+EACM+qiN+qiS2qiU6qiRWqmN2gPwFwEBEAKQaqmgiqmg+qmVyqgA9wonenGqSZx\/Gik+KqVASgRL\/vkwRAqnt3mktjiR7BSZgMCgisKnY3B\/+ImUgEoEJ9ebLFqooCkpMWoG1ago4kWR9iiZ9ZmfaNoGaloE3mdjtUo3JomrZCB+z6kMYwpkkxKlZ+CnEVqsQ0ACa4WObYADKqACMlCv9Gqv9SoDKlBLWuqQ4DoG4lqGMbOqZsqarkqlj2cESdhiczCTjdKZRbql\/yoGz\/oDyAcOOCqc1UqskTKsawChQ7CFCTsHghkpzWqVyiqdExsGDquqAgsp2ogHvvoD6GoGPWqiEloE6kh9cqCi1vWKtqqeKwsGFRut35CnT\/qdrQopyPma1zoEbLoomOcGLds0RdCvZsClinKy\/mTQsjF7DeW6BzMLrGLwlwgbKZAHAMc6KREZByWLgEMQsWcgpzCaBkU7rsmQsdR6rkv7KB7rtOxKBIyYsmsAhJLSkSgLN996qBL5RHiLDGGrB2NLok+bnDlrBJsZKQbZgOAIKXQEtN5qqCbbuLJVj56YtAXbBupqrYFLBPF1gW6wth7IaFhbBlr7A4iKa0NqunwVCGX6KDVbBiDLsZDyqgjpKJubBjSAnQwLusXyBrfLtWPgtY97DJG7oBvrl\/d5toOJfpSynWkQfZQijkZQu2QQvXb7ScV3DQaooHgwout6sG9woq8KAEn4AaeKBQQJf2+XSkGrBnS7KNKbY6PI\/g3XK7PvZLBMy72PgrgT6iknEItggHPSd21euLiju3WRYrQmWMB7AL+qW7mAK79JIL4FiQaa2jxV6bzp8gYBvLViqKsdfLq9lr0jDCl\/+6OHuwSDSykJgAIIAK9bkGCeompJYL5jgL5ocLed2Lt7mcAh3LqWK8VGULGMwqRcAAJE3Ck5HLf\/a6TMSrowW73GcMB38LuOQrZhYJQM7CgObARb5ing6wVbDGUSLARILAZKPI+O+7Jgd48X2QZm27eOUr9DAAFvGylYfAUoMKtZCGuhu6wZTI3q68elt7dQSsiN0sVncKJpewQkgHtufMdSoAKZOyl3asGPLLooGcM0\/oyxEnduBJBusyzLtHzLtpzLFFDL70YA6ubL5QbMJMDLwSyV6zS5ChyPbVx\/TkChn\/ICLvCcKFABoZKPTSC3ZvDCPzDAYcDEvFunlUIEIEy8j9K0OkzCTWBxjrIDVvcEIABMoXIBbnrEhAvG3SjGf\/zN4MwonDSzwdunInzO3QsFIxcqE+AAK8wEGnC8kgJsT4DNZaDN3Gx8lYxM+wwpnDTOH7u98xvQSqABM7ooB00CUQQCMpACnUspJzDPSpDHYbDHZiB+YXfR4TwEGm2cfabJjGLISMAAUftEK1ADIaADOmADEZADPbCbkHIALN1wkayyYazBY9zENK0oGQ3F\/uRcyMu801SAAil8enh1VvUssVHNxxtMxsVQfgXKSWjcKGoMBsIKB4nM1VUguyv1AUt0Ul9M1pNsBtRryRfdzzYs0Mqs0wF5BQow15E0Ak3dBC4NBjC9iem0vtaQhDR61XybzI7CyeHp0dmV0uTyALUoBRBNBhLtyk68q1XNz0SAzFEcKeYMq1Q8BRDgApioLB+QAQkt1orLyrlJyemE1sSg1u+J2avJuujMBvTLBQgQArdtKwtgA0IMWns9t0P7BQEbDiPwAdzd3d793eAd3uI93uRd3uPdz+b91l+w3eTN02QwVuT9xlaAAzbwQsryAgXQv1XAAeadv1xQAOWd\/rtk4GjkfQPCPQwwgABBrOAJ3uAM\/uAOnuALvuAR\/uAUfuETXuESvuEXzuEwwEAgUOEZjqVlIOIcfuBQoOEQTtlUgAE60AIh7WMloAEsnlsejuE56OAjDgPT\/QUgsONBLOHfAQMKUAALQI6PcgIJMFxm4uMEwAIaYAMhkAEB4AEWoAIKwAL\/3ORc3uVe\/uVgHuZiPuZkXuZmfuZonuZqvuZs7h8EQANeFedwTgPt1m5yPucU4FUsQAMMQAN73ud\/7ud8Luh9zgAkgAI9fiWo+U8fcAMnMAM9EAMCgOI6Qtwd9QAlYACk3CSWfXo1wH9FYulitwAmUONEsuhKeAER\/kDpLyLqyjcDu50knd6Y5fQks96YD\/C5TOLqJ2ijSMLrJ7jIQ0JeLuAAxX7sxp7syL7syt7szB5WJTAABxDjiiLsQWKAE\/0FKCACAWBmn+LrRKJH2S4GPEDc1u4jerQBb6ADz80oIoAk2A4HBGDCSsbqJKJHI2g4mOUpMXAkBpjvcUDNa2WYQCLuc4AApwwpRhfqlKLucyACnxLrPRLvdCDwIEkkFD8HOCCb5Csk6W4HVasoEr8jGT8H7topHBgk+H4HXy0pqzjsDX8HhgspyfsjBm8HBFCh4R7zdzCaxDckJX+QnbLl\/Yc5fMM5J9QBGRACoeM6pm4HaEIDAiAC\/jpgATogADiQ6HmAAiRA9SYgAhSw6YOgOjygAjagAjxAAFrvBzCAAzTAAyKgARZgAgJAAiQeCzdvB\/gE6lMAA5wlyo7yAR1gAyNfB37fP2Z4ATNQAymgAWLPBhhgAwXQAyvwANH1AJCeApo+CPRdAB1Q+dH1AZivOxZQ+HZg0ihthjcwAy2QATrQ2K7w8XfA0IxC8FuAAiYgQQjkArYfBzhgAknNKhvQ+I9PBpGP6o4yAyHAA0+\/BjTgAanajS5A9G0AAzpQAe3+KAeQAyZg+qeAmuPOBlcKBiaw3dSyACFw91DgAxuwA+3\/\/u7v\/h1vBCLQ8r8yA+CXBvSN\/CFT\/gO6ngRAoDvtNkRjcbMCAZhN5xMaBXBCu98Vm9Vut5sQSxoWO2tHMxIVZlQ+XPcbuzHBxnX7HZ\/X32fw62ovcA\/H7+pCcEzGqpDR7cEFAhEqxu9ESmWiURNrx2RJUg8jp22zcUJEzMbvgw60SaSvVHMCzNUpFg4jSqBFtvHCo9V2mLiYCfdtw3jYgnHGmKHH13dDY5gSztIJxGRjevPER3i5CSXm5buxgUSqGe4j0pWgN72xhoB4oVDXSQW5\/s2LGPzIFTQoJpOfBQcRjWDUgBiKEgBljeDgCtubQ69OUNT0QIFBEAFueGQUAwEUE6vGBUKQwiSjFxHigfrHhSCJ\/psxt3xwwRAo0IRwlAXNQ6FRjGE2SPFsVKJmoIxutEFI0dQpnBCfiIFwcCGrnxs6nqh611KPi5Jh4Vyw4EqfH34y1rJ1UwGtUb2SHCrceydBI2ugIEy0y2gFBURTuVjiseKwnwFphsGgF5nLhxBOzL5hJQiBNMxvWuTFs1OLrhhYR2NJ\/Bc2orhwFsYOQ6LRDlc4UJeq++2GBEGMt1zwwbp1lhMCbBHo3brEJ3eeTY9hsCg5lw00ZBeKlp3LA7K2ydsZmqx8lMt+HIAS8FvTixYOJDDA0QQDDRkWGjzw5SGQwMCb5gMTQGHhgAG5mAyAlc7aQwd0fHlggBJi8MAA\/gN8yKCCESQsBSRBnjNEQS4iSA\/FKPqiLcUmZPglqj06+ygCHmIMgwqwNqmAqzuIA+iDCQpIwQMLVDDBgxgK6AA5TT5ARRAF\/PvmggkayCCDAlqYYEpqSJgxs+qk+HGVCQJgoUcoYJAgAchK2WyP2Zz64IINBpjghC7TsaHFPs9zA5AWcdCxEB8kyUCWAijTA4UKSllhUTsE9GgBB+4TAwEDVizlAnb2cODDTTZIQIZLoQCBAB0yIPQjRB+8AwXRNinBVDwYGKCU0vQYUZYLUuAAhRsRIEDTb57sM0Vei0pxPTheSEmQEEpZgAdQVGC1kBHSFIPMRBXLg4AQ9Gxk\/gVo8QBTpgRqwUOGBnj6zA4IeNViBeYQ0QBbybYVY157QrqDAB+8keUBT5El708uaksPBJgaOVGQFzeB0xUUOtgkBTy61aQB7gTBIQdZOsiDh1ALeSAEgvagwVGP4K3DsEY+cGBfPWBwuJEE8pDzmwbwCcSEjkrZQcyDGUq4CxQpcNOZG++gAD44bvh3mJE2MdCOjQs5AEpQbi1FKTsG3bFWRATgmUCnoUAXjgMuIkYDk+EYz45+35jAXkRgCGDcQnow2rZN3Vg4Nq\/kfuOBn\/eAALtCFjC4GAn6duODdbnt2VxbcGak8jpAsPsCqm0BYVJj1XZChCbd6EDlYWgY\/riQDxi4A20nAyCGhNrnBhw2pLUg\/C8JmG5EdD2ahWOA010hQehCTmg9Cq3fAHAZFSYfvA5XGRkAelukTAeeMXCI+g2dC0LAXUYOiDQMu7V4oOvKCtjkhsx5B0rZv3DQIAb3r4A4ENIiV9FcwYDDcUFbY5BeT4RTEAo0zg98CgPb3FAD5YGCBAkikJhgoDsuZIAhEBge8uzgQThMQHHGYIomcnA\/vfhOOTGIgAxpOEMb1hCHN9RhDmOQghasIF+aGEDN6kAD1W3hACk0iACOqIX2XK4UWDMICz5StiYYsREgZAgONCiLl0Vhc36ACFBIcL0t3G4M\/vvBBggoCRVs\/qJaLhRKiXgyAPvloQaNuMHsjGIAGEGRhUGZTiEqIIWY+UGLQCFA8zbxxSdQoIlZGMEFiaGCSF7hAd27BYi+dZAwwiFQcjyI4OhoLOoJggOaGIxeQsYIikVvE8A7yPwa0ckmEOCSP2gBEZfBADNSJwx5ZMTz9rLAH2RMDCbkggqMAsMtMFOUBlFmKRmxAcsFQlZ+GAFsEEC+LTygOqVbhRIPAoMu+gGNTvikdu7IkDeWwpFNoCLx\/gIC2L3DipvUhPmCgoEgcmGM0SSHM6lZiBxQcgwikBkf\/zJIOIQNlo14ZVDeWYhlMQEFl3wBQ\/ciztiZJptwGBlsIMmIAiRT\/hMHaCMxKLiFZwmUHKQsaCPSKYl+QRQ28\/pAPgHgUTdcoJ1Ha4THmCBAP5zyLxA450d3ITPI7cUBjeDoE+z2lr\/cc3cwNQZBZ+qGCUx1DxX1wwOCGpRUMiKRTzCmBP\/CA5o2AQYHzMIMEFoQATQyLzI1UXlwVYgahGGaV5BlUCRWiIBqdRhc7aobCqDJuiUlPSGlXPd8WhxeHqSvfgilCxjxNvK0jHM3KuwqHBsUt3ZWCv2SgW0y+w7EFkONi73CCwJw2SgQQBO2jM1ZCyFFJyyQn7DRQSN+xquRlocGTrrRIeFQAhQFFplQCOwByDNcRryWGIqVLaCuWQeHvmEA\/imSLEAj6ofu6gUBcs3CanFZiPPChrnA3IZ6sxDH8rQ0C9SNwrwmupe4Xhe7ttDudjPjAds2YbxcKJ5t7spUtVo0PaCFw1vwe4XjpmeesYvRaFmEIhj8Egue1acfdPsXWvohwAImcDo6gFAU\/KJPetXCKpsgvZ+URwKMOFFr3bBg8vCYci3Rnh8M0KJ1bgGATpjmYPeS40Kk2BWxXTEWOmBb6\/q1TxFghHMf7IcGkgcDjKhBRsd6YKN8N0xP+OcWeAobDrvhok3gVU1tQ98fQBkUXN0ACvjcZz\/\/GdCBFjQKCMABBVggADJuRAeKlr5CPDFFbw5PS6T3Xr3A4JIz\/kCzFoLrYc6N47QQbhECGvFUAEzTt7ZhpBvwLAk9xwYHDghsBcWA6UaIOD0vZsSXmSC90hrFm1m4gDDhEL8UAbkn49CySZE1QjcYiqqF8PFfuNpqRHCVyUZhARt8AWkoKJQRDzCzUbDqhiT3lCUogiDlVlFXvXjAwUxYtxtSnZ4j\/066hcB1bBKcBWuLSNTlIUArN\/GC915ZMgcjOBz++tuxpuhiAAnvwXgrXwBAwM5XIGqKHFTmaJMYRQtn9b\/3wKts\/0UDIEai0+Atkwuc4OUxh\/nMZV5zmt\/c5jnHOc1zuU0nVBYL2kiPDjxQ9KL7wANIN3p8t4DTFkEg3oTg\/pwHXOACqled6j5AOtJDEICuB8AHXw+B1pPuAhuc3Qcu0DrZww52sXsd7FoHuhZawqtfB0UCRj960vVO8j1gu0+5K8W5mXDvKW9CvzX2w0ZEqYFC0A1ZI3pZqA+fjqlO8+5+f+2r+wSBfmemxMSu\/DRe0COtCV2OnPUDWFMk+szURNKj30TejrEPzWve5Afz\/Cae8QRFy74QmdMa4+UoPfa1aNkWrzDw4VBkJdv+9iTnVSg7P+AfXHOpzNcER08vUKZn4QO8q3D4iqp9X9DZ7tEnOecPhoNcXqGmIFC5+bewWsW3RaC\/Rz2yEJ5mJoic\/gqh0zBP\/f4N8ABH9RiB\/nB0LQA1wbe6L5rKTQsS72DEyv8AIOIa8CE+LhcK0NryB3BAYNZ2Cq7eTwPZCgAgUJRWbQtOrjxiDwte5vM0MAsmrgkI0APx7AABxwKzigmCjQazwNtUUI5GxAXJQwHSjQlcLwgXhAPfIPNy0IVyj3cwDrKaQAKbUAgdDv+i6Xi0QDcAx\/FeBQAMTwt9Ts6gTwoDjP0AR8JOyAlm0El+4APq0A4\/4AXyUA\/3cA8f4AJi7gAOYAcEcQM2YAFmYAIQURETkRFnYARGYAB6YABaoANawP6YYO5+YP\/uBwC14AV4p+OCrAkSUAsR6AlwcA2xiwp5pwcdgSu+bws8gABw\/mAWa5EWEQADEAABYIAXYQACQOAXkUVrKNCFAmAVxm0vjEoUmSAUEQdLbCgEuu7ris4GHMABqvEarREbq9EATCBDdAAcNUADVEABZEABREAC0FEd05EdRUAAOAAeWYAB5JEFaIACaMAWWyf9UhG7uIr6jEbqGEFxjOmkWi0Tic+FNi0LSixFTmwZAQDc\/KD0\/g0V+VGr2tBoIOD98iaqqsnahk+gktAPpi09COplkAK1PlANLRKmdpB3WNAN6KYVLzDFiNCFGKBQAAcI6bAmGNAPrKrVKpIlowkE76dfbmwKNIHXAmwYBSrM\/ODCWiS52s0JMq6QVFIuhvIiHUeO\/mYtyWCSC5CKYarRA0IgAlIgBXKgBBqgByRxBpzv\/jQCppxNC24AGQVJw5wgA4nCaHgRA3AAB0iABThABERABlRAB2is9rJSKwVqFXln\/n7glTIRC\/6mRUSyEDYuBRcPpqRn39LjC7Xgi5qRctosNlbgkgry+RizMUUJIw\/GJ9kDdWSmrP4CFvNrEvyAGF2o4tyg09Ljv5SQCUiNEeASRaayEKBpxKCwNaPp937gCJFLEyBP\/hoB8sgDAuavhbpMLmEq+yaQ\/z7tCRSrBfpEGT3j+ISyOQFnmv7xYFqOEYqnE7ngKtMDBrXgEuPyp7RqPrPA2MpDDumwJTpyrNyN\/iGyUAtscDndIArXE2ECDnDsBtcwUyLvkhyY8PVyswsFKiLfICrJAzfE0wkCciRTBDn9AClXswMd9H5c8mBCtNSeIDgLYSlhAwMy7kPRrW20qjrfwdRiwyHJsAnocgvSijz6UwsYch9ZFHCeM86QxRjJJQre8A0skzySzw\/qbTM3VKCClLzSgwQyTkChwAfC7Uf3ggNyaTeZQD2ZtEWWjHdIwATFkglKihHsCzZgYCevIAyh4CARi\/LeAE9j4zZFEy0wYP7KkzxAQLu8bUFxwk0B5zVbJECxgKeQtAbJY\/muQDH1kwvWVI6QTQt6zzY6NN6c4Dzf4Dr3gjTdAFQB\/mBJIzXGILRP+i\/hpAAHxJT2Lg0sRzUMQBKxnAxFbQME5s0znAYB1kzYatMgUGBPr2BVb3AlZTVFJjU9JEBMrwAoy+tW\/8LR\/CA\/uXM\/X4tXHkAzjcIMe0JtSLG5YgNDFYaIYpVaUcRayQNbN+EBjs8JUEBM6ZQh4LNbuZULEFKgZhIMmXUZxhCvpAAElDULtjUoFJZGUYo15xVFijLSsvUKfhMKonTX9IIH3u8zPRWJsAsEvnMLdkkvaEBjryCemmBTf+AFRpYcMOBZf0BB92taLfZB\/eBJiRVLZUZfnwACevV9ztQYFkmiFIgzscuPtswoSMBhHzIKEFQLiOkg\/mYRB\/bSWSyNTXeWZ2PDSVMEB56TC5wuDEK2ERYAYUEBBaw2U5mWS3lUu+rTIJhng8SAiRohgRgCUx+2DuQ1bGOjXo0CB2IgMkWzQWP2B2agbQUBBMz2Bw7g7poywFBgaq+gAQxUD3jAaIVTCgi0EHTFIP4WC7YzjcB2cPcCY9uqBkwQyfTAS99gBZBWEkDgW\/1gUKUgEzdRq9TWGWwXEXQAdpMNZjSBbckBBgo1C1agjdp0dV+IVoECBDggBT7XsPaAUTXhBLw2EFiASLnAUX+1aVOsVd3gBsIVFG4GSAhIBDVhBxhSEmQAe7HgAeQXCgQ3eqVXs2jxLwETB\/43\/oABWIALmIAPGDAxgARioAVGYAMS94Q4lwnGphEeAAVvdzU0QTXr4E\/xzHSpjJwCQQZQFp7aiAAy9wpOgCRthnnBTznrAHr3Fygk1\/z2DBGAl1xeWHs1wFjdAG0BaVyhbHvjIwUaFAp4oFJFtA4aTBNaQHjrQAgaKVrbR3VlWKhKEQsuwDTtQAFadgB21w4MoIefTQ8y8VW1CgNI2A1eoAD+s9Z0wPp+YCdfth3gKQQkGCL95wNWOApi2IoNQsqmbAO2+A5IAG4VxgEyjwZ8YIzdAGKzpnzxDAHi2BBywABIYF9AgAVsoAVa9gcKAGBpsg4kB0RKQAVczARCEw4e\/sB7dbZi\/zgoKPnwauBx7QB9pqEFTEACWAAHEAAEEIAEeMAAUkCNPYOPxySS8QwE3rWCN6AHKrEDRuAAincLFdJlV6oJSCB8V7kEDGCXe\/mXcYAHVMAHZFkTWQ+GqxiWBwqLCc8WPNZYIJi7hiOZWy1oFeQFBuN8YxCb4Sp3p0GeB4eQU0ud13mrtDCfDeJ7SuQDDGwx6rnVTICaY+IC1kV0RRkPyrSUGtqmCtqgiSGQZ+oBUIIhSIBrW2MA8NdHILrVRKCY2WIFUmifXbaWoUACUDgrBiCEd8ajP1rFGnAmhpYcJGDWPOIFtHQPgPX2YMAHcJoiZqIlrJknJQEG\/iLAk+vhAR45EPTXpw+a\/g4gAIT6ICzgZtPBOIwYiAfWAxHAqjGjAkJYquk4D3CghSniA3IArQGrp7va1bTvAypgV\/O0rbPiAGygn+tAqQsQAygzHSaAZsfvsHGEhn1hJvKaX\/aarwVhBB6Aszvbsz8btENbtEebtDn7AlZgAlpgSCwgsg0CByyASUxiBTTAQjm4ElKRBHLAqaupU58grls7DDSgBya6LTygpmkHszNbufMABTTgdb9hBgIAnW2BA7zRArzRBK67G43kd6GZEr\/buzsgB2oGBCRAt8FnAHyAASgprvF4DDKlP+rhAxrABNy7DhQgu7cbu7W7vpfb\/r+XYU0KoAd2QOU+oAccYKd5tjfdoE\/DoLwzoKwnNwNkoKbhmQsafBkgQAVKIMJ\/4AFM+bj\/W8S1CgYoQAA0wAMCwAZ0QAEEgAEIIMSZNDYpZ9xMnOgSoAZmIBAnoAIiwAFUgAMsGwAw1UoZwsRRPAIqYAA24AaSYAQqoAISIAIEwL5H3MqvXJSeVcjJQZU3Fsu\/HMytXLFoFjYaeXzDHM3T\/I9ndwsaDkWE9Q3UV83nnM4tdlM\/4Fxjg1cGus773M8tksywzD4LIUf\/3NAPnR+ZGfym2ChQ4KV7G9EjXdJvD86dJbCN4nMK4QaqfNI73dMBp3418YnJ4Z+5ILo+\/h3VU\/217vkNDoDPbQEFMKCuyVzVa93WWyTTcyPBl+GD3fnWfx3YywMHQv0HduDVD0Udgl3Zl708OCBbb8AFavsOHmNtY5zZrx3bA+FpU0qHbYECurwuRz3bx53ck1oWFsAFjp1hdaAFTPAFarTc413e98DCZaYHdACTGUUEcqBlH+DS5x3gA14Mtp2yZ6AEfEAFBIACKAMEBHM\/EqAHiH0CVVrgK97iu\/hdTGIDdt3iO17gBSCgMWMCrN3jS57ZcaDUGdoDON3kWx7Yr6WgBkDcXZ7mxx0G2Hw0LLjmd97kiRo8\/nrLeV7ogZ0FEmC3p6FSxHrolz7eQUABGoC4\/hdPXZie6lseBQwgBzYg6l22AyJAAli+6sM+2FFABSJgBh4glz7gBDrABTgA7MUe7pkdGIdlMCVABwygxTmAAjDAF+Pe7\/8e8ANf8Aef8Avf8A8f8RNf8Ref8Rvf8R8f8iNf8ief8ivf8i8f8zNf8zef8zvf8z8f9ENf9Eef9Evf9E8f9VNf9Vef9Vvf9V8f9mNf9mef9mvf9m8f93Nf93ef93vf938f+INf+Ief+Ivf+I8f+ZNf+Zef+Zvf+Z8f+qNf+qef+qvf+q8f+7Nf+7ef+7vf+78f\/MNf\/Mef\/Mvf\/M8f\/dNf\/def\/dvf\/d8f\/uNf\/uef\/uvf\/u8f\/\/NfnP\/3n\/\/73\/\/\/HwgAwiGxaDwik8ols+l8QqPSKbVqvWKz2i236\/2Cw+IxuWw+o9PqNbvtfsPj8jm9br\/j8\/o9v+\/\/AwYKDhIWGh4iJiouMjY6PkJGSk5SVlpeYmZqbnJ2en6ChoqOkpaanqKmqq6ytrq+wsbKztLW2t7i5uru8vb6\/gIHCw8TFxsfIycrLzM3Oz9DR0tPU1dbXw8FAQA7"
+}/*EDITMODE-END*/;
+var SE_PRESETS = {
+    sharp:  { card: 0,  input: 0,  label: 'Kantig' },
+    subtle: { card: 6,  input: 4,  label: 'Subtil' },
+    soft:   { card: 14, input: 8,  label: 'Soft' },
+    pillow: { card: 24, input: 14, label: 'Weich' }
+};
+var seTweaks = Object.assign({}, SE_TWEAK_DEFAULTS);
+try { var s = localStorage.getItem('bim_se_tweaks'); if (s) seTweaks = Object.assign(seTweaks, JSON.parse(s)); } catch (_) {}
+
+function applySeTweaks() {
+    var c = seTweaks.cardRadiusPx, ip = seTweaks.inputRadiusPx;
+    document.querySelectorAll('.bim-card, .editor-section').forEach(function(el) { el.style.borderRadius = c + 'px'; });
+    document.querySelectorAll('.bim-input, .bim-select, .bim-textarea, .input, .select, .textarea, .bim-btn, .btn').forEach(function(el) { el.style.borderRadius = ip + 'px'; });
+    document.querySelectorAll('.bim-btn-icon, .icon-btn').forEach(function(el) { el.style.borderRadius = Math.max(0, ip - 1) + 'px'; });
+    document.querySelectorAll('.user-chip').forEach(function(el) { el.style.borderRadius = ip + 'px'; });
+    document.querySelectorAll('.category-row, .custom-field-row, .participant-row, .status-option-row, .tbl, .bim-table').forEach(function(el) { el.style.borderRadius = c + 'px'; });
+    // Instanzen table: target the table wrap and clip with overflow:hidden so corners actually round
+    document.querySelectorAll('#instancesWrap .bim-table, #instancesWrap > .bim-card').forEach(function(el) {
+        el.style.borderRadius = c + 'px';
+        el.style.overflow = 'hidden';
+    });
+    document.getElementById('seCardRadiusLabel').textContent = c + ' px';
+    document.getElementById('seInputRadiusLabel').textContent = ip + ' px';
+    var p = SE_PRESETS[seTweaks.radiusPreset];
+    document.getElementById('seRadiusValLabel').textContent = p ? p.label : 'Eigen';
+    document.querySelectorAll('#seRadiusPreset button').forEach(function(b) {
+        b.classList.toggle('active', b.dataset.preset === seTweaks.radiusPreset);
+    });
+    document.getElementById('seCardRadiusSlider').value = c;
+    document.getElementById('seInputRadiusSlider').value = ip;
+}
+function persistSeTweaks() {
+    try { localStorage.setItem('bim_se_tweaks', JSON.stringify(seTweaks)); } catch (_) {}
+    if (window.parent) window.parent.postMessage({type:'__edit_mode_set_keys', edits: seTweaks}, '*');
+}
+function setSePreset(name) {
+    var p = SE_PRESETS[name]; if (!p) return;
+    seTweaks.radiusPreset = name;
+    seTweaks.cardRadiusPx = p.card;
+    seTweaks.inputRadiusPx = p.input;
+    applySeTweaks(); persistSeTweaks();
+}
+
+(function initSeTweaks() {
+    var toggle = document.getElementById('seTweaksToggle');
+    var panel  = document.getElementById('seTweaks');
+    var closeB = document.getElementById('seTweaksClose');
+    function open()  { panel.classList.add('open'); toggle.classList.add('hidden'); if (window.parent) window.parent.postMessage({type:'__edit_mode_available'}, '*'); }
+    function close() { panel.classList.remove('open'); toggle.classList.remove('hidden'); if (window.parent) window.parent.postMessage({type:'__edit_mode_dismissed'}, '*'); }
+    toggle.addEventListener('click', open);
+    closeB.addEventListener('click', close);
+    window.addEventListener('message', function(e) {
+        if (!e.data || typeof e.data !== 'object') return;
+        if (e.data.type === '__activate_edit_mode')   open();
+        if (e.data.type === '__deactivate_edit_mode') close();
+    });
+    if (window.parent) window.parent.postMessage({type:'__edit_mode_available'}, '*');
+
+    document.querySelectorAll('#seRadiusPreset button').forEach(function(b) {
+        b.addEventListener('click', function() { setSePreset(b.dataset.preset); });
+    });
+    document.getElementById('seCardRadiusSlider').addEventListener('input', function(e) {
+        seTweaks.cardRadiusPx = parseInt(e.target.value, 10);
+        seTweaks.radiusPreset = 'custom';
+        applySeTweaks(); persistSeTweaks();
+    });
+    document.getElementById('seInputRadiusSlider').addEventListener('input', function(e) {
+        seTweaks.inputRadiusPx = parseInt(e.target.value, 10);
+        seTweaks.radiusPreset = 'custom';
+        applySeTweaks(); persistSeTweaks();
+    });
+})();
+
+// Re-apply tweaks after dynamic renders (categories, fields, participants…)
+// Throttled, ignores attribute mutations to avoid feedback loop (applyTweaks sets inline styles).
+var _seScheduled = false;
+function _seSchedule() {
+    if (_seScheduled) return;
+    _seScheduled = true;
+    requestAnimationFrame(function() { _seScheduled = false; applySeTweaks(); });
+}
+var _seMo = new MutationObserver(function(muts) {
+    for (var i = 0; i < muts.length; i++) {
+        if (muts[i].type === 'childList' && (muts[i].addedNodes.length || muts[i].removedNodes.length)) {
+            _seSchedule();
+            return;
+        }
+    }
+});
+setTimeout(function() {
+    _seMo.observe(document.body, { childList: true, subtree: true });
+    applySeTweaks();
+}, 120);
 
 init();
 </script>

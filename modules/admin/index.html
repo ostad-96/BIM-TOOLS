@@ -2,100 +2,186 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Administration — BIM Tools</title>
 <link rel="stylesheet" href="../../shared/css/acc-variables.css">
 <link rel="stylesheet" href="../../shared/css/acc-base.css">
 <link rel="stylesheet" href="../../shared/css/acc-components.css">
+<link rel="stylesheet" href="../../shared/css/acc-corporate.css">
 <link rel="stylesheet" href="css/admin.css">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<style>
+/* Admin sub-nav (tabs) */
+.admin-subnav {
+    background: var(--c-paper);
+    border-bottom: 1px solid var(--c-line);
+    position: sticky; top: 60px; z-index: 40;
+}
+.admin-subnav-inner {
+    max-width: 1280px; margin: 0 auto;
+    padding: 0 24px;
+    display: flex; gap: 4px; overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+.admin-subnav a {
+    padding: 12px 14px; margin-right: 2px;
+    font-size: 13px; font-weight: 500;
+    color: var(--c-ink-3); text-decoration: none;
+    border-bottom: 2px solid transparent;
+    transition: color .12s var(--ease), border-color .12s var(--ease);
+    display: inline-flex; align-items: center; gap: 7px;
+    white-space: nowrap;
+}
+.admin-subnav a:hover { color: var(--c-ink); text-decoration: none; }
+.admin-subnav a.active { color: var(--c-brand); border-bottom-color: var(--c-brand); }
+.admin-subnav svg { width: 14px; height: 14px; }
+@media (max-width: 768px) {
+    .admin-subnav-inner { padding: 0 16px; }
+}
+
+/* Chart cards */
+.chart-card-corp {
+    background: var(--c-surface);
+    border: 1px solid var(--c-line);
+    border-radius: var(--r-lg);
+    box-shadow: var(--el-1);
+    padding: 18px;
+}
+.chart-card-corp .ti {
+    font-family: var(--f-display);
+    font-weight: 600; font-size: 14px;
+    color: var(--c-ink); margin-bottom: 12px;
+}
+.chart-canvas-wrap-corp { height: 240px; position: relative; }
+
+.charts-grid-2 {
+    display: grid; gap: 12px;
+    grid-template-columns: 1.5fr 1fr;
+    margin-bottom: 14px;
+}
+.charts-grid-1-1 {
+    display: grid; gap: 12px;
+    grid-template-columns: 1fr 1fr;
+}
+@media (max-width: 900px) {
+    .charts-grid-2, .charts-grid-1-1 { grid-template-columns: 1fr; }
+}
+
+/* Activity feed (corp) */
+.feed-card { padding: 0; }
+.feed-card .ti { padding: 16px 18px 0; }
+.feed-list {
+    max-height: 260px; overflow-y: auto;
+    padding: 6px 4px 8px;
+}
+.feed-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 14px;
+    border-radius: 8px;
+    transition: background .12s var(--ease);
+}
+.feed-item:hover { background: var(--c-brand-tint); }
+.feed-avatar {
+    width: 30px; height: 30px; border-radius: 50%;
+    background: var(--c-brand); color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700; font-family: var(--f-display);
+    flex-shrink: 0;
+}
+.feed-text { font-size: 13px; color: var(--c-ink); line-height: 1.5; flex: 1; min-width: 0; }
+.feed-text strong { color: var(--c-ink); font-weight: 600; }
+.feed-text em { color: var(--c-ink-3); font-style: normal; }
+.feed-time { font-size: 11px; color: var(--c-ink-4); margin-top: 2px; }
+.feed-foot {
+    display: flex; justify-content: center;
+    padding: 10px;
+    border-top: 1px solid var(--c-line);
+}
+</style>
 </head>
-<body style="opacity:0">
+<body class="corp" style="opacity:0">
 
-<div class="admin-layout">
-
-    <!-- Sidebar -->
-    <nav class="admin-sidebar">
-        <div class="admin-sidebar-header">
-            <div class="admin-sidebar-logo">
-                <img src="../../shared/assets/emch-berger-logo.gif" alt="Logo">
+<!-- ════════ Top bar ════════ -->
+<header class="app-top">
+    <div class="app-top-inner">
+        <a href="../../index.html" class="app-top-brand">
+            <div class="app-top-mark">BT</div>
+            <div>
+                <div class="app-top-name">BIM Tools</div>
+                <div class="app-top-sub">Administration</div>
             </div>
-            <div class="admin-sidebar-title">Administration</div>
-            <div class="admin-sidebar-subtitle">BIM Tools</div>
-        </div>
-        <div class="admin-nav">
-            <a class="admin-nav-item active" href="index.html">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
-                <span>Dashboard</span>
-            </a>
-            <a class="admin-nav-item" href="users.html">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
-                <span>Benutzer</span>
-            </a>
-            <a class="admin-nav-item" href="activity.html">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-                <span>Aktivitäten</span>
-            </a>
-            <a class="admin-nav-item" href="access.html">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
-                <span>Zugriff</span>
-            </a>
-        </div>
-        <div class="admin-sidebar-footer">
-            <a class="admin-back-link" href="../../index.html">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline points="15 18 9 12 15 6"/></svg>
-                Zur Startseite
-            </a>
-        </div>
-    </nav>
+        </a>
+        <nav class="app-crumbs">
+            <a href="../../index.html">BIM Tools</a>
+            <span class="sep">›</span>
+            <span class="here">Administration</span>
+        </nav>
+        <div class="app-top-right" id="userArea"></div>
+    </div>
+</header>
 
-    <!-- Main -->
-    <main class="admin-main">
-        <div class="admin-header">
-            <div style="display:flex;align-items:center;justify-content:space-between;">
-                <div>
-                    <div class="admin-header-title">Dashboard</div>
-                    <div class="admin-header-desc">Systemübersicht und Aktivitäten</div>
-                </div>
-                <div id="adminUser" style="font-size:12px;color:var(--bim-text-muted);"></div>
-            </div>
+<!-- ════════ Sub-nav ════════ -->
+<nav class="admin-subnav">
+    <div class="admin-subnav-inner">
+        <a href="index.html" class="active">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+            Dashboard
+        </a>
+        <a href="users.html">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+            Benutzer
+        </a>
+        <a href="activity.html">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            Aktivitäten
+        </a>
+        <a href="access.html">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+            Zugriff
+        </a>
+    </div>
+</nav>
+
+<!-- ════════ Page ════════ -->
+<main class="app-page">
+
+    <div class="page-hero">
+        <div class="page-hero-l">
+            <div class="page-hero-eyebrow">Übersicht</div>
+            <h1 class="page-hero-title">Dashboard</h1>
+            <p class="page-hero-desc">Live-Status der Plattform — Benutzer, Aktivitäten und Bestand auf einen Blick.</p>
         </div>
+    </div>
 
-        <div class="admin-content">
-            <!-- Summary cards -->
-            <div class="admin-summary-grid" id="summaryCards"></div>
+    <!-- Summary stats -->
+    <div class="stat-grid" id="summaryCards"></div>
 
-            <!-- Charts -->
-            <div class="admin-charts-grid">
-                <div class="chart-card">
-                    <div class="chart-card-title">Aktivitätstrend (letzte 14 Tage)</div>
-                    <div class="chart-canvas-wrap"><canvas id="activityChart"></canvas></div>
-                </div>
-                <div class="chart-card">
-                    <div class="chart-card-title">Aktionen</div>
-                    <div class="chart-canvas-wrap"><canvas id="actionChart"></canvas></div>
-                </div>
-            </div>
-
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
-                <!-- Top users -->
-                <div class="chart-card">
-                    <div class="chart-card-title">Aktivste Benutzer</div>
-                    <div class="chart-canvas-wrap"><canvas id="topUsersChart"></canvas></div>
-                </div>
-
-                <!-- Recent activity -->
-                <div class="activity-feed">
-                    <div class="activity-feed-header">
-                        <span>Letzte Aktivitäten</span>
-                        <a href="activity.html" style="font-size:11px;font-weight:500;">Alle anzeigen &rarr;</a>
-                    </div>
-                    <div id="recentFeed" style="max-height:260px;overflow-y:auto;"></div>
-                </div>
-            </div>
+    <!-- Charts row 1 -->
+    <div class="charts-grid-2">
+        <div class="chart-card-corp">
+            <div class="ti">Aktivitätstrend · letzte 14 Tage</div>
+            <div class="chart-canvas-wrap-corp"><canvas id="activityChart"></canvas></div>
         </div>
-    </main>
-</div>
+        <div class="chart-card-corp">
+            <div class="ti">Aktionen</div>
+            <div class="chart-canvas-wrap-corp"><canvas id="actionChart"></canvas></div>
+        </div>
+    </div>
+
+    <!-- Charts row 2 -->
+    <div class="charts-grid-1-1">
+        <div class="chart-card-corp">
+            <div class="ti">Aktivste Benutzer</div>
+            <div class="chart-canvas-wrap-corp"><canvas id="topUsersChart"></canvas></div>
+        </div>
+        <div class="chart-card-corp feed-card">
+            <div class="ti">Letzte Aktivitäten</div>
+            <div class="feed-list" id="recentFeed"></div>
+            <div class="feed-foot"><a class="back-link" href="activity.html">Alle Aktivitäten ansehen <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></a></div>
+        </div>
+    </div>
+
+</main>
 
 <script src="../../shared/js/acc-utils.js"></script>
 <script src="../../shared/js/acc-storage.js"></script>
@@ -117,10 +203,26 @@ async function init() {
         return;
     }
     document.body.style.opacity = '1';
-    document.getElementById('adminUser').textContent = currentUser.name || currentUser.username;
+
+    // User chip
+    var initials = (currentUser.name || currentUser.username || '?').split(' ').map(function(w){return w[0];}).join('').toUpperCase().slice(0,2);
+    var role = (currentUser.role || 'viewer').toLowerCase();
+    document.getElementById('userArea').innerHTML =
+        '<button class="user-chip" onclick="BIM.UI.showPasswordChangeModal()" title="Profil & Passwort">' +
+            '<span class="avatar">' + initials + '</span>' +
+            '<span>' + BIM.Utils.escapeHtml(currentUser.name || currentUser.username) + '</span>' +
+            '<span class="role-dot ' + role + '"></span>' +
+        '</button>' +
+        '<button class="icon-btn danger" onclick="doLogout()" title="Abmelden" aria-label="Abmelden">' +
+            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
+                '<path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>' +
+            '</svg>' +
+        '</button>';
 
     await loadDashboard();
 }
+
+function doLogout() { BIM.Auth.logout().then(function() { window.location.href = '../../login.html'; }); }
 
 async function loadDashboard() {
     var users = await BIM.Auth.getAllUsers();
@@ -130,39 +232,40 @@ async function loadDashboard() {
 
     var activeUsers = users.filter(function(u) { return u.status === 'active'; }).length;
 
-    // Summary cards
     document.getElementById('summaryCards').innerHTML =
-        summaryCard('Benutzer', users.length, activeUsers + ' aktiv', '#7c3aed', 'var(--bim-role-admin-bg)',
-            '<svg viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>') +
-        summaryCard('Serien', series.length, '', 'var(--bim-primary)', 'var(--bim-primary-10)',
-            '<svg viewBox="0 0 24 24" fill="none" stroke="var(--bim-primary)" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>') +
-        summaryCard('Sitzungen', instances.length, '', 'var(--bim-info)', 'var(--bim-info-light)',
-            '<svg viewBox="0 0 24 24" fill="none" stroke="var(--bim-info)" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>') +
-        summaryCard('Protokolleinträge', logs.length, '', 'var(--bim-success)', 'var(--bim-success-light)',
-            '<svg viewBox="0 0 24 24" fill="none" stroke="var(--bim-success)" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>');
+        statCard('Benutzer', users.length, activeUsers + ' aktiv', svg('users')) +
+        statCard('Serien',  series.length, '',                     svg('folder')) +
+        statCard('Sitzungen', instances.length, '',                svg('calendar')) +
+        statCard('Protokoll', logs.length, 'Einträge',             svg('activity'));
 
-    // Charts
     buildActivityChart(logs);
     buildActionChart(logs);
     buildTopUsersChart(logs);
 
-    // Recent feed
-    var recent = logs.sort(function(a,b) { return a.timestamp > b.timestamp ? -1 : 1; }).slice(0, 15);
+    var recent = logs.sort(function(a,b) { return a.timestamp > b.timestamp ? -1 : 1; }).slice(0, 12);
     renderFeed(recent);
 }
 
-function summaryCard(label, value, sub, color, bg, icon) {
-    return '<div class="summary-card">' +
-        '<div class="summary-card-icon" style="background:' + bg + '">' + icon + '</div>' +
-        '<div class="summary-card-label">' + label + '</div>' +
-        '<div class="summary-card-value" style="color:' + color + '">' + value + '</div>' +
-        (sub ? '<div class="summary-card-sub">' + sub + '</div>' : '') +
+function statCard(label, value, sub, icon) {
+    return '<div class="stat">' +
+        '<div class="stat-icon">' + icon + '</div>' +
+        '<div class="stat-label">' + label + '</div>' +
+        '<div class="stat-value">' + value + '</div>' +
+        (sub ? '<div class="stat-sub">' + sub + '</div>' : '') +
     '</div>';
+}
+function svg(k) {
+    var m = {
+        users:    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>',
+        folder:   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>',
+        calendar: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>',
+        activity: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>'
+    };
+    return m[k] || '';
 }
 
 function buildActivityChart(logs) {
-    var days = [];
-    var counts = [];
+    var days = [], counts = [];
     for (var i = 13; i >= 0; i--) {
         var d = new Date(); d.setDate(d.getDate() - i);
         var key = d.toISOString().slice(0,10);
@@ -171,72 +274,67 @@ function buildActivityChart(logs) {
     }
     new Chart(document.getElementById('activityChart'), {
         type: 'line',
-        data: {
-            labels: days,
-            datasets: [{ label: 'Aktivitäten', data: counts,
-                borderColor: '#003B4D', backgroundColor: 'rgba(0,59,77,0.08)',
-                fill: true, tension: 0.4, pointRadius: 3, pointBackgroundColor: '#003B4D' }]
-        },
+        data: { labels: days, datasets: [{ label: 'Aktivitäten', data: counts,
+            borderColor: '#003B4D', backgroundColor: 'rgba(0,59,77,0.10)',
+            fill: true, tension: 0.35, pointRadius: 3, pointBackgroundColor: '#003B4D', borderWidth: 2 }] },
         options: { responsive: true, maintainAspectRatio: false,
             plugins: { legend: { display: false } },
-            scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
+            scales: {
+                y: { beginAtZero: true, ticks: { stepSize: 1, color: '#8a939a', font: { size: 10 } }, grid: { color: '#e6e3dc' } },
+                x: { ticks: { color: '#8a939a', font: { size: 10 } }, grid: { display: false } }
+            } }
     });
 }
 
 function buildActionChart(logs) {
     var actionMap = {};
-    logs.forEach(function(l) {
-        var a = l.action || 'other';
-        actionMap[a] = (actionMap[a] || 0) + 1;
-    });
+    logs.forEach(function(l) { var a = l.action || 'other'; actionMap[a] = (actionMap[a] || 0) + 1; });
     var labels = Object.keys(actionMap);
     var data = labels.map(function(k) { return actionMap[k]; });
-    var colors = ['#003B4D','#7c3aed','#2563eb','#059669','#d97706','#dc2626','#6b7280','#ec4899'];
+    var colors = ['#003B4D','#b45309','#14694a','#5d676e','#7c3aed','#1d4ed8','#9b1c1c','#0e7490'];
     new Chart(document.getElementById('actionChart'), {
         type: 'doughnut',
-        data: {
-            labels: labels.map(function(l) { return actionLabel(l); }),
-            datasets: [{ data: data, backgroundColor: colors.slice(0, labels.length), borderWidth: 0 }]
-        },
-        options: { responsive: true, maintainAspectRatio: false,
-            plugins: { legend: { position: 'right', labels: { boxWidth: 10, font: { size: 11 } } } } }
+        data: { labels: labels.map(function(l) { return actionLabel(l); }),
+                datasets: [{ data: data, backgroundColor: colors.slice(0, labels.length), borderWidth: 0 }] },
+        options: { responsive: true, maintainAspectRatio: false, cutout: '62%',
+            plugins: { legend: { position: 'right', labels: { boxWidth: 10, font: { size: 11 }, color: '#364046' } } } }
     });
 }
 
 function buildTopUsersChart(logs) {
     var userMap = {};
-    logs.forEach(function(l) {
-        var name = l.userName || 'Unbekannt';
-        userMap[name] = (userMap[name] || 0) + 1;
-    });
+    logs.forEach(function(l) { var name = l.userName || 'Unbekannt'; userMap[name] = (userMap[name] || 0) + 1; });
     var sorted = Object.keys(userMap).sort(function(a,b) { return userMap[b] - userMap[a]; }).slice(0, 8);
     new Chart(document.getElementById('topUsersChart'), {
         type: 'bar',
-        data: {
-            labels: sorted,
-            datasets: [{ label: 'Aktivitäten', data: sorted.map(function(k) { return userMap[k]; }),
-                backgroundColor: '#003B4D', borderRadius: 4, barThickness: 20 }]
-        },
+        data: { labels: sorted, datasets: [{ label: 'Aktivitäten', data: sorted.map(function(k) { return userMap[k]; }),
+            backgroundColor: '#003B4D', borderRadius: 4, barThickness: 18 }] },
         options: { responsive: true, maintainAspectRatio: false, indexAxis: 'y',
             plugins: { legend: { display: false } },
-            scales: { x: { beginAtZero: true, ticks: { stepSize: 1 } } } }
+            scales: {
+                x: { beginAtZero: true, ticks: { stepSize: 1, color: '#8a939a', font: { size: 10 } }, grid: { color: '#e6e3dc' } },
+                y: { ticks: { color: '#364046', font: { size: 11 } }, grid: { display: false } }
+            } }
     });
 }
 
 function renderFeed(logs) {
     var wrap = document.getElementById('recentFeed');
-    if (logs.length === 0) { wrap.innerHTML = '<div style="padding:20px;text-align:center;color:var(--bim-text-muted);font-size:12px;">Keine Aktivitäten</div>'; return; }
+    if (logs.length === 0) {
+        wrap.innerHTML = '<div style="padding:24px;text-align:center;color:var(--c-ink-4);font-size:12px;">Noch keine Aktivitäten</div>';
+        return;
+    }
     var html = '';
     logs.forEach(function(l) {
         var initials = (l.userName || '?').split(' ').map(function(w){return w[0];}).join('').toUpperCase().slice(0,2);
         var bgColor = actionColor(l.action);
-        html += '<div class="activity-item">' +
-            '<div class="activity-avatar" style="background:' + bgColor + '">' + initials + '</div>' +
-            '<div class="activity-text">' +
+        html += '<div class="feed-item">' +
+            '<div class="feed-avatar" style="background:' + bgColor + '">' + initials + '</div>' +
+            '<div class="feed-text">' +
                 '<strong>' + BIM.Utils.escapeHtml(l.userName || 'System') + '</strong> ' +
                 actionLabel(l.action) +
                 (l.resourceName ? ' — <em>' + BIM.Utils.escapeHtml(l.resourceName) + '</em>' : '') +
-                '<div class="activity-time">' + timeAgo(l.timestamp) + '</div>' +
+                '<div class="feed-time">' + timeAgo(l.timestamp) + '</div>' +
             '</div>' +
         '</div>';
     });
@@ -244,20 +342,20 @@ function renderFeed(logs) {
 }
 
 function actionLabel(a) {
-    var map = { login:'Anmeldung', logout:'Abmeldung', view:'Ansicht', create:'Erstellt', update:'Aktualisiert', delete:'Gelöscht' };
+    var map = { login:'meldete sich an', logout:'meldete sich ab', view:'rief auf', create:'erstellte', update:'aktualisierte', delete:'löschte' };
     return map[a] || a;
 }
 function actionColor(a) {
-    var map = { login:'#059669', logout:'#6b7280', view:'#2563eb', create:'#7c3aed', update:'#d97706', delete:'#dc2626' };
+    var map = { login:'#14694a', logout:'#5d676e', view:'#003B4D', create:'#7c3aed', update:'#b45309', delete:'#9b1c1c' };
     return map[a] || '#003B4D';
 }
 function timeAgo(ts) {
     if (!ts) return '';
     var diff = Math.floor((Date.now() - new Date(ts).getTime()) / 1000);
     if (diff < 60) return 'gerade eben';
-    if (diff < 3600) return Math.floor(diff/60) + ' Min.';
-    if (diff < 86400) return Math.floor(diff/3600) + ' Std.';
-    return Math.floor(diff/86400) + ' Tage';
+    if (diff < 3600) return 'vor ' + Math.floor(diff/60) + ' Min.';
+    if (diff < 86400) return 'vor ' + Math.floor(diff/3600) + ' Std.';
+    return 'vor ' + Math.floor(diff/86400) + ' Tagen';
 }
 
 init();

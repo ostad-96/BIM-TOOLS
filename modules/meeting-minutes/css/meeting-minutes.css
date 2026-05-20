@@ -237,13 +237,20 @@
 
 /* ── Editor footer ── */
 .editor-footer {
-    position: sticky; bottom: 0;
+    position: fixed; bottom: 0; left: 0; right: 0;
     display: flex; align-items: center; gap: var(--bim-space-2);
     padding: 12px 24px; background: var(--bim-white);
-    border-top: 1px solid var(--bim-border); box-shadow: 0 -2px 8px rgba(0,0,0,0.04);
+    border-top: 1px solid var(--bim-border); box-shadow: 0 -4px 16px rgba(14,23,25,0.06);
     z-index: 50;
 }
+body.corp .editor-footer {
+    background: var(--c-surface, #fff);
+    border-top: 1px solid var(--c-line);
+    box-shadow: 0 -4px 16px rgba(14,23,25,0.06);
+}
 .editor-footer-spacer { flex: 1; }
+/* Ensure page content isn't hidden behind the fixed footer */
+body:has(.editor-footer) { padding-bottom: 72px; }
 
 /* ── Rich text editor ── */
 .rt-editor-wrap {

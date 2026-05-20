@@ -1,6 +1,123 @@
 var BIM = BIM || {};
 
 BIM.UI = {
+    /* ── Corporate top bar (shared across all pages) ──
+       Usage:
+         BIM.UI.installTopBar({
+             crumbs: [
+                 { label: 'BIM Tools', href: '../../index.html' },
+                 { label: 'Sitzungsprotokolle', here: true }
+             ],
+             user: currentUser,           // may be omitted; falls back to no chip
+             onLogout: function(){ ... }, // optional; default = '../../login.html'
+             showLogout: true
+         })
+    */
+    installTopBar: function(opts) {
+        opts = opts || {};
+        document.body.classList.add('corp');
+
+        // Hide any legacy topbar already in markup
+        var legacy = document.querySelector('.bim-topbar');
+        if (legacy && legacy.parentNode) legacy.parentNode.removeChild(legacy);
+
+        // Skip if a topbar from this helper is already present
+        if (document.querySelector('.app-top[data-installed]')) return;
+
+        var bar = document.createElement('header');
+        bar.className = 'app-top';
+        bar.setAttribute('data-installed', '1');
+
+        var crumbsHtml = '';
+        if (opts.crumbs && opts.crumbs.length) {
+            crumbsHtml = '<nav class="app-crumbs" aria-label="Navigation">' +
+                opts.crumbs.map(function(c, i) {
+                    var sep = i > 0 ? '<span class="sep">›</span>' : '';
+                    if (c.here || !c.href) {
+                        return sep + '<span class="here">' + BIM.Utils.escapeHtml(c.label) + '</span>';
+                    }
+                    return sep + '<a href="' + c.href + '">' + BIM.Utils.escapeHtml(c.label) + '</a>';
+                }).join('') +
+            '</nav>';
+        }
+
+        var rightHtml = '';
+        if (opts.actions) rightHtml += opts.actions;
+        if (opts.user) {
+            var u = opts.user;
+            var initials = (u.name || u.username || '?').split(' ').map(function(w){return w[0];}).join('').toUpperCase().slice(0,2);
+            var role = (u.role || 'viewer').toLowerCase();
+            rightHtml +=
+                '<button class="user-chip" onclick="BIM.UI.showPasswordChangeModal()" title="Profil & Passwort">' +
+                    '<span class="avatar">' + initials + '</span>' +
+                    '<span>' + BIM.Utils.escapeHtml(u.name || u.username) + '</span>' +
+                    '<span class="role-dot ' + role + '" title="' + BIM.Auth.getRoleLabel(u.role) + '"></span>' +
+                '</button>';
+        }
+        if (opts.showLogout !== false) {
+            rightHtml +=
+                '<button class="icon-btn danger" data-action="topbar-logout" title="Abmelden" aria-label="Abmelden">' +
+                    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
+                        '<path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>' +
+                    '</svg>' +
+                '</button>';
+        }
+
+        bar.innerHTML =
+            '<div class="app-top-inner">' +
+                '<a href="' + (opts.brandHref || '../../index.html') + '" class="app-top-brand">' +
+                    '<div class="app-top-mark">BT</div>' +
+                    '<div>' +
+                        '<div class="app-top-name">BIM Tools</div>' +
+                        '<div class="app-top-sub">' + BIM.Utils.escapeHtml(opts.subtitle || 'Bauprojekt-Koordination') + '</div>' +
+                    '</div>' +
+                '</a>' +
+                crumbsHtml +
+                '<div class="app-top-right">' + rightHtml + '</div>' +
+            '</div>';
+
+        document.body.insertBefore(bar, document.body.firstChild);
+
+        // Wire logout
+        var logoutBtn = bar.querySelector('[data-action="topbar-logout"]');
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', function() {
+                if (opts.onLogout) return opts.onLogout();
+                BIM.Auth.logout().then(function() {
+                    window.location.href = opts.loginHref || '../../login.html';
+                });
+            });
+        }
+    },
+
+    /* ── Admin sub-nav (shared across admin pages) ──
+       Injected just below the top bar; takes 'active' page key:
+       'dashboard' | 'users' | 'activity' | 'access'
+    */
+    installAdminSubnav: function(activeKey) {
+        var existing = document.querySelector('.admin-subnav');
+        if (existing) return;
+        var items = [
+            { k: 'dashboard', label: 'Dashboard',    href: 'index.html',    icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>' },
+            { k: 'users',     label: 'Benutzer',     href: 'users.html',    icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>' },
+            { k: 'activity',  label: 'Aktivitäten',  href: 'activity.html', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>' },
+            { k: 'access',    label: 'Zugriff',      href: 'access.html',   icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>' }
+        ];
+        var nav = document.createElement('nav');
+        nav.className = 'admin-subnav';
+        nav.innerHTML = '<div class="admin-subnav-inner">' +
+            items.map(function(it) {
+                return '<a href="' + it.href + '"' + (it.k === activeKey ? ' class="active"' : '') + '>' + it.icon + it.label + '</a>';
+            }).join('') +
+        '</div>';
+        var topbar = document.querySelector('.app-top');
+        if (topbar && topbar.nextSibling) {
+            topbar.parentNode.insertBefore(nav, topbar.nextSibling);
+        } else {
+            document.body.insertBefore(nav, document.body.firstChild);
+        }
+    },
+
     _toastContainer: null,
 
     _ensureToastContainer: function() {
