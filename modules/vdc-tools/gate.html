@@ -147,7 +147,6 @@ body {
                     <line x1="12" y1="17" x2="12.01" y2="17"/>
                 </svg>
             </div>
-            <div id="toolBadge" class="gate-tool-name"></div>
             <div class="gate-title">VDC Manager erforderlich</div>
         </div>
         <div class="gate-message">
@@ -169,31 +168,45 @@ body {
     var params = new URLSearchParams(window.location.search);
     var tool = params.get('tool') || '';
 
-    var toolNames = {
-        'kollisionsmatrix': 'Kollisionsmatrix',
-        'agent': 'VDC Agent'
-    };
-
     var toolFiles = {
         'kollisionsmatrix': 'kollisionsmatrix.html',
         'agent': 'agent.html'
     };
 
-    // Show tool name badge
-    var badge = document.getElementById('toolBadge');
-    badge.textContent = toolNames[tool] || tool || 'VDC Tool';
+    // Detection strategy:
+    // 1. Check user agent for QtWebEngine (VDC Manager's embedded browser)
+    // 2. Also poll for vdcApp which may be injected asynchronously
+    var ua = navigator.userAgent || '';
+    var isQtBrowser = /QtWebEngine/i.test(ua);
 
-    // Check for VDC Manager environment
-    if (typeof vdcApp !== 'undefined') {
-        // Inside VDC Manager — redirect to the actual tool
+    function redirect() {
         var target = toolFiles[tool];
-        if (target) {
-            window.location.replace(target);
-        }
+        if (target) window.location.replace(target);
+    }
+
+    // If QtWebEngine detected, redirect immediately
+    if (isQtBrowser) {
+        redirect();
         return;
     }
 
-    // Not in VDC Manager — show the gate page (already visible)
+    // Also check if vdcApp appears within 1 second (async injection)
+    if (typeof vdcApp !== 'undefined') {
+        redirect();
+        return;
+    }
+
+    var attempts = 0;
+    var poll = setInterval(function() {
+        attempts++;
+        if (typeof vdcApp !== 'undefined') {
+            clearInterval(poll);
+            redirect();
+        } else if (attempts >= 10) {
+            clearInterval(poll);
+            // Not in VDC Manager — gate page stays visible
+        }
+    }, 100);
 })();
 
 // ── Animated background ──
