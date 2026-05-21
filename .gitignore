@@ -1,0 +1,6 @@
+data/db.json
+data/db.json.tmp
+data/attachments/
+uploads/
+scraps/
+node_modules/
