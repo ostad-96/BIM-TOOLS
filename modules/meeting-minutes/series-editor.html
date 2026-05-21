@@ -598,6 +598,7 @@ function applySeTweaks() {
     document.querySelectorAll('.bim-input, .bim-select, .bim-textarea, .input, .select, .textarea, .bim-btn, .btn').forEach(function(el) { el.style.borderRadius = ip + 'px'; });
     document.querySelectorAll('.bim-btn-icon, .icon-btn').forEach(function(el) { el.style.borderRadius = Math.max(0, ip - 1) + 'px'; });
     document.querySelectorAll('.user-chip').forEach(function(el) { el.style.borderRadius = ip + 'px'; });
+    document.querySelectorAll('.app-top-mark').forEach(function(el) { el.style.borderRadius = ip + 'px'; });
     document.querySelectorAll('.category-row, .custom-field-row, .participant-row, .status-option-row, .tbl, .bim-table').forEach(function(el) { el.style.borderRadius = c + 'px'; });
     // Instanzen table: target the table wrap and clip with overflow:hidden so corners actually round
     document.querySelectorAll('#instancesWrap .bim-table, #instancesWrap > .bim-card').forEach(function(el) {
