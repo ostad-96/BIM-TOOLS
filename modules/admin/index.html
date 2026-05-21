@@ -219,6 +219,20 @@ async function init() {
             '</svg>' +
         '</button>';
 
+    // Apply saved hub tweaks
+    try {
+        var saved = localStorage.getItem('bim_hub_tweaks');
+        if (saved) {
+            var tw = JSON.parse(saved);
+            var icon = tw.iconRadiusPx;
+            if (icon !== undefined) {
+                document.querySelectorAll('.app-top-mark').forEach(function(el) { el.style.borderRadius = icon + 'px'; });
+                document.querySelectorAll('.user-chip').forEach(function(el) { el.style.borderRadius = icon + 'px'; });
+                document.querySelectorAll('.icon-btn').forEach(function(el) { el.style.borderRadius = Math.max(0, icon - 1) + 'px'; });
+            }
+        }
+    } catch (_) {}
+
     await loadDashboard();
 }
 

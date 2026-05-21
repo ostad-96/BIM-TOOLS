@@ -78,6 +78,20 @@ BIM.UI = {
 
         document.body.insertBefore(bar, document.body.firstChild);
 
+        // Apply saved hub tweaks (icon radius → logo + icons)
+        try {
+            var saved = localStorage.getItem('bim_hub_tweaks');
+            if (saved) {
+                var tw = JSON.parse(saved);
+                var icon = tw.iconRadiusPx;
+                if (icon !== undefined) {
+                    bar.querySelectorAll('.app-top-mark').forEach(function(el) { el.style.borderRadius = icon + 'px'; });
+                    bar.querySelectorAll('.user-chip').forEach(function(el) { el.style.borderRadius = icon + 'px'; });
+                    bar.querySelectorAll('.icon-btn').forEach(function(el) { el.style.borderRadius = Math.max(0, icon - 1) + 'px'; });
+                }
+            }
+        } catch (_) {}
+
         // Wire logout
         var logoutBtn = bar.querySelector('[data-action="topbar-logout"]');
         if (logoutBtn) {
