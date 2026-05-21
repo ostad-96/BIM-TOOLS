@@ -92,12 +92,8 @@ body.corp h1, body.corp h2, body.corp h3, body.corp h4 {
 .app-top-brand:hover { text-decoration: none; }
 .app-top-mark {
     width: 32px; height: 32px;
-    background: var(--c-brand); color: #fff;
-    border-radius: 8px;
-    display: flex; align-items: center; justify-content: center;
-    font-family: var(--f-display);
-    font-weight: 700; font-size: 13px;
-    letter-spacing: 0.02em;
+    border-radius: 6px;
+    object-fit: cover;
     box-shadow: var(--el-1);
 }
 .app-top-name {
