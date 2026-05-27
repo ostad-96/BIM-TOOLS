@@ -440,9 +440,19 @@ async function removeCustomField(idx) {
         'Das Feld "' + (field && field.label || 'Unbenannt') + '" wird entfernt. Bestehende Daten in diesem Feld gehen bei allen Themen verloren. Fortfahren?'
     );
     if (!ok) return;
+    var fieldId = field.id;
     series.customFieldDefs.splice(idx, 1);
     renderCustomFields();
     autoSave();
+
+    // Clean orphaned data from all items
+    var items = await BIM.MeetingStore.getDiscussionItemsForSeries(series.id);
+    for (var i = 0; i < items.length; i++) {
+        if (items[i].customFields && items[i].customFields[fieldId] !== undefined) {
+            delete items[i].customFields[fieldId];
+            await BIM.MeetingStore.updateDiscussionItem(items[i]);
+        }
+    }
 }
 
 // ── STATUS OPTIONS ──

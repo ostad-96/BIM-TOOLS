@@ -277,7 +277,7 @@ async function loadInstanceForPrint(seriesId, instanceId) {
         if (item.createdByInstanceId === _instanceId) return true;
         var hasUpdates = (updsByItem[item.id] || []).some(function(u) { return u.instanceId === _instanceId; });
         if (hasUpdates) return true;
-        if (item.status === 'offen' || item.status === 'laufend') return true;
+        if (item.status === 'offen' || item.status === 'laufend' || item.status === 'informationen') return true;
         return false;
     });
 

@@ -12,6 +12,15 @@
 </head>
 <body class="corp" style="opacity:0" data-ready="">
 
+<!-- ════════ Viewer mode: hide action buttons via CSS before JS runs ════════ -->
+<style>
+body.viewer-mode .bim-btn-primary:not(.bim-btn-back),
+body.viewer-mode .bim-btn-danger,
+body.viewer-mode .bim-btn-icon:not(.app-top .bim-btn-icon),
+body.viewer-mode .rt-toolbar,
+body.viewer-mode .editor-footer .bim-btn:not([onclick*="navigateTo"]):not([onclick*="history"]) { display: none !important; }
+</style>
+
 <!-- ════════ Tweaks panel ════════ -->
 <style>
 .ie-tweaks-toggle {
@@ -245,15 +254,12 @@ async function init() {
 
     // ── Role-aware gating BEFORE revealing the page ──
     if (!BIM.Auth.canEdit(currentUser)) {
-        // Viewer: disable inputs and hide action buttons BEFORE revealing the page
+        // Viewer: CSS class hides buttons instantly (no flash), then disable inputs
+        document.body.classList.add('viewer-mode');
         document.querySelectorAll('main input, main select, main textarea, main [contenteditable], #tab-meta input, #tab-meta select, #tab-meta textarea, #tab-discussion input, #tab-discussion textarea, #tab-overview input, #tab-overview textarea').forEach(function(el) {
             if (el.closest('.ie-tweaks, .se-tweaks, .hub-tweaks, .mm-tweaks, [data-tweak-panel]')) return;
             el.disabled = true;
             if (el.hasAttribute('contenteditable')) el.setAttribute('contenteditable', 'false');
-        });
-        document.querySelectorAll('.bim-btn-primary, .bim-btn-danger, .bim-btn-icon, .rt-toolbar').forEach(function(el) {
-            if (el.closest('.ie-tweaks, .se-tweaks, .hub-tweaks, .mm-tweaks, .app-top, .editor-footer')) return;
-            el.style.display = 'none';
         });
     }
 
@@ -306,8 +312,8 @@ async function init() {
         // Has updates in this instance
         var hasUpdates = (updatesMapForFilter[item.id] || []).some(function(u) { return u.instanceId === instanceId; });
         if (hasUpdates) return true;
-        // Still open (offen or laufend)
-        if (item.status === 'offen' || item.status === 'laufend') return true;
+        // Still open/active or informational (persistent reference items)
+        if (item.status === 'offen' || item.status === 'laufend' || item.status === 'informationen') return true;
         return false;
     });
 
@@ -322,16 +328,13 @@ async function init() {
         selectCategory(series.topicCategoryDefs[0].id);
     }
 
-    // Viewer read-only mode: disable all editing controls (scoped — leave tweaks/topbar alive)
+    // Viewer read-only mode: disable dynamically rendered controls
+    // (buttons already hidden via CSS body.viewer-mode; this catches inputs rendered after init)
     if (!BIM.Auth.canEdit(currentUser)) {
         document.querySelectorAll('input, select, textarea, [contenteditable]').forEach(function(el) {
             if (el.closest('.ie-tweaks, .se-tweaks, .hub-tweaks, .mm-tweaks, .app-top, [data-tweak-panel]')) return;
             el.disabled = true;
             el.removeAttribute('contenteditable');
-        });
-        document.querySelectorAll('.bim-btn-primary, .bim-btn-danger, .bim-btn-icon, .rt-toolbar').forEach(function(el) {
-            if (el.closest('.ie-tweaks, .se-tweaks, .hub-tweaks, .mm-tweaks, .app-top')) return;
-            el.style.display = 'none';
         });
     }
 
@@ -452,8 +455,7 @@ async function onStatusChange(val) {
     if (val === 'abgeschlossen') {
         setTimeout(enforceInstanceStatus, 200);
     } else {
-        // Re-enable editing by reloading
-        location.reload();
+        releaseInstanceStatus();
     }
 }
 
@@ -483,6 +485,28 @@ function enforceInstanceStatus() {
         var main = document.querySelector('main');
         if (main) main.insertBefore(banner, main.firstChild);
     }
+}
+
+function releaseInstanceStatus() {
+    // Remove banner
+    var banner = document.getElementById('abgeschlossenBanner');
+    if (banner) banner.remove();
+    // Re-enable inputs (skip if viewer)
+    if (!BIM.Auth.canEdit(currentUser)) return;
+    document.querySelectorAll('input, select, textarea').forEach(function(el) {
+        if (el.closest('.ie-tweaks, .app-top, [data-tweak-panel]')) return;
+        el.disabled = false;
+    });
+    document.querySelectorAll('[contenteditable="false"]').forEach(function(el) {
+        if (el.closest('.ie-tweaks, .app-top, [data-tweak-panel], .locked-editor')) return;
+        el.setAttribute('contenteditable', 'true');
+    });
+    document.querySelectorAll('.bim-btn-primary, .bim-btn-danger, .bim-btn-icon, .rt-toolbar').forEach(function(el) {
+        if (el.closest('.ie-tweaks, .app-top')) return;
+        el.style.display = '';
+    });
+    // Re-render items to restore buttons
+    renderDiscussionItems();
 }
 
 // ── TABS ──

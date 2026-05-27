@@ -149,6 +149,21 @@ var server = http.createServer(async function(req, res) {
         return;
     }
 
+    // ── API: Atomic increment (race-safe) ───────────────
+    // POST /api/db/:store/:id/increment/:field — atomically increment a numeric field
+    var incrMatch = url.match(/^\/api\/db\/([a-zA-Z]+)\/([a-zA-Z0-9_-]+)\/increment\/([a-zA-Z]+)$/);
+    if (incrMatch && method === 'POST') {
+        var iStore = incrMatch[1], iRecId = incrMatch[2], iField = incrMatch[3];
+        return _writeQueue = _writeQueue.then(async function() {
+            if (!Array.isArray(_db[iStore])) return sendJSON(res, 404, { error: 'Store not found' });
+            var rec = _db[iStore].find(function(r) { return r.id === iRecId; });
+            if (!rec) return sendJSON(res, 404, { error: 'Record not found' });
+            rec[iField] = (rec[iField] || 0) + 1;
+            schedulePersist();
+            sendJSON(res, 200, rec);
+        }).catch(function(e) { sendJSON(res, 500, { error: e.message }); });
+    }
+
     // ── API: Granular CRUD (serialized via write queue) ──
     // POST /api/db/:store          — create (body = entity)
     // PUT  /api/db/:store/:id      — update (body = entity)

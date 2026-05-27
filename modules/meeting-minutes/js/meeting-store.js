@@ -149,8 +149,21 @@ BIM.MeetingStore = {
         var series = await this.SM().getById('meetingSeries', seriesId);
         if (!series) throw new Error('Series not found: ' + seriesId);
 
-        series.instanceCount = (series.instanceCount || 0) + 1;
-        await this.updateSeries(series);
+        // Atomic server-side increment to prevent race conditions
+        try {
+            var resp = await fetch('/api/db/meetingSeries/' + seriesId + '/increment/instanceCount', { method: 'POST' });
+            if (resp.ok) {
+                series = await resp.json();
+            } else {
+                // Fallback for file:// or no-server mode
+                series.instanceCount = (series.instanceCount || 0) + 1;
+                await this.updateSeries(series);
+            }
+        } catch(_) {
+            // Fallback for file:// or no-server mode
+            series.instanceCount = (series.instanceCount || 0) + 1;
+            await this.updateSeries(series);
+        }
 
         var author = await this.getCurrentAuthor();
         var now = BIM.Utils.now();
