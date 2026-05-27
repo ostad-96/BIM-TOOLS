@@ -371,7 +371,28 @@ function updateCategory(idx, field, value) {
     autoSave();
 }
 
-function removeCategory(idx) {
+async function removeCategory(idx) {
+    var cat = series.topicCategoryDefs[idx];
+    if (!cat) return;
+
+    // Check for items in this category
+    var items = await BIM.MeetingStore.getDiscussionItemsForCategory(series.id, cat.id);
+    if (items.length > 0) {
+        var remaining = series.topicCategoryDefs.filter(function(c, i) { return i !== idx; });
+        if (remaining.length === 0) {
+            BIM.UI.error('Letzte Kategorie kann nicht gelöscht werden, solange Themen existieren.');
+            return;
+        }
+        var ok = await BIM.UI.confirm(
+            'Kategorie hat Themen',
+            items.length + ' Thema(en) in dieser Kategorie. Diese werden nach "' + remaining[0].label + '" verschoben. Fortfahren?'
+        );
+        if (!ok) return;
+        for (var i = 0; i < items.length; i++) {
+            await BIM.MeetingStore.moveItemToCategory(items[i].id, remaining[0].id, series.id);
+        }
+    }
+
     series.topicCategoryDefs.splice(idx, 1);
     series.topicCategoryDefs.forEach(function(c, i) { c.sortOrder = i + 1; });
     renderCategories();
@@ -412,7 +433,13 @@ function updateCustomField(idx, field, value) {
     autoSave();
 }
 
-function removeCustomField(idx) {
+async function removeCustomField(idx) {
+    var field = series.customFieldDefs[idx];
+    var ok = await BIM.UI.confirm(
+        'Feld entfernen',
+        'Das Feld "' + (field && field.label || 'Unbenannt') + '" wird entfernt. Bestehende Daten in diesem Feld gehen bei allen Themen verloren. Fortfahren?'
+    );
+    if (!ok) return;
     series.customFieldDefs.splice(idx, 1);
     renderCustomFields();
     autoSave();

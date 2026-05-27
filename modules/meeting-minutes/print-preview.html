@@ -271,7 +271,17 @@ async function loadInstanceForPrint(seriesId, instanceId) {
         (attByItem[a.discussionItemId] = attByItem[a.discussionItemId] || []).push(a.fileName);
     });
 
-    var items = (full.discussionItems || []).slice().sort(function(a, b) {
+    // Instance-scoped filtering: same logic as meeting-view.html
+    var _instanceId = full.instance.id;
+    var filteredItems = (full.discussionItems || []).filter(function(item) {
+        if (item.createdByInstanceId === _instanceId) return true;
+        var hasUpdates = (updsByItem[item.id] || []).some(function(u) { return u.instanceId === _instanceId; });
+        if (hasUpdates) return true;
+        if (item.status === 'offen' || item.status === 'laufend') return true;
+        return false;
+    });
+
+    var items = filteredItems.slice().sort(function(a, b) {
         var ca = (catById[a.categoryId] || {}).sortOrder || 0;
         var cb = (catById[b.categoryId] || {}).sortOrder || 0;
         if (ca !== cb) return ca - cb;

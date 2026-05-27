@@ -149,7 +149,7 @@
                     </div>
                     <div class="bim-form-row">
                         <label class="bim-form-label">Status</label>
-                        <select id="fStatus" class="bim-select" style="max-width:200px;" onchange="autoSave()">
+                        <select id="fStatus" class="bim-select" style="max-width:200px;" onchange="onStatusChange(this.value)">
                             <option value="entwurf">Entwurf</option>
                             <option value="aktiv">Aktiv</option>
                             <option value="abgeschlossen">Abgeschlossen</option>
@@ -245,12 +245,15 @@ async function init() {
 
     // ── Role-aware gating BEFORE revealing the page ──
     if (!BIM.Auth.canEdit(currentUser)) {
-        // Viewer: disable inputs early so they don't render as editable for one frame
-        // (scope to the editor area only — leave the tweaks panel interactive)
+        // Viewer: disable inputs and hide action buttons BEFORE revealing the page
         document.querySelectorAll('main input, main select, main textarea, main [contenteditable], #tab-meta input, #tab-meta select, #tab-meta textarea, #tab-discussion input, #tab-discussion textarea, #tab-overview input, #tab-overview textarea').forEach(function(el) {
             if (el.closest('.ie-tweaks, .se-tweaks, .hub-tweaks, .mm-tweaks, [data-tweak-panel]')) return;
             el.disabled = true;
             if (el.hasAttribute('contenteditable')) el.setAttribute('contenteditable', 'false');
+        });
+        document.querySelectorAll('.bim-btn-primary, .bim-btn-danger, .bim-btn-icon, .rt-toolbar').forEach(function(el) {
+            if (el.closest('.ie-tweaks, .se-tweaks, .hub-tweaks, .mm-tweaks, .app-top, .editor-footer')) return;
+            el.style.display = 'none';
         });
     }
 
@@ -282,7 +285,6 @@ async function init() {
     series = full.series;
     instance = full.instance;
     participants = full.participants;
-    allItems = full.discussionItems;
     allUpdates = full.updates;
     allAttachments = full.attachments;
 
@@ -290,11 +292,31 @@ async function init() {
     allSeriesInstances = await BIM.MeetingStore.getInstancesForSeries(seriesId);
     allSeriesInstances.forEach(function(i) { instanceMap[i.id] = i; });
 
+    // Instance-scoped filtering: only show items relevant to this instance
+    // (same logic as meeting-view.html)
+    var allSeriesItems = full.discussionItems;
+    var updatesMapForFilter = {};
+    allUpdates.forEach(function(u) {
+        if (!updatesMapForFilter[u.discussionItemId]) updatesMapForFilter[u.discussionItemId] = [];
+        updatesMapForFilter[u.discussionItemId].push(u);
+    });
+    allItems = allSeriesItems.filter(function(item) {
+        // Created in this instance
+        if (item.createdByInstanceId === instanceId) return true;
+        // Has updates in this instance
+        var hasUpdates = (updatesMapForFilter[item.id] || []).some(function(u) { return u.instanceId === instanceId; });
+        if (hasUpdates) return true;
+        // Still open (offen or laufend)
+        if (item.status === 'offen' || item.status === 'laufend') return true;
+        return false;
+    });
+
     await loadUserProfiles();
     loadFormData();
     renderParticipants();
     renderCategoryNav();
     renderStats();
+    enforceInstanceStatus();
 
     if (series.topicCategoryDefs.length > 0) {
         selectCategory(series.topicCategoryDefs[0].id);
@@ -384,6 +406,11 @@ function updateTopbar() {
     }
 }
 
+// Warn on unsaved changes
+window.addEventListener('beforeunload', function(e) {
+    if (autoSaveTimer) { e.preventDefault(); e.returnValue = ''; }
+});
+
 function collectFields() {
     instance.date = document.getElementById('fDate').value;
     instance.timeStart = document.getElementById('fTimeStart').value;
@@ -413,6 +440,51 @@ async function saveInstance() {
     showSaved();
 }
 
+async function onStatusChange(val) {
+    if (val === 'abgeschlossen') {
+        var openCount = allItems.filter(function(it) { return it.status === 'offen' || it.status === 'laufend'; }).length;
+        if (openCount > 0) {
+            var ok = await BIM.UI.confirm('Offene Themen', openCount + ' Thema(en) sind noch offen. Sitzung trotzdem abschliessen?');
+            if (!ok) { document.getElementById('fStatus').value = instance.status; return; }
+        }
+    }
+    autoSave();
+    if (val === 'abgeschlossen') {
+        setTimeout(enforceInstanceStatus, 200);
+    } else {
+        // Re-enable editing by reloading
+        location.reload();
+    }
+}
+
+function enforceInstanceStatus() {
+    if (!instance || instance.status !== 'abgeschlossen') return;
+    if (currentUser && currentUser.role === 'admin') return; // admin can still edit
+
+    document.querySelectorAll('input, select, textarea, [contenteditable]').forEach(function(el) {
+        if (el.closest('.ie-tweaks, .app-top, [data-tweak-panel]')) return;
+        if (el.id === 'fStatus') return; // allow changing status back
+        el.disabled = true;
+        if (el.hasAttribute('contenteditable')) el.setAttribute('contenteditable', 'false');
+    });
+    document.querySelectorAll('.bim-btn-primary, .bim-btn-danger, .bim-btn-icon, .rt-toolbar').forEach(function(el) {
+        if (el.closest('.ie-tweaks, .app-top, .editor-footer')) return;
+        el.style.display = 'none';
+    });
+
+    // Show info banner
+    var existing = document.getElementById('abgeschlossenBanner');
+    if (!existing) {
+        var banner = document.createElement('div');
+        banner.id = 'abgeschlossenBanner';
+        banner.className = 'bim-card';
+        banner.style.cssText = 'background:#fef3cd; border:1px solid #ffc107; padding:12px 16px; margin:0 24px 12px; text-align:center; font-size:13px;';
+        banner.textContent = 'Diese Sitzung ist abgeschlossen. Ändern Sie den Status, um die Bearbeitung fortzusetzen.';
+        var main = document.querySelector('main');
+        if (main) main.insertBefore(banner, main.firstChild);
+    }
+}
+
 // ── TABS ──
 function switchTab(tab) {
     document.querySelectorAll('.mm-tab').forEach(function(t) { t.classList.toggle('active', t.getAttribute('data-tab') === tab); });
@@ -439,9 +511,7 @@ function renderParticipantGroup(wrapId, list) {
         html += '<input type="text" class="bim-input bim-input-sm name-field" value="' + BIM.Utils.escapeHtml(p.name) + '" placeholder="Name" data-field="name" onchange="updateParticipant(this)">';
         html += '<input type="text" class="bim-input bim-input-sm" value="' + BIM.Utils.escapeHtml(p.company) + '" placeholder="Firma" data-field="company" onchange="updateParticipant(this)">';
         html += '<input type="text" class="bim-input bim-input-sm" value="' + BIM.Utils.escapeHtml(p.role) + '" placeholder="Rolle" data-field="role" onchange="updateParticipant(this)" style="width:140px;">';
-        if (p.participantType !== 'organisator') {
-            html += '<label class="bim-checkbox-label" style="flex-shrink:0;"><input type="checkbox" ' + (p.present ? 'checked' : '') + ' data-field="present" onchange="updateParticipant(this)"> Anw.</label>';
-        }
+        html += '<label class="bim-checkbox-label" style="flex-shrink:0;"><input type="checkbox" ' + (p.present ? 'checked' : '') + ' data-field="present" onchange="updateParticipant(this)"> Anw.</label>';
         html += '<button class="bim-btn-icon bim-btn-sm" onclick="removeParticipant(\'' + p.id + '\')" title="Entfernen">&times;</button>';
         html += '</div>';
     });
@@ -556,7 +626,7 @@ function renderDiscussionItems() {
         html += '<div class="discussion-item-body" onclick="event.stopPropagation()">';
 
         if (isCarriedOver) {
-            // ── LOCKED: Carried-over item (read-only fields) ──
+            // ── CARRIED-OVER: title & description locked, status/date/assignees editable ──
             html += '<div class="bim-form-row"><label class="bim-form-label">Titel</label>';
             html += '<div class="locked-field-value">' + BIM.Utils.escapeHtml(item.title || '(ohne Titel)') + '</div></div>';
 
@@ -565,27 +635,32 @@ function renderDiscussionItems() {
             html += '<div class="rt-content-locked">' + (item.description || '<span class="bim-text-muted">Keine Beschreibung</span>') + '</div>';
             html += '</div></div>';
 
-            // Status + Due date (read-only)
-            html += '<div class="bim-flex-center bim-gap-2" style="margin-bottom:8px;">';
-            html += '<span class="locked-field-value" style="font-size:12px;">' + BIM.Utils.escapeHtml(getStatusLabel(item.status)) + '</span>';
+            // Status + Due date (EDITABLE for carried-over items)
+            var _dueSoon2 = '';
             if (item.dueDate) {
-                var _dueSoon2 = '';
                 var _dl2 = Math.floor((new Date(item.dueDate) - new Date()) / 86400000);
                 if (_dl2 <= 14) _dueSoon2 = 'color:#e53e3e; font-weight:600;';
-                html += '<span class="locked-field-value" style="font-size:12px;' + _dueSoon2 + '">Fällig: ' + formatDateDE(item.dueDate) + '</span>';
             }
+            html += '<div class="bim-flex-center bim-gap-2" style="margin-bottom:8px;">';
+            html += '<select class="bim-select bim-input-sm" style="width:150px;" onchange="updateItemField(\'' + item.id + '\', \'status\', this.value)" data-status-sel="' + item.id + '">' + statusOpts + '</select>';
+            html += '<input type="date" class="bim-input bim-input-sm" style="width:150px;' + _dueSoon2 + '" value="' + (item.dueDate || '') + '" onchange="updateItemField(\'' + item.id + '\', \'dueDate\', this.value)">';
+            if (item.dueDate) html += '<span class="bim-text-xs" style="margin-left:4px;' + _dueSoon2 + '">' + formatDateDE(item.dueDate) + '</span>';
             html += '</div>';
 
-            // Assignees (read-only)
-            if (item.assignees && item.assignees.length > 0) {
-                html += '<div style="margin-bottom:8px;"><label class="bim-form-label" style="margin-bottom:4px;">Zugewiesen an</label>';
-                (item.assignees || []).forEach(function(a) {
-                    html += '<div class="locked-field-value" style="margin-bottom:4px;">' + BIM.Utils.escapeHtml(a.name) + (a.company ? ' (' + BIM.Utils.escapeHtml(a.company) + ')' : '') + '</div>';
-                });
+            // Assignees (EDITABLE for carried-over items)
+            html += '<div style="margin-bottom:8px;"><label class="bim-form-label" style="margin-bottom:4px;">Zugewiesen an</label>';
+            html += '<div id="assignees-' + item.id + '">';
+            (item.assignees || []).forEach(function(a, ai) {
+                html += '<div class="bim-flex-center bim-gap-2" style="margin-bottom:4px;">';
+                html += '<input type="text" class="bim-input bim-input-sm" style="flex:1;" value="' + BIM.Utils.escapeHtml(a.name) + '" placeholder="Name" onchange="updateAssignee(\'' + item.id + '\',' + ai + ',\'name\',this.value)">';
+                html += '<input type="text" class="bim-input bim-input-sm" style="flex:1;" value="' + BIM.Utils.escapeHtml(a.company) + '" placeholder="Firma" onchange="updateAssignee(\'' + item.id + '\',' + ai + ',\'company\',this.value)">';
+                html += '<button class="bim-btn-icon bim-btn-sm" onclick="removeAssignee(\'' + item.id + '\',' + ai + ')">&times;</button>';
                 html += '</div>';
-            }
+            });
+            html += '<button class="bim-btn bim-btn-sm bim-btn-ghost" onclick="addAssignee(\'' + item.id + '\')">+ Zuweisen</button>';
+            html += '</div></div>';
 
-            // Custom fields (read-only)
+            // Custom fields (read-only for carried-over)
             if (series.customFieldDefs && series.customFieldDefs.length > 0) {
                 var hasCustomValues = series.customFieldDefs.some(function(fd) { return (item.customFields || {})[fd.id]; });
                 if (hasCustomValues) {
@@ -776,6 +851,15 @@ async function updateItemField(itemId, field, value) {
     item[field] = value;
     await BIM.MeetingStore.updateDiscussionItem(item);
     if (field === 'title') renderDiscussionItems();
+    if (field === 'status') {
+        renderDiscussionItems();
+        renderStats();
+        // Hint when all items are resolved
+        var openLeft = allItems.filter(function(it) { return it.status === 'offen' || it.status === 'laufend'; }).length;
+        if (openLeft === 0 && allItems.length > 0 && instance.status !== 'abgeschlossen') {
+            BIM.UI.success('Alle Themen erledigt — Sie können die Sitzung jetzt abschliessen.');
+        }
+    }
 }
 
 async function updateAssignee(itemId, idx, field, value) {
@@ -858,10 +942,25 @@ async function removeAttachment(attId, itemId) {
 async function removeDiscussionItem(itemId) {
     var confirmed = await BIM.UI.confirmDelete('Dieses Thema und alle zugehörigen Einträge löschen?');
     if (!confirmed) return;
+    var deletedItem = allItems.find(function(it) { return it.id === itemId; });
+    var deletedCategoryId = deletedItem ? deletedItem.categoryId : null;
     await BIM.MeetingStore.removeDiscussionItem(itemId);
     allItems = allItems.filter(function(it) { return it.id !== itemId; });
     allUpdates = allUpdates.filter(function(u) { return u.discussionItemId !== itemId; });
     allAttachments = allAttachments.filter(function(a) { return a.discussionItemId !== itemId; });
+
+    // Renumber remaining items in the category to close gaps
+    if (deletedCategoryId) {
+        var remaining = allItems.filter(function(it) { return it.categoryId === deletedCategoryId; });
+        remaining.sort(function(a, b) { return a.itemNumber - b.itemNumber; });
+        for (var ri = 0; ri < remaining.length; ri++) {
+            if (remaining[ri].itemNumber !== ri + 1) {
+                remaining[ri].itemNumber = ri + 1;
+                await BIM.MeetingStore.updateDiscussionItem(remaining[ri]);
+            }
+        }
+    }
+
     renderCategoryNav();
     renderDiscussionItems();
 }
@@ -1060,6 +1159,9 @@ function templateOption(key, label, desc) {
 }
 
 async function createNextInstance() {
+    // Save current work before navigating away
+    collectFields();
+    await BIM.MeetingStore.updateInstance(instance);
     var confirmed = await BIM.UI.confirm('Neue Sitzung', 'Eine neue Sitzung in dieser Serie erstellen? Teilnehmer werden übernommen.');
     if (!confirmed) return;
     var inst = await BIM.MeetingStore.createInstance(seriesId, {});

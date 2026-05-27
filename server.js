@@ -22,6 +22,9 @@ const ATT_DIR  = path.join(DATA_DIR, 'attachments');
 if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR);
 if (!fs.existsSync(ATT_DIR))  fs.mkdirSync(ATT_DIR);
 
+// ── Write queue for serializing mutations ─────────────
+var _writeQueue = Promise.resolve();
+
 // ── In-memory DB cache ────────────────────────────────
 var _db = {};
 try {
@@ -146,7 +149,7 @@ var server = http.createServer(async function(req, res) {
         return;
     }
 
-    // ── API: Granular CRUD ─────────────────────────────
+    // ── API: Granular CRUD (serialized via write queue) ──
     // POST /api/db/:store          — create (body = entity)
     // PUT  /api/db/:store/:id      — update (body = entity)
     // DELETE /api/db/:store/:id    — remove
@@ -157,25 +160,31 @@ var server = http.createServer(async function(req, res) {
         if (!Array.isArray(_db[store])) _db[store] = [];
 
         if (method === 'POST' && !recId) {
-            var body = JSON.parse((await readBody(req)).toString('utf8'));
-            _db[store].push(body);
-            schedulePersist();
-            return sendJSON(res, 201, body);
+            return _writeQueue = _writeQueue.then(async function() {
+                var body = JSON.parse((await readBody(req)).toString('utf8'));
+                _db[store].push(body);
+                schedulePersist();
+                sendJSON(res, 201, body);
+            }).catch(function(e) { sendJSON(res, 500, { error: e.message }); });
         }
 
         if (method === 'PUT' && recId) {
-            var body = JSON.parse((await readBody(req)).toString('utf8'));
-            var idx = _db[store].findIndex(function(r) { return r.id === recId; });
-            if (idx === -1) _db[store].push(body);
-            else _db[store][idx] = body;
-            schedulePersist();
-            return sendJSON(res, 200, body);
+            return _writeQueue = _writeQueue.then(async function() {
+                var body = JSON.parse((await readBody(req)).toString('utf8'));
+                var idx = _db[store].findIndex(function(r) { return r.id === recId; });
+                if (idx === -1) _db[store].push(body);
+                else _db[store][idx] = body;
+                schedulePersist();
+                sendJSON(res, 200, body);
+            }).catch(function(e) { sendJSON(res, 500, { error: e.message }); });
         }
 
         if (method === 'DELETE' && recId) {
-            _db[store] = _db[store].filter(function(r) { return r.id !== recId; });
-            schedulePersist();
-            return sendJSON(res, 200, { ok: true });
+            return _writeQueue = _writeQueue.then(async function() {
+                _db[store] = _db[store].filter(function(r) { return r.id !== recId; });
+                schedulePersist();
+                sendJSON(res, 200, { ok: true });
+            }).catch(function(e) { sendJSON(res, 500, { error: e.message }); });
         }
 
         return sendJSON(res, 400, { error: 'Bad request' });

@@ -7,7 +7,7 @@ var BIM = BIM || {};
  *   - PBKDF2-SHA256 with 310,000 iterations + 16-byte random salt (OWASP 2025)
  *   - Backward-compatible with legacy SHA-256 hashes (auto-upgrades on login)
  *   - Password policy: min 8 chars, upper + lower + digit + special
- *   - Brute force protection: progressive lockout after 5 failed attempts
+ *   - No login lockout (disabled)
  *   - Anti-enumeration: constant-time-ish responses for wrong username
  *   - First-login password setup: admin creates user without password
  *   - Session invalidation on password change
@@ -22,8 +22,6 @@ var BIM = BIM || {};
 BIM.Auth = {
     SESSION_KEY: 'bim_session_token',
     SESSION_DURATION: 24 * 60 * 60 * 1000, // 24 hours
-    MAX_FAILED_ATTEMPTS: 5,
-    LOCKOUT_DURATION: 15 * 60 * 1000, // 15 minutes
     PBKDF2_ITERATIONS: 310000,
 
     // ── Password Hashing (PBKDF2) ─────────────────────────────
@@ -214,14 +212,6 @@ BIM.Auth = {
                 return Promise.reject(new Error('Dieses Konto ist deaktiviert.'));
             }
 
-            // Check lockout
-            var failedAttempts = user.failedAttempts || 0;
-            if (user.lockedUntil && new Date(user.lockedUntil) > new Date()) {
-                var remainMs = new Date(user.lockedUntil) - new Date();
-                var remainMin = Math.ceil(remainMs / 60000);
-                return Promise.reject(new Error('Konto vorübergehend gesperrt. Versuchen Sie es in ' + remainMin + ' Minuten erneut.'));
-            }
-
             // First-login: user has no password yet → redirect to setup
             if (user.passwordHash === null && (user.mustSetPassword || user.mustSetPassword === undefined)) {
                 // For first-login, don't require a password — just show setup
@@ -236,16 +226,7 @@ BIM.Auth = {
             // Verify password
             return self.verifyPassword(password, user.passwordHash).then(function(result) {
                 if (!result.valid) {
-                    // Increment failed attempts
-                    user.failedAttempts = (user.failedAttempts || 0) + 1;
-                    user.lastFailedAttempt = BIM.Utils.now();
-                    if (user.failedAttempts >= self.MAX_FAILED_ATTEMPTS) {
-                        user.lockedUntil = new Date(Date.now() + self.LOCKOUT_DURATION).toISOString();
-                    }
                     return BIM.StorageManager.update('userProfiles', user).then(function() {
-                        if (user.lockedUntil && new Date(user.lockedUntil) > new Date()) {
-                            return Promise.reject(new Error('Konto vorübergehend gesperrt. Zu viele Fehlversuche. Versuchen Sie es in 15 Minuten erneut.'));
-                        }
                         return Promise.reject(new Error('Benutzername oder Passwort falsch.'));
                     });
                 }
@@ -464,19 +445,6 @@ BIM.Auth = {
         });
     },
 
-    /**
-     * Admin resets lockout for a user (clears failed attempts and lock).
-     */
-    resetUserLockout: function(userId) {
-        return BIM.StorageManager.getById('userProfiles', userId).then(function(user) {
-            if (!user) return Promise.reject(new Error('Benutzer nicht gefunden.'));
-            user.failedAttempts = 0;
-            user.lockedUntil = null;
-            user.lastFailedAttempt = null;
-            user.updatedAt = BIM.Utils.now();
-            return BIM.StorageManager.update('userProfiles', user);
-        });
-    },
 
     // ── Session Management ────────────────────────────────────
 

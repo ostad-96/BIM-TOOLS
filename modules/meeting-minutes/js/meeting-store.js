@@ -185,7 +185,7 @@ BIM.MeetingStore = {
                     role: prevParticipants[i].role,
                     email: prevParticipants[i].email,
                     participantType: prevParticipants[i].participantType,
-                    present: true
+                    present: false
                 });
             }
         } else if (series.defaultParticipants && series.defaultParticipants.length > 0) {
@@ -197,7 +197,7 @@ BIM.MeetingStore = {
                     role: dp.role || '',
                     email: dp.email || '',
                     participantType: dp.participantType || 'eingeladene',
-                    present: true
+                    present: false
                 });
             }
         }
@@ -210,6 +210,8 @@ BIM.MeetingStore = {
         return this.SM().update('meetingInstances', instance);
     },
 
+    // Note: instanceCount is NOT decremented on deletion. Instance numbers are stable
+    // identifiers (like invoice numbers) and must not be reused to preserve data integrity.
     deleteInstance: async function(id) {
         await this._deleteInstanceData(id);
         return this.SM().remove('meetingInstances', id);
@@ -220,7 +222,18 @@ BIM.MeetingStore = {
         for (var i = 0; i < participants.length; i++) {
             await this.SM().remove('participants', participants[i].id);
         }
-        // Updates and attachments tagged to this instance are kept (they belong to discussion items)
+        // Clean up updates created in this instance
+        var allUpdates = await this.SM().getAll('discussionUpdates');
+        var instanceUpdates = allUpdates.filter(function(u) { return u.instanceId === instanceId; });
+        for (var j = 0; j < instanceUpdates.length; j++) {
+            await this.SM().remove('discussionUpdates', instanceUpdates[j].id);
+        }
+        // Clean up attachments uploaded in this instance
+        var allAttachments = await this.SM().getAll('attachments');
+        var instanceAttachments = allAttachments.filter(function(a) { return a.instanceId === instanceId; });
+        for (var k = 0; k < instanceAttachments.length; k++) {
+            await this.SM().remove('attachments', instanceAttachments[k].id);
+        }
     },
 
     getInstanceById: function(id) {
@@ -358,11 +371,26 @@ BIM.MeetingStore = {
     moveItemToCategory: async function(itemId, newCategoryId, seriesId) {
         var item = await this.SM().getById('discussionItems', itemId);
         if (!item) return;
+        var oldCategoryId = item.categoryId;
         var existing = await this.SM().query('discussionItems', { seriesId: seriesId });
-        var inNew = existing.filter(function(it) { return it.categoryId === newCategoryId; });
+
+        // Assign next number in target category
+        var inNew = existing.filter(function(it) { return it.categoryId === newCategoryId && it.id !== itemId; });
         item.categoryId = newCategoryId;
         item.itemNumber = inNew.length + 1;
-        return this.updateDiscussionItem(item);
+        await this.updateDiscussionItem(item);
+
+        // Renumber source category to close gaps
+        if (oldCategoryId && oldCategoryId !== newCategoryId) {
+            var inOld = existing.filter(function(it) { return it.categoryId === oldCategoryId && it.id !== itemId; });
+            inOld.sort(function(a, b) { return a.itemNumber - b.itemNumber; });
+            for (var i = 0; i < inOld.length; i++) {
+                if (inOld[i].itemNumber !== i + 1) {
+                    inOld[i].itemNumber = i + 1;
+                    await this.updateDiscussionItem(inOld[i]);
+                }
+            }
+        }
     },
 
     getOpenItemCount: async function(seriesId) {
@@ -383,8 +411,15 @@ BIM.MeetingStore = {
             date: data.date || BIM.Utils.today(),
             text: data.text || '',
             author: author,
+            instanceNumber: null,
             createdAt: BIM.Utils.now()
         };
+
+        // Store instanceNumber for display even if instance is later deleted
+        if (instanceId) {
+            var inst = await this.SM().getById('meetingInstances', instanceId);
+            if (inst) update.instanceNumber = inst.instanceNumber;
+        }
 
         var item = await this.SM().getById('discussionItems', discussionItemId);
         if (item) {

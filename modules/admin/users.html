@@ -159,14 +159,8 @@ function renderUsers() {
             pwIndicator = '<span style="font-size:11px; color:var(--bim-warning, #f59e0b); margin-left:6px; cursor:help;" title="Passwort noch nicht gesetzt">&#9888;</span>';
         }
 
-        // Lockout indicator
-        var lockIndicator = '';
-        if (u.lockedUntil && new Date(u.lockedUntil) > new Date()) {
-            lockIndicator = '<span style="font-size:11px; color:var(--bim-danger, #e53e3e); margin-left:4px; cursor:help;" title="Konto gesperrt">&#128274;</span>';
-        }
-
         html += '<tr>' +
-            '<td><strong>' + BIM.Utils.escapeHtml(u.name || '—') + '</strong>' + pwIndicator + lockIndicator + '</td>' +
+            '<td><strong>' + BIM.Utils.escapeHtml(u.name || '—') + '</strong>' + pwIndicator + '</td>' +
             '<td>' + BIM.Utils.escapeHtml(u.username) + '</td>' +
             '<td>' + BIM.Utils.escapeHtml(u.email || '—') + '</td>' +
             '<td>' + BIM.Utils.escapeHtml(u.company || '—') + '</td>' +

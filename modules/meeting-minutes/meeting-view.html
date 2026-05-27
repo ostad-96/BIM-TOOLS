@@ -523,7 +523,9 @@ function renderItem(item, series, itemUpdates, itemAttachments, instanceMap, cur
         instanceOrder.forEach(function(iid) {
             var inst = instanceMap[iid];
             if (multipleInstances) {
-                var label = inst ? 'Sitzung ' + inst.instanceNumber : 'Unbekannte Sitzung';
+                // Use stored instanceNumber from updates as fallback when instance is deleted
+                var storedNum = updatesByInstance[iid] && updatesByInstance[iid][0] ? updatesByInstance[iid][0].instanceNumber : null;
+                var label = inst ? 'Sitzung ' + inst.instanceNumber : (storedNum ? 'Sitzung ' + storedNum + ' (gelöscht)' : 'Unbekannte Sitzung');
                 if (iid === currentInstanceId) label += ' (aktuell)';
                 html += '<div class="pv-instance-group">';
                 html += '<div class="pv-instance-group-label">' + esc(label) + '</div>';
