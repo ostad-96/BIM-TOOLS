@@ -49,8 +49,8 @@ html, body { background: var(--c-brand); overflow: hidden; }
     var params = new URLSearchParams(window.location.search);
     var tool = params.get('tool') || '';
 
-    var toolFiles = { 'kollisionsmatrix': 'kollisionsmatrix.html', 'agent': 'agent.html' };
-    var toolLabels = { 'kollisionsmatrix': 'Kollisionsmatrix', 'agent': 'VDC Agent' };
+    var toolFiles = { 'kollisionsmatrix': 'kollisionsmatrix.html', 'agent': 'agent.html', 'lichtraumprofil': 'lichtraumprofil.html' };
+    var toolLabels = { 'kollisionsmatrix': 'Kollisionsmatrix', 'agent': 'VDC Agent', 'lichtraumprofil': 'Lichtraumprofil' };
     var badge = document.getElementById('toolBadge');
     if (toolLabels[tool]) badge.textContent = toolLabels[tool];
 

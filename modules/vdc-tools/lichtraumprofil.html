@@ -1,0 +1,1507 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lichtraumprofil - WebForms</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+    font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+    background: #ffffff;
+    color: #1a1a1a;
+    font-size: 13px;
+    line-height: 1.6;
+    min-height: 100vh;
+    padding-bottom: 50px;
+}
+
+/* ── Header ── */
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 24px;
+    background: #003B4D;
+    color: #fff;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    position: sticky; top: 0; z-index: 50;
+}
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+.header .back-btn {
+    background: rgba(255,255,255,0.10);
+    border: 1px solid rgba(255,255,255,0.18);
+    color: rgba(255,255,255,0.85);
+    width: 34px; height: 34px;
+    border-radius: 7px;
+    cursor: pointer;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+}
+.header .back-btn:hover { background: rgba(255,255,255,0.20); border-color: rgba(255,255,255,0.30); color: #fff; }
+.header h1 {
+    font-size: 15px;
+    font-weight: 600;
+    color: #fff;
+    letter-spacing: -0.005em;
+}
+.header .header-subtitle {
+    font-size: 10.5px;
+    color: rgba(255,255,255,0.65);
+    font-weight: 500;
+    margin-top: 1px;
+    letter-spacing: 0.06em; text-transform: uppercase;
+}
+.model-count {
+    font-size: 11px;
+    font-weight: 600;
+    color: #fff;
+    background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.18);
+    padding: 4px 12px;
+    border-radius: 999px;
+    letter-spacing: 0.04em;
+}
+
+/* ── Main content ── */
+.main-content {
+    padding: 16px 32px 16px 32px;
+}
+
+/* ── Panels ── */
+.panel {
+    background: white;
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
+    margin-bottom: 12px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+}
+.panel-header {
+    padding: 10px 16px;
+    background: #ffffff;
+    border-bottom: 2px solid #4a5d6b;
+    font-weight: 600;
+    font-size: 13px;
+    color: #4a5d6b;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.panel-body { padding: 12px 16px; }
+
+/* ── Buttons ── */
+.btn {
+    padding: 6px 14px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 600;
+    transition: all 0.15s;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.btn-primary { background: #c8d5de; color: #1a1a1a; }
+.btn-primary:hover:not(:disabled) { background: #b0bec8; }
+.btn-secondary { background: #e8edf1; color: #4a5d6b; }
+.btn-secondary:hover:not(:disabled) { background: #d5dde4; }
+.btn-success { background: #c8d5de; color: #1a1a1a; }
+.btn-success:hover:not(:disabled) { background: #b0bec8; }
+.btn-large { font-size: 14px; padding: 10px 28px; }
+.btn-pick { background: #003B4D; color: white; }
+.btn-pick:hover:not(:disabled) { background: #004d63; }
+.btn-danger { background: #003B4D; color: white; }
+.btn-danger:hover:not(:disabled) { background: #004d63; }
+.btn-warning { background: #e8edf1; color: #4a5d6b; }
+.btn-warning:hover:not(:disabled) { background: #d5dde4; }
+
+/* ── Log ── */
+.log-wrap {
+    max-height: 250px;
+    overflow-y: auto;
+    padding: 10px 16px;
+    font-family: "Consolas", "Courier New", monospace;
+    font-size: 11px;
+    line-height: 1.6;
+    background: #1e293b;
+    color: #94a3b8;
+}
+.log-wrap .ok { color: #4ade80; }
+.log-wrap .err { color: #f87171; }
+.log-wrap .info { color: #60a5fa; }
+.log-wrap .warn { color: #fbbf24; }
+
+/* ── Progress ── */
+.progress-bar-wrap {
+    height: 6px;
+    background: #e5e7eb;
+    border-radius: 3px;
+    overflow: hidden;
+    margin: 8px 16px;
+}
+.progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #4a5d6b, #003B4D);
+    border-radius: 3px;
+    transition: width 0.3s;
+    width: 0%;
+}
+.hidden { display: none !important; }
+
+/* ── Setup rows ── */
+.setup-row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 8px;
+}
+.setup-row:last-child { margin-bottom: 0; }
+.setup-label { width: 180px; font-weight: 500; color: #6b7280; flex-shrink: 0; }
+.setup-value {
+    flex: 1;
+    padding: 6px 10px;
+    background: #f8f9fb;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    font-size: 12px;
+    color: #1a1a1a;
+}
+
+/* ── Pick groups ── */
+.pick-group {
+    border: 2px dashed #e5e7eb;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 12px;
+    transition: border-color 0.3s;
+}
+.pick-group.active {
+    border-color: #003B4D;
+    background: #f0f7fa;
+}
+.pick-group.done {
+    border-color: #4a5d6b;
+    background: #f0f5f7;
+}
+.pick-group-title {
+    font-weight: 600;
+    font-size: 13px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.pick-status {
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-weight: 600;
+}
+.status-waiting { background: #f1f5f9; color: #6b7280; }
+.status-picking { background: #e0edf3; color: #003B4D; }
+.status-done { background: #d1fae5; color: #065f46; }
+
+/* ── Results ── */
+.result-big {
+    text-align: center;
+    padding: 24px;
+}
+.result-big .value {
+    font-size: 48px;
+    font-weight: 700;
+    color: #003B4D;
+    line-height: 1;
+}
+.result-big .unit {
+    font-size: 20px;
+    font-weight: 400;
+    color: #6b7280;
+    margin-left: 4px;
+}
+.result-big .label {
+    font-size: 13px;
+    color: #6b7280;
+    margin-top: 4px;
+}
+.result-vehicle {
+    text-align: center;
+    padding: 16px;
+    background: #f0f7fa;
+    border-top: 1px solid #c8d5de;
+}
+.result-vehicle .value {
+    font-size: 32px;
+    font-weight: 700;
+    color: #003B4D;
+}
+.result-vehicle .label {
+    font-size: 12px;
+    color: #4a5d6b;
+    margin-top: 2px;
+}
+
+.result-details {
+    padding: 12px 16px;
+    font-size: 12px;
+    border-top: 1px solid #e5e7eb;
+}
+.result-details table { width: 100%; border-collapse: collapse; }
+.result-details td { padding: 4px 8px; }
+.result-details td:first-child { color: #6b7280; width: 200px; }
+.result-details td:last-child { font-weight: 500; }
+
+/* ── Footer ── */
+.footer {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    background: #f8f9fb; border-top: 1px solid #e5e7eb;
+    padding: 10px 32px; font-size: 11px; color: #9ca3af;
+    display: flex; justify-content: space-between; align-items: center;
+    z-index: 20;
+}
+
+/* ── Page transitions ── */
+.page-transition {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    z-index: 9999;
+    pointer-events: none;
+}
+.page-transition .slide {
+    position: absolute; top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: #e8e8e8;
+    transform: translateX(100%);
+}
+.page-transition .slide-accent {
+    position: absolute; top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: #003B4D;
+    transform: translateX(100%);
+}
+@keyframes entrance-slide {
+    0%   { transform: translateX(0); }
+    100% { transform: translateX(-100%); }
+}
+@keyframes entrance-accent {
+    0%   { transform: translateX(0); }
+    100% { transform: translateX(-100%); }
+}
+body.entering .page-transition .slide {
+    transform: translateX(0);
+    animation: entrance-slide 0.5s cubic-bezier(0.4, 0, 0.2, 1) 0.15s forwards;
+}
+body.entering .page-transition .slide-accent {
+    transform: translateX(0);
+    animation: entrance-accent 0.45s cubic-bezier(0.4, 0, 0.2, 1) 0.05s forwards;
+}
+@keyframes exit-slide {
+    0%   { transform: translateX(100%); }
+    100% { transform: translateX(0); }
+}
+@keyframes exit-accent {
+    0%   { transform: translateX(100%); }
+    100% { transform: translateX(0); }
+}
+body.exiting .page-transition { pointer-events: all; }
+body.exiting .page-transition .slide-accent {
+    animation: exit-accent 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.05s forwards;
+}
+body.exiting .page-transition .slide {
+    animation: exit-slide 0.45s cubic-bezier(0.4, 0, 0.2, 1) 0s forwards;
+}
+</style>
+</head>
+<body class="entering">
+
+<div class="page-transition">
+    <div class="slide"></div>
+    <div class="slide-accent"></div>
+</div>
+
+<div class="header">
+    <div class="header-left">
+        <button class="back-btn" onclick="navigateBack()" title="Zurück zur Übersicht" aria-label="Zurück">&#8592;</button>
+        <div style="display:flex; align-items:center; gap:10px;">
+            <img src="../../shared/assets/emch-berger-logo.gif" alt="Emch+Berger" style="width:30px; height:30px; border-radius:8px; object-fit:cover;">
+            <div>
+                <h1>Lichtraumprofil</h1>
+                <div class="header-subtitle">Minimale vertikale Distanz &middot; VDC Manager</div>
+            </div>
+        </div>
+    </div>
+    <div style="display:flex; align-items:center; gap:14px;">
+        <div class="model-count" id="modelCountBadge">-</div>
+    </div>
+</div>
+
+<div class="main-content">
+
+<!-- Panel 1: Face Picking -->
+<div class="panel" id="pickPanel">
+    <div class="panel-header" style="display:flex; justify-content:space-between; align-items:center;">
+        <span>Flächen auswählen</span>
+        <button class="btn btn-secondary" onclick="resetPicking()" style="font-size:11px; padding:4px 10px;">&#8635; Zurücksetzen</button>
+    </div>
+    <div id="pickLoading" style="padding:20px; text-align:center; color:#94a3b8; font-size:12px;">
+        Warte auf VDC Manager...
+    </div>
+    <div class="panel-body hidden" id="pickBody">
+
+        <!-- Group A: Bridge -->
+        <div class="pick-group" id="groupA">
+            <div class="pick-group-title">
+                <span>A: Brückenunterseite</span>
+                <span class="pick-status status-waiting" id="statusA">Warten</span>
+            </div>
+            <p style="font-size:11px; color:#6b7280; margin-bottom:8px;">
+                Klicken Sie auf alle Flächen der Brückenunterseite im 3D-Viewer. Sie können mehrere Flächen nacheinander anklicken.
+            </p>
+            <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+                <button class="btn btn-pick" onclick="startPickA()" id="btnPickA">Flächen auswählen</button>
+                <button class="btn btn-success hidden" onclick="confirmA()" id="btnConfirmA">Bestätigen</button>
+                <button class="btn btn-secondary hidden" onclick="addMoreA()" id="btnAddMoreA">+ Weitere hinzufügen</button>
+                <span style="font-size:11px; color:#6b7280;" id="countA"></span>
+            </div>
+        </div>
+
+        <!-- Group B: Road -->
+        <div class="pick-group" id="groupB">
+            <div class="pick-group-title">
+                <span>B: Strassenoberfläche</span>
+                <span class="pick-status status-waiting" id="statusB">Warten</span>
+            </div>
+            <p style="font-size:11px; color:#6b7280; margin-bottom:8px;">
+                Klicken Sie auf alle Flächen der Strassenoberfläche. Sie können mehrere Flächen nacheinander anklicken.
+            </p>
+            <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+                <button class="btn btn-pick" onclick="startPickB()" id="btnPickB" disabled>Flächen auswählen</button>
+                <button class="btn btn-success hidden" onclick="confirmB()" id="btnConfirmB">Bestätigen</button>
+                <button class="btn btn-secondary hidden" onclick="addMoreB()" id="btnAddMoreB">+ Weitere hinzufügen</button>
+                <span style="font-size:11px; color:#6b7280;" id="countB"></span>
+            </div>
+        </div>
+
+        <!-- Settings -->
+        <div style="margin-top:8px; padding-top:12px; border-top:1px solid #e5e7eb;">
+            <div class="setup-row">
+                <span class="setup-label">Rasterabstand (m):</span>
+                <input type="number" id="gridSpacing" value="0.1" min="0.01" max="5" step="0.01"
+                       style="width:100px; padding:6px 10px; font-size:12px; border:1px solid #e5e7eb; border-radius:6px; font-family:inherit;">
+                <span style="font-size:11px; color:#9ca3af;">Kleiner = genauer, aber langsamer</span>
+            </div>
+            <div class="setup-row">
+                <span class="setup-label">Sicherheitsabzug (m):</span>
+                <input type="number" id="safetyMargin" value="0.10" min="0" max="2" step="0.01"
+                       style="width:100px; padding:6px 10px; font-size:12px; border:1px solid #e5e7eb; border-radius:6px; font-family:inherit;">
+            </div>
+        </div>
+
+        <!-- Run button -->
+        <div style="margin-top:12px;">
+            <button class="btn btn-pick btn-large" onclick="runCalculation()" id="btnRun" disabled style="width:100%;">
+                &#9654; Berechnung starten
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Panel 2: Execution -->
+<div class="panel hidden" id="executionPanel">
+    <div class="panel-header">Berechnung läuft</div>
+    <div class="panel-body">
+        <div id="phaseLabel" style="font-size:12px; color:#4a5d6b; margin-bottom:4px;">Initialisierung...</div>
+        <div class="progress-bar-wrap" style="margin:0;">
+            <div class="progress-bar-fill" id="progressBar"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Panel 3: Results -->
+<div class="panel hidden" id="resultPanel">
+    <div class="panel-header" style="display:flex; justify-content:space-between; align-items:center;">
+        <span>Ergebnis</span>
+        <div style="display:flex; gap:6px;">
+            <button class="btn btn-primary" onclick="zoomToCritical()" style="font-size:11px;">Im 3D-Viewer anzeigen</button>
+            <button class="btn btn-primary" onclick="drawCriticalLine()" id="btnDrawLine" style="font-size:11px;">Linie zeichnen</button>
+            <button class="btn btn-primary" onclick="drawAllRays()" id="btnDrawRays" style="font-size:11px;">Alle Strahlen zeichnen</button>
+            <button class="btn btn-danger hidden" onclick="removeVisualization()" id="btnRemoveViz" style="font-size:11px;">Visualisierung entfernen</button>
+        </div>
+    </div>
+    <div class="result-big">
+        <div><span class="value" id="resultDistance">-</span><span class="unit">m</span></div>
+        <div class="label">Minimale vertikale lichte Höhe</div>
+    </div>
+    <div class="result-vehicle">
+        <div><span class="value" id="resultVehicle">-</span> m</div>
+        <div class="label">Maximale Fahrzeughöhe (inkl. Sicherheitsabzug)</div>
+    </div>
+    <div class="result-details" id="resultDetails"></div>
+</div>
+
+<!-- Panel 4: Log -->
+<div class="panel" id="logPanel">
+    <div class="panel-header" style="display:flex; justify-content:space-between; align-items:center;">
+        <span>Protokoll</span>
+        <button class="btn btn-secondary" onclick="document.getElementById('logWrap').innerHTML=''" style="font-size:11px; padding:4px 10px;">Leeren</button>
+    </div>
+    <div class="log-wrap" id="logWrap"></div>
+</div>
+
+</div><!-- /main-content -->
+
+<footer class="footer">
+    <span>&copy; 2026 Emch+Berger GmbH</span>
+    <span>Lichtraumprofil &middot; WebForms</span>
+</footer>
+
+<script>
+// ==================================================
+// GLOBALS
+// ==================================================
+var bridgeMesh = null;   // { vertices: [{x,y,z},...], triangles: [{i0,i1,i2},...] }
+var roadMesh = null;
+var pickingTarget = null; // 'A' or 'B'
+var calculationResult = null;
+var vizModelID = null;
+var lastRayData = null;
+
+// ==================================================
+// HELPERS
+// ==================================================
+function log(msg, cls) {
+    var el = document.getElementById("logWrap");
+    var line = document.createElement("div");
+    if (cls) line.className = cls;
+    line.textContent = msg;
+    el.appendChild(line);
+    el.scrollTop = el.scrollHeight;
+}
+
+function setProgress(pct) {
+    document.getElementById("progressBar").style.width = pct + "%";
+}
+
+function show(id) { document.getElementById(id).classList.remove("hidden"); }
+function hide(id) { document.getElementById(id).classList.add("hidden"); }
+
+function toArray(val) {
+    if (!val) return [];
+    if (Array.isArray(val)) return val;
+    var arr = [];
+    try {
+        var keys = Object.keys(val);
+        if (keys.length > 0) {
+            var numKeys = keys.filter(function(k) { return !isNaN(parseInt(k)); });
+            numKeys.sort(function(a, b) { return parseInt(a) - parseInt(b); });
+            if (numKeys.length > 0) {
+                for (var i = 0; i < numKeys.length; i++) arr.push(val[numKeys[i]]);
+                return arr;
+            }
+            for (var j = 0; j < keys.length; j++) arr.push(val[keys[j]]);
+            return arr;
+        }
+    } catch(e) {}
+    try {
+        for (var idx = 0; idx < 500; idx++) {
+            var v = val[idx];
+            if (v === undefined || v === null) break;
+            arr.push(v);
+        }
+    } catch(e) {}
+    return arr;
+}
+
+function s(val) {
+    if (val === undefined || val === null) return "";
+    return String(val);
+}
+
+function navigateBack() {
+    document.body.classList.remove('entering');
+    document.body.classList.add('exiting');
+    setTimeout(function() { window.location.href = "../../index.html"; }, 500);
+}
+
+// ==================================================
+// INITIALIZATION
+// ==================================================
+(function waitForVdcApp() {
+    if (typeof vdcApp !== "undefined") {
+        onReady();
+    } else {
+        var timer = setInterval(function() {
+            if (typeof vdcApp !== "undefined") {
+                clearInterval(timer);
+                onReady();
+            }
+        }, 200);
+    }
+})();
+
+async function onReady() {
+    log("VDC Manager verbunden", "ok");
+    hide("pickLoading");
+    show("pickBody");
+
+    try {
+        var rawList = await vdcApp.getModelListByDomain("geometry");
+        var geomModels = toArray(rawList);
+        document.getElementById("modelCountBadge").textContent = geomModels.length + " Modelle";
+        log(geomModels.length + " Geometrie-Modelle gefunden", "info");
+    } catch(e) {
+        log("Fehler beim Laden der Modelle: " + e, "err");
+    }
+}
+
+// ==================================================
+// FACE PICKING
+// ==================================================
+var appendingA = false;
+var appendingB = false;
+
+function mergeMesh(existing, newMesh) {
+    var vertOffset = existing.vertices.length;
+    for (var v = 0; v < newMesh.vertices.length; v++) {
+        existing.vertices.push(newMesh.vertices[v]);
+    }
+    for (var t = 0; t < newMesh.triangles.length; t++) {
+        existing.triangles.push({
+            i0: newMesh.triangles[t].i0 + vertOffset,
+            i1: newMesh.triangles[t].i1 + vertOffset,
+            i2: newMesh.triangles[t].i2 + vertOffset
+        });
+    }
+}
+
+function activateFacePicking(label) {
+    try {
+        vdcApp.setHandlerMode({ type: 'measure', mode: 'faces' });
+        log("Messmodus aktiviert: " + label, "info");
+    } catch(e) {
+        log("Fehler beim Aktivieren des Messmodus: " + e, "err");
+    }
+}
+
+function updateCountA() {
+    if (bridgeMesh) {
+        document.getElementById("countA").textContent =
+            bridgeMesh.vertices.length + " Vertices, " + bridgeMesh.triangles.length + " Dreiecke";
+    }
+}
+
+function updateCountB() {
+    if (roadMesh) {
+        document.getElementById("countB").textContent =
+            roadMesh.vertices.length + " Vertices, " + roadMesh.triangles.length + " Dreiecke";
+    }
+}
+
+function startPickA() {
+    pickingTarget = 'A';
+    appendingA = false;
+    bridgeMesh = null;
+    document.getElementById("groupA").className = "pick-group active";
+    document.getElementById("statusA").className = "pick-status status-picking";
+    document.getElementById("statusA").textContent = "Auswählen...";
+    document.getElementById("countA").textContent = "";
+    show("btnConfirmA");
+    hide("btnAddMoreA");
+    activateFacePicking("Brückenunterseite");
+}
+
+function addMoreA() {
+    appendingA = true;
+    document.getElementById("groupA").className = "pick-group active";
+    document.getElementById("statusA").className = "pick-status status-picking";
+    document.getElementById("statusA").textContent = "Weitere...";
+    show("btnConfirmA");
+    hide("btnAddMoreA");
+    try { vdcApp.clearMeasureItems(); } catch(e) {}
+    activateFacePicking("Weitere Brückenflächen");
+}
+
+async function confirmA() {
+    try {
+        var facesData = await vdcApp.getPickedFaces();
+        log("RAW getPickedFaces() Brücke: " + JSON.stringify(facesData, null, 2), "info");
+        var newMesh = parseFacesData(facesData);
+
+        if (newMesh.vertices.length === 0) {
+            log("Keine Flächen ausgewählt! Bitte Flächen im 3D-Viewer anklicken.", "warn");
+            return;
+        }
+
+        if (appendingA && bridgeMesh) {
+            mergeMesh(bridgeMesh, newMesh);
+            log("Brücke erweitert: +" + newMesh.vertices.length + " Vertices, +" + newMesh.triangles.length + " Dreiecke", "ok");
+        } else {
+            bridgeMesh = newMesh;
+        }
+
+        logMeshDetails("Brücke gesamt", bridgeMesh);
+
+        document.getElementById("groupA").className = "pick-group done";
+        document.getElementById("statusA").className = "pick-status status-done";
+        document.getElementById("statusA").textContent = "Fertig";
+        updateCountA();
+        hide("btnConfirmA");
+        show("btnAddMoreA");
+        document.getElementById("btnPickA").disabled = true;
+        document.getElementById("btnPickB").disabled = false;
+
+        try { vdcApp.clearMeasureItems(); } catch(e) {}
+
+    } catch(e) {
+        log("Fehler beim Lesen der Flächen: " + e, "err");
+        if (e.stack) log("Stack: " + e.stack, "err");
+    }
+}
+
+function startPickB() {
+    pickingTarget = 'B';
+    appendingB = false;
+    roadMesh = null;
+    document.getElementById("groupB").className = "pick-group active";
+    document.getElementById("statusB").className = "pick-status status-picking";
+    document.getElementById("statusB").textContent = "Auswählen...";
+    document.getElementById("countB").textContent = "";
+    show("btnConfirmB");
+    hide("btnAddMoreB");
+    activateFacePicking("Strassenoberfläche");
+}
+
+function addMoreB() {
+    appendingB = true;
+    document.getElementById("groupB").className = "pick-group active";
+    document.getElementById("statusB").className = "pick-status status-picking";
+    document.getElementById("statusB").textContent = "Weitere...";
+    show("btnConfirmB");
+    hide("btnAddMoreB");
+    try { vdcApp.clearMeasureItems(); } catch(e) {}
+    activateFacePicking("Weitere Strassenflächen");
+}
+
+async function confirmB() {
+    try {
+        var facesData = await vdcApp.getPickedFaces();
+        log("RAW getPickedFaces() Strasse: " + JSON.stringify(facesData, null, 2), "info");
+        var newMesh = parseFacesData(facesData);
+
+        if (newMesh.vertices.length === 0) {
+            log("Keine Flächen ausgewählt! Bitte Flächen im 3D-Viewer anklicken.", "warn");
+            return;
+        }
+
+        if (appendingB && roadMesh) {
+            mergeMesh(roadMesh, newMesh);
+            log("Strasse erweitert: +" + newMesh.vertices.length + " Vertices, +" + newMesh.triangles.length + " Dreiecke", "ok");
+        } else {
+            roadMesh = newMesh;
+        }
+
+        logMeshDetails("Strasse gesamt", roadMesh);
+
+        document.getElementById("groupB").className = "pick-group done";
+        document.getElementById("statusB").className = "pick-status status-done";
+        document.getElementById("statusB").textContent = "Fertig";
+        updateCountB();
+        hide("btnConfirmB");
+        show("btnAddMoreB");
+        document.getElementById("btnPickB").disabled = true;
+        document.getElementById("btnRun").disabled = false;
+
+        try { vdcApp.clearMeasureItems(); } catch(e) {}
+
+    } catch(e) {
+        log("Fehler beim Lesen der Flächen: " + e, "err");
+        if (e.stack) log("Stack: " + e.stack, "err");
+    }
+}
+
+function logMeshDetails(name, mesh) {
+    log(name + ": " + mesh.vertices.length + " Vertices, " + mesh.triangles.length + " Dreiecke", "ok");
+    for (var i = 0; i < mesh.vertices.length; i++) {
+        var v = mesh.vertices[i];
+        log("  V[" + i + "]: x=" + v.x + " y=" + v.y + " z=" + v.z, "info");
+    }
+    for (var t = 0; t < mesh.triangles.length; t++) {
+        var tri = mesh.triangles[t];
+        log("  T[" + t + "]: i0=" + tri.i0 + " i1=" + tri.i1 + " i2=" + tri.i2, "info");
+        if (tri.i0 >= mesh.vertices.length || tri.i1 >= mesh.vertices.length || tri.i2 >= mesh.vertices.length) {
+            log("  WARNUNG: Dreiecksindex ausserhalb der Vertices! Max=" + (mesh.vertices.length - 1), "err");
+        }
+    }
+}
+
+function parseFacesData(facesData) {
+    var vertices = [];
+    var triangles = [];
+
+    if (!facesData) {
+        log("parseFacesData: facesData ist null/undefined", "warn");
+        return { vertices: vertices, triangles: triangles };
+    }
+
+    log("parseFacesData: typeof=" + typeof facesData + " keys=" + Object.keys(facesData).join(","), "info");
+
+    var facesArr = [];
+    if (facesData.faces) {
+        facesArr = toArray(facesData.faces);
+        log("parseFacesData: facesData.faces gefunden, " + facesArr.length + " faces", "info");
+    } else {
+        facesArr = toArray(facesData);
+        log("parseFacesData: kein .faces, nutze facesData direkt, " + facesArr.length + " Einträge", "info");
+    }
+
+    for (var f = 0; f < facesArr.length; f++) {
+        var face = facesArr[f];
+        log("parseFacesData: face[" + f + "] typeof=" + typeof face + " keys=" +
+            (face && typeof face === 'object' ? Object.keys(face).join(",") : "N/A"), "info");
+
+        var faceVerts = toArray(face.vertices || []);
+        var faceTris = toArray(face.triangles || []);
+
+        log("parseFacesData: face[" + f + "] vertices=" + faceVerts.length + " triangleIndices=" + faceTris.length, "info");
+
+        if (faceVerts.length > 0) {
+            log("parseFacesData: vertex[0] sample: " + JSON.stringify(faceVerts[0]), "info");
+        }
+        if (faceTris.length > 0) {
+            log("parseFacesData: triangle indices sample: " + JSON.stringify(faceTris.slice(0, 6)), "info");
+        }
+
+        var vertOffset = vertices.length;
+
+        for (var v = 0; v < faceVerts.length; v++) {
+            var vt = faceVerts[v];
+            var px, py, pz;
+            if (typeof vt === 'object' && vt !== null) {
+                px = parseFloat(vt.x !== undefined ? vt.x : (vt[0] || 0));
+                py = parseFloat(vt.y !== undefined ? vt.y : (vt[1] || 0));
+                pz = parseFloat(vt.z !== undefined ? vt.z : (vt[2] || 0));
+            } else if (typeof vt === 'number') {
+                px = vt;
+                py = parseFloat(faceVerts[v + 1] || 0);
+                pz = parseFloat(faceVerts[v + 2] || 0);
+                log("parseFacesData: WARNUNG - vertices scheinen flat (nicht als Objekte) zu sein!", "warn");
+            } else {
+                px = 0; py = 0; pz = 0;
+            }
+            vertices.push({ x: px, y: py, z: pz });
+        }
+
+        for (var t = 0; t < faceTris.length; t++) {
+            var tri = faceTris[t];
+            var i0, i1, i2;
+            if (Array.isArray(tri)) {
+                i0 = parseInt(tri[0]);
+                i1 = parseInt(tri[1]);
+                i2 = parseInt(tri[2]);
+            } else {
+                i0 = parseInt(tri);
+                i1 = parseInt(faceTris[t + 1]);
+                i2 = parseInt(faceTris[t + 2]);
+                t += 2;
+            }
+            if (!isNaN(i0) && !isNaN(i1) && !isNaN(i2)) {
+                triangles.push({
+                    i0: i0 + vertOffset,
+                    i1: i1 + vertOffset,
+                    i2: i2 + vertOffset
+                });
+            } else {
+                log("parseFacesData: ungültige Dreiecksindizes bei t=" + t + ": " + JSON.stringify(tri), "err");
+            }
+        }
+    }
+
+    log("parseFacesData: ERGEBNIS: " + vertices.length + " Vertices, " + triangles.length + " Dreiecke", "ok");
+    return { vertices: vertices, triangles: triangles };
+}
+
+function resetPicking() {
+    bridgeMesh = null;
+    roadMesh = null;
+    pickingTarget = null;
+    calculationResult = null;
+    lastRayData = null;
+
+    document.getElementById("groupA").className = "pick-group";
+    document.getElementById("groupB").className = "pick-group";
+    document.getElementById("statusA").className = "pick-status status-waiting";
+    document.getElementById("statusA").textContent = "Warten";
+    document.getElementById("statusB").className = "pick-status status-waiting";
+    document.getElementById("statusB").textContent = "Warten";
+    document.getElementById("countA").textContent = "";
+    document.getElementById("countB").textContent = "";
+    document.getElementById("btnPickA").disabled = false;
+    document.getElementById("btnPickB").disabled = true;
+    document.getElementById("btnRun").disabled = true;
+    hide("btnConfirmA");
+    hide("btnConfirmB");
+    hide("btnAddMoreA");
+    hide("btnAddMoreB");
+    hide("resultPanel");
+    hide("executionPanel");
+
+    try { vdcApp.clearMeasureItems(); } catch(e) {}
+    log("Auswahl zurückgesetzt", "info");
+}
+
+// ==================================================
+// GEOMETRY MATH
+// ==================================================
+function computeBoundingBox(vertices) {
+    var minX = Infinity, minY = Infinity, minZ = Infinity;
+    var maxX = -Infinity, maxY = -Infinity, maxZ = -Infinity;
+    for (var i = 0; i < vertices.length; i++) {
+        var v = vertices[i];
+        if (v.x < minX) minX = v.x;
+        if (v.y < minY) minY = v.y;
+        if (v.z < minZ) minZ = v.z;
+        if (v.x > maxX) maxX = v.x;
+        if (v.y > maxY) maxY = v.y;
+        if (v.z > maxZ) maxZ = v.z;
+    }
+    return { minX: minX, minY: minY, minZ: minZ, maxX: maxX, maxY: maxY, maxZ: maxZ };
+}
+
+function buildTriangleXYList(mesh) {
+    var list = [];
+    for (var t = 0; t < mesh.triangles.length; t++) {
+        var tri = mesh.triangles[t];
+        var v0 = mesh.vertices[tri.i0];
+        var v1 = mesh.vertices[tri.i1];
+        var v2 = mesh.vertices[tri.i2];
+        if (!v0 || !v1 || !v2) {
+            log("buildTriangleXYList: Tri[" + t + "] hat undefinierte Vertices! i0=" + tri.i0 +
+                " i1=" + tri.i1 + " i2=" + tri.i2 + " (vertices.length=" + mesh.vertices.length + ")" +
+                " v0=" + !!v0 + " v1=" + !!v1 + " v2=" + !!v2, "err");
+            continue;
+        }
+        if (isNaN(v0.x) || isNaN(v0.y) || isNaN(v0.z) ||
+            isNaN(v1.x) || isNaN(v1.y) || isNaN(v1.z) ||
+            isNaN(v2.x) || isNaN(v2.y) || isNaN(v2.z)) {
+            log("buildTriangleXYList: Tri[" + t + "] hat NaN-Koordinaten!", "err");
+            continue;
+        }
+        list.push({
+            v0: v0, v1: v1, v2: v2,
+            minX: Math.min(v0.x, v1.x, v2.x),
+            maxX: Math.max(v0.x, v1.x, v2.x),
+            minY: Math.min(v0.y, v1.y, v2.y),
+            maxY: Math.max(v0.y, v1.y, v2.y)
+        });
+    }
+    return list;
+}
+
+function buildSpatialIndex(trisXY, originX, originY, cellSize, cellsX, cellsY) {
+    var grid = [];
+    for (var i = 0; i < cellsX * cellsY; i++) grid.push(null);
+    for (var t = 0; t < trisXY.length; t++) {
+        var tri = trisXY[t];
+        var cxMin = Math.max(0, Math.floor((tri.minX - originX) / cellSize));
+        var cxMax = Math.min(cellsX - 1, Math.floor((tri.maxX - originX) / cellSize));
+        var cyMin = Math.max(0, Math.floor((tri.minY - originY) / cellSize));
+        var cyMax = Math.min(cellsY - 1, Math.floor((tri.maxY - originY) / cellSize));
+        for (var cx = cxMin; cx <= cxMax; cx++) {
+            for (var cy = cyMin; cy <= cyMax; cy++) {
+                var idx = cx * cellsY + cy;
+                if (!grid[idx]) grid[idx] = [];
+                grid[idx].push(t);
+            }
+        }
+    }
+    return grid;
+}
+
+function getZOnMesh(px, py, mesh, trisXY) {
+    var zMin = Infinity;
+    var zMax = -Infinity;
+    var found = false;
+
+    for (var t = 0; t < trisXY.length; t++) {
+        var tri = trisXY[t];
+        if (px < tri.minX || px > tri.maxX || py < tri.minY || py > tri.maxY) continue;
+        var bary = barycentric(px, py, tri.v0, tri.v1, tri.v2);
+        if (bary === null) continue;
+        var z = bary.u * tri.v0.z + bary.v * tri.v1.z + bary.w * tri.v2.z;
+        found = true;
+        if (z < zMin) zMin = z;
+        if (z > zMax) zMax = z;
+    }
+
+    if (!found) return null;
+    return { min: zMin, max: zMax };
+}
+
+function barycentric(px, py, v0, v1, v2) {
+    var d00 = (v1.x - v0.x) * (v1.x - v0.x) + (v1.y - v0.y) * (v1.y - v0.y);
+    var d01 = (v1.x - v0.x) * (v2.x - v0.x) + (v1.y - v0.y) * (v2.y - v0.y);
+    var d11 = (v2.x - v0.x) * (v2.x - v0.x) + (v2.y - v0.y) * (v2.y - v0.y);
+    var d20 = (px - v0.x) * (v1.x - v0.x) + (py - v0.y) * (v1.y - v0.y);
+    var d21 = (px - v0.x) * (v2.x - v0.x) + (py - v0.y) * (v2.y - v0.y);
+
+    var denom = d00 * d11 - d01 * d01;
+    if (Math.abs(denom) < 1e-12) return null;
+
+    var v = (d11 * d20 - d01 * d21) / denom;
+    var w = (d00 * d21 - d01 * d20) / denom;
+    var u = 1.0 - v - w;
+
+    var eps = -1e-6;
+    if (u < eps || v < eps || w < eps) return null;
+
+    return { u: u, v: v, w: w };
+}
+
+function sleep(ms) {
+    return new Promise(function(resolve) { setTimeout(resolve, ms); });
+}
+
+async function runCalculation() {
+    if (!bridgeMesh || !roadMesh) {
+        log("runCalculation: bridgeMesh oder roadMesh fehlt!", "err");
+        return;
+    }
+
+    show("executionPanel");
+    hide("resultPanel");
+    document.getElementById("btnRun").disabled = true;
+    setProgress(5);
+
+    log("", "");
+    log("=== Berechnung gestartet ===", "info");
+
+    try {
+        await sleep(50);
+
+        var spacing = parseFloat(document.getElementById("gridSpacing").value) || 0.1;
+        var safetyMargin = parseFloat(document.getElementById("safetyMargin").value) || 0.10;
+        log("Einstellungen: spacing=" + spacing + " safetyMargin=" + safetyMargin, "info");
+
+        log("STEP 1: Bounding Boxes berechnen...", "info");
+        var bbA = computeBoundingBox(bridgeMesh.vertices);
+        var bbB = computeBoundingBox(roadMesh.vertices);
+
+        log("Brücke BB: X[" + bbA.minX.toFixed(2) + ".." + bbA.maxX.toFixed(2) +
+            "] Y[" + bbA.minY.toFixed(2) + ".." + bbA.maxY.toFixed(2) +
+            "] Z[" + bbA.minZ.toFixed(2) + ".." + bbA.maxZ.toFixed(2) + "]", "info");
+        log("Strasse BB: X[" + bbB.minX.toFixed(2) + ".." + bbB.maxX.toFixed(2) +
+            "] Y[" + bbB.minY.toFixed(2) + ".." + bbB.maxY.toFixed(2) +
+            "] Z[" + bbB.minZ.toFixed(2) + ".." + bbB.maxZ.toFixed(2) + "]", "info");
+
+        log("STEP 2: XY Überlappung...", "info");
+        var overlapMinX = Math.max(bbA.minX, bbB.minX);
+        var overlapMaxX = Math.min(bbA.maxX, bbB.maxX);
+        var overlapMinY = Math.max(bbA.minY, bbB.minY);
+        var overlapMaxY = Math.min(bbA.maxY, bbB.maxY);
+
+        log("Overlap: X[" + overlapMinX.toFixed(2) + ".." + overlapMaxX.toFixed(2) +
+            "] Y[" + overlapMinY.toFixed(2) + ".." + overlapMaxY.toFixed(2) + "]", "info");
+
+        if (overlapMinX >= overlapMaxX || overlapMinY >= overlapMaxY) {
+            log("FEHLER: Keine XY-Überlappung!", "err");
+            document.getElementById("phaseLabel").textContent = "Keine Überlappung gefunden!";
+            setProgress(100);
+            hide("executionPanel");
+            document.getElementById("btnRun").disabled = false;
+            return;
+        }
+
+        log("Überlappung: " + (overlapMaxX - overlapMinX).toFixed(2) + " x " +
+            (overlapMaxY - overlapMinY).toFixed(2) + " m", "ok");
+
+        log("STEP 3: Dreiecks-Listen erstellen...", "info");
+        document.getElementById("phaseLabel").textContent = "Erstelle Raumindex...";
+        setProgress(15);
+        await sleep(10);
+
+        var bridgeTrisXY = buildTriangleXYList(bridgeMesh);
+        log("bridgeTrisXY: " + bridgeTrisXY.length + " Dreiecke aufbereitet", "info");
+        for (var bt = 0; bt < bridgeTrisXY.length; bt++) {
+            var btr = bridgeTrisXY[bt];
+            log("  Bridge Tri[" + bt + "]: v0=(" + btr.v0.x.toFixed(2) + "," + btr.v0.y.toFixed(2) + "," + btr.v0.z.toFixed(2) + ")" +
+                " v1=(" + btr.v1.x.toFixed(2) + "," + btr.v1.y.toFixed(2) + "," + btr.v1.z.toFixed(2) + ")" +
+                " v2=(" + btr.v2.x.toFixed(2) + "," + btr.v2.y.toFixed(2) + "," + btr.v2.z.toFixed(2) + ")" +
+                " AABB X[" + btr.minX.toFixed(2) + ".." + btr.maxX.toFixed(2) + "] Y[" + btr.minY.toFixed(2) + ".." + btr.maxY.toFixed(2) + "]", "info");
+        }
+
+        var roadTrisXY = buildTriangleXYList(roadMesh);
+        log("roadTrisXY: " + roadTrisXY.length + " Dreiecke aufbereitet", "info");
+        for (var rt = 0; rt < roadTrisXY.length; rt++) {
+            var rtr = roadTrisXY[rt];
+            log("  Road Tri[" + rt + "]: v0=(" + rtr.v0.x.toFixed(2) + "," + rtr.v0.y.toFixed(2) + "," + rtr.v0.z.toFixed(2) + ")" +
+                " v1=(" + rtr.v1.x.toFixed(2) + "," + rtr.v1.y.toFixed(2) + "," + rtr.v1.z.toFixed(2) + ")" +
+                " v2=(" + rtr.v2.x.toFixed(2) + "," + rtr.v2.y.toFixed(2) + "," + rtr.v2.z.toFixed(2) + ")" +
+                " AABB X[" + rtr.minX.toFixed(2) + ".." + rtr.maxX.toFixed(2) + "] Y[" + rtr.minY.toFixed(2) + ".." + rtr.maxY.toFixed(2) + "]", "info");
+        }
+
+        log("STEP 4: Raumindex erstellen...", "info");
+        var nx = Math.ceil((overlapMaxX - overlapMinX) / spacing) + 1;
+        var ny = Math.ceil((overlapMaxY - overlapMinY) / spacing) + 1;
+
+        var cellSize = Math.max(spacing * 10, 1.0);
+        var cellsX = Math.max(1, Math.ceil((overlapMaxX - overlapMinX) / cellSize));
+        var cellsY = Math.max(1, Math.ceil((overlapMaxY - overlapMinY) / cellSize));
+        log("Zellraster: " + cellsX + " x " + cellsY + " Zellen (cellSize=" + cellSize.toFixed(2) + "m)", "info");
+
+        var bridgeIndex = buildSpatialIndex(bridgeTrisXY, overlapMinX, overlapMinY, cellSize, cellsX, cellsY);
+        var roadIndex = buildSpatialIndex(roadTrisXY, overlapMinX, overlapMinY, cellSize, cellsX, cellsY);
+
+        var activeCells = 0;
+        var totalCells = cellsX * cellsY;
+        for (var ci = 0; ci < totalCells; ci++) {
+            if (bridgeIndex[ci] && roadIndex[ci]) activeCells++;
+        }
+        log("Aktive Zellen (beide Flächen): " + activeCells + " / " + totalCells, "ok");
+
+        if (activeCells === 0) {
+            log("FEHLER: Keine Zellen mit beiden Flächen gefunden!", "err");
+            setProgress(100);
+            hide("executionPanel");
+            document.getElementById("btnRun").disabled = false;
+            return;
+        }
+
+        var estimatedSamples = 0;
+        for (var ec = 0; ec < totalCells; ec++) {
+            if (!bridgeIndex[ec] || !roadIndex[ec]) continue;
+            var ecx = Math.floor(ec / cellsY);
+            var ecy = ec % cellsY;
+            var cMinX = overlapMinX + ecx * cellSize;
+            var cMaxX = Math.min(overlapMinX + (ecx + 1) * cellSize, overlapMaxX);
+            var cMinY = overlapMinY + ecy * cellSize;
+            var cMaxY = Math.min(overlapMinY + (ecy + 1) * cellSize, overlapMaxY);
+            var eixS = Math.max(0, Math.floor((cMinX - overlapMinX) / spacing));
+            var eixE = Math.min(nx - 1, Math.ceil((cMaxX - overlapMinX) / spacing));
+            var eiyS = Math.max(0, Math.floor((cMinY - overlapMinY) / spacing));
+            var eiyE = Math.min(ny - 1, Math.ceil((cMaxY - overlapMinY) / spacing));
+            estimatedSamples += (eixE - eixS + 1) * (eiyE - eiyS + 1);
+        }
+        log("Raster: " + nx + " x " + ny + " gesamt, ~" + estimatedSamples + " in aktiven Zellen (von " + (nx * ny) + " total)", "info");
+
+        document.getElementById("phaseLabel").textContent =
+            "Berechne vertikale Distanzen (~" + estimatedSamples + " Punkte)...";
+        setProgress(20);
+        await sleep(10);
+
+        log("STEP 5: Sampling (nur aktive Zellen)...", "info");
+        var minGap = Infinity;
+        var minGapPoint = null;
+        var minBridgeZ = 0;
+        var minRoadZ = 0;
+        var samplesHit = 0;
+        var samplesNoBridge = 0;
+        var samplesNoRoad = 0;
+        var processed = 0;
+        var loggedSamples = 0;
+        var rayDataTemp = [];
+        var visited = {};
+
+        for (var cx = 0; cx < cellsX; cx++) {
+            for (var cy = 0; cy < cellsY; cy++) {
+                var cellIdx = cx * cellsY + cy;
+                if (!bridgeIndex[cellIdx] || !roadIndex[cellIdx]) continue;
+
+                var cellMinX = overlapMinX + cx * cellSize;
+                var cellMaxX = Math.min(overlapMinX + (cx + 1) * cellSize, overlapMaxX);
+                var cellMinY = overlapMinY + cy * cellSize;
+                var cellMaxY = Math.min(overlapMinY + (cy + 1) * cellSize, overlapMaxY);
+
+                var ixStart = Math.max(0, Math.floor((cellMinX - overlapMinX) / spacing));
+                var ixEnd = Math.min(nx - 1, Math.ceil((cellMaxX - overlapMinX) / spacing));
+                var iyStart = Math.max(0, Math.floor((cellMinY - overlapMinY) / spacing));
+                var iyEnd = Math.min(ny - 1, Math.ceil((cellMaxY - overlapMinY) / spacing));
+
+                for (var ix = ixStart; ix <= ixEnd; ix++) {
+                    for (var iy = iyStart; iy <= iyEnd; iy++) {
+                        var vkey = ix + "_" + iy;
+                        if (visited[vkey]) continue;
+                        visited[vkey] = true;
+
+                        var px = overlapMinX + ix * spacing;
+                        var py = overlapMinY + iy * spacing;
+
+                        var zA = getZOnMesh(px, py, bridgeMesh, bridgeTrisXY);
+                        var zB = getZOnMesh(px, py, roadMesh, roadTrisXY);
+
+                        if (loggedSamples < 20) {
+                            log("  Sample(" + px.toFixed(3) + "," + py.toFixed(3) + "): bridgeZ=" +
+                                (zA ? "min=" + zA.min.toFixed(3) + "/max=" + zA.max.toFixed(3) : "null") +
+                                " roadZ=" + (zB ? "min=" + zB.min.toFixed(3) + "/max=" + zB.max.toFixed(3) : "null"), "info");
+                            loggedSamples++;
+                        }
+
+                        if (zA === null) {
+                            samplesNoBridge++;
+                        } else if (zB === null) {
+                            samplesNoRoad++;
+                        } else {
+                            var bridgeBottom = zA.min;
+                            var roadTop = zB.max;
+                            var gap = bridgeBottom - roadTop;
+
+                            if (loggedSamples <= 20) {
+                                log("    gap = " + bridgeBottom.toFixed(3) + " - " + roadTop.toFixed(3) + " = " + gap.toFixed(3), "info");
+                            }
+
+                            if (gap > 0) {
+                                samplesHit++;
+                                rayDataTemp.push({ px: px, py: py, roadZ: roadTop, bridgeZ: bridgeBottom, gap: gap });
+                                if (gap < minGap) {
+                                    minGap = gap;
+                                    minGapPoint = { x: px, y: py };
+                                    minBridgeZ = bridgeBottom;
+                                    minRoadZ = roadTop;
+                                }
+                            }
+                        }
+
+                        processed++;
+                        if (processed % 1000 === 0) {
+                            var pct = 20 + (processed / estimatedSamples) * 70;
+                            setProgress(Math.min(90, pct));
+                            document.getElementById("phaseLabel").textContent =
+                                "Berechne... " + processed + " Punkte";
+                            await sleep(0);
+                        }
+                    }
+                }
+            }
+        }
+
+        lastRayData = rayDataTemp;
+
+        setProgress(95);
+        document.getElementById("phaseLabel").textContent = "Fertig!";
+
+        log("STEP 6: Ergebnis zusammenstellen...", "info");
+        log("Statistik:", "info");
+        log("  Treffer (beide Flächen, gap>0): " + samplesHit, "info");
+        log("  Kein Brücke-Treffer: " + samplesNoBridge, "info");
+        log("  Kein Strasse-Treffer: " + samplesNoRoad, "info");
+        log("  Abgetastet (aktive Zellen): " + processed, "info");
+        log("  Übersprungen (inaktive Zellen): " + ((nx * ny) - processed), "info");
+
+        if (samplesHit === 0) {
+            log("FEHLER: Keine überlappenden Punkte mit positivem gap gefunden!", "err");
+            log("Mögliche Ursachen:", "warn");
+            log("  - Flächen überlappen nicht vertikal (Dreiecke decken Overlap-Bereich nicht ab)", "warn");
+            log("  - Brücke liegt unter der Strasse (gap < 0)", "warn");
+            log("  - Dreiecksindizes falsch geparsed (Dreiecke zeigen auf falsche Vertices)", "warn");
+            setProgress(100);
+            hide("executionPanel");
+            document.getElementById("btnRun").disabled = false;
+            return;
+        }
+
+        var vehicleHeight = minGap - safetyMargin;
+        if (vehicleHeight < 0) vehicleHeight = 0;
+
+        calculationResult = {
+            minGap: minGap,
+            vehicleHeight: vehicleHeight,
+            point: minGapPoint,
+            bridgeZ: minBridgeZ,
+            roadZ: minRoadZ,
+            samplesHit: samplesHit,
+            totalSamples: processed,
+            safetyMargin: safetyMargin
+        };
+
+        log("=== ERGEBNIS ===", "ok");
+        log("Minimale lichte Höhe: " + minGap.toFixed(4) + " m", "ok");
+        log("Max. Fahrzeughöhe: " + vehicleHeight.toFixed(2) + " m", "ok");
+        log("Punkt: X=" + minGapPoint.x.toFixed(3) + " Y=" + minGapPoint.y.toFixed(3), "ok");
+        log("BrückeZ=" + minBridgeZ.toFixed(4) + " StrasseZ=" + minRoadZ.toFixed(4), "ok");
+
+        document.getElementById("resultDistance").textContent = minGap.toFixed(3);
+        document.getElementById("resultVehicle").textContent = vehicleHeight.toFixed(2);
+
+        var detailsHtml = '<table>';
+        detailsHtml += '<tr><td>Kritischer Punkt (X, Y):</td><td>' +
+            minGapPoint.x.toFixed(3) + ', ' + minGapPoint.y.toFixed(3) + '</td></tr>';
+        detailsHtml += '<tr><td>Brücke Z (Unterseite):</td><td>' + minBridgeZ.toFixed(4) + ' m</td></tr>';
+        detailsHtml += '<tr><td>Strasse Z (Oberfläche):</td><td>' + minRoadZ.toFixed(4) + ' m</td></tr>';
+        detailsHtml += '<tr><td>Vertikale Distanz:</td><td><strong>' + minGap.toFixed(4) + ' m</strong></td></tr>';
+        detailsHtml += '<tr><td>Sicherheitsabzug:</td><td>-' + safetyMargin.toFixed(2) + ' m</td></tr>';
+        detailsHtml += '<tr><td>Abgetastete Punkte:</td><td>' + samplesHit + ' Treffer / ' + processed + ' abgetastet</td></tr>';
+        detailsHtml += '</table>';
+        document.getElementById("resultDetails").innerHTML = detailsHtml;
+
+        show("resultPanel");
+        hide("executionPanel");
+        document.getElementById("btnRun").disabled = false;
+
+    } catch(e) {
+        log("FATALER FEHLER in runCalculation: " + e, "err");
+        if (e.stack) log("Stack: " + e.stack, "err");
+        hide("executionPanel");
+        document.getElementById("btnRun").disabled = false;
+    }
+}
+
+// ==================================================
+// 3D VISUALIZATION
+// ==================================================
+var VIZ_MODEL_NAME = "Lichtraumprofil";
+var vizCreatedIds = [];
+
+async function findOrCreateVizParent() {
+    var existing = toArray(await vdcApp.getModelListByName(VIZ_MODEL_NAME, "geometry"));
+    log("  getModelListByName -> " + existing.length + " Modell(e)", "info");
+
+    if (existing.length === 0) {
+        var newId = s(await vdcApp.createModel(VIZ_MODEL_NAME, true, "geometry"));
+        log("  createModel -> " + newId, "info");
+        if (newId.charAt(0) === '-') {
+            log("  FEHLER: createModel Fehlercode " + newId, "err");
+            return null;
+        }
+        vizModelID = newId;
+    } else {
+        vizModelID = s(existing[0]);
+        log("  Vorhandenes Modell: " + vizModelID, "ok");
+    }
+
+    var containers = toArray(await vdcApp.getRootContainerList(VIZ_MODEL_NAME));
+    log("  getRootContainerList -> " + containers.length + " Container", "info");
+    for (var c = 0; c < containers.length; c++) {
+        log("    [" + c + "] " + s(containers[c]), "info");
+    }
+
+    if (containers.length > 0) {
+        var containerId = s(containers[0]);
+        log("  Nutze Container: " + containerId, "ok");
+        return containerId;
+    }
+
+    var rootNode = s(await vdcApp.getRootNodeByModel(vizModelID));
+    log("  Fallback rootNode: " + rootNode, "warn");
+    return rootNode;
+}
+
+async function drawCriticalLine() {
+    if (!calculationResult) return;
+
+    var r = calculationResult;
+    var px = r.point.x;
+    var py = r.point.y;
+    var zBot = r.roadZ;
+    var zTop = r.bridgeZ;
+    var midZ = (zBot + zTop) / 2;
+
+    log("Zeichne Visualisierung...", "info");
+    log("  Punkt: X=" + px.toFixed(3) + " Y=" + py.toFixed(3), "info");
+    log("  Z-Bereich: " + zBot.toFixed(3) + " bis " + zTop.toFixed(3), "info");
+
+    try {
+        var parentId = await findOrCreateVizParent();
+        if (!parentId) {
+            log("FEHLER: Kein beschreibbarer Container gefunden!", "err");
+            return;
+        }
+
+        var lineXml = '<objectLines ID="lrp_line_' + Date.now() + '" name="Lichte Höhe">'
+            + '<color r="1.0" g="0.0" b="0.0" a="1.0" />'
+            + '<p nr="0" x="' + px + '" y="' + py + '" z="' + zBot + '" />'
+            + '<p nr="1" x="' + px + '" y="' + py + '" z="' + zTop + '" />'
+            + '<l p1="0" p2="1" />'
+            + '</objectLines>';
+        log("  XML: " + lineXml, "info");
+        var lineId = s(await vdcApp.createObjectFromXml(parentId, lineXml));
+        log("  objectLines -> " + lineId, "info");
+        if (lineId.charAt(0) !== '-') vizCreatedIds.push(lineId);
+
+        var textXml = '<objectText ID="lrp_text_' + Date.now() + '" name="Distanz">'
+            + '<color r="1.0" g="0.0" b="0.0" a="1.0" />'
+            + '<textItem c="' + r.minGap.toFixed(3) + ' m" h="0.5"'
+            + ' x="' + (px + 0.3) + '" y="' + (py + 0.3) + '" z="' + midZ + '"'
+            + ' rx="0" ry="0" rz="0"></textItem>'
+            + '</objectText>';
+        var textId = s(await vdcApp.createObjectFromXml(parentId, textXml));
+        log("  objectText -> " + textId, "info");
+        if (textId.charAt(0) !== '-') vizCreatedIds.push(textId);
+
+        var ms = 0.2;
+        var bottomXml = '<objectLines ID="lrp_mbot_' + Date.now() + '" name="Punkt Strasse">'
+            + '<color r="0.0" g="0.8" b="0.0" a="1.0" />'
+            + '<p nr="0" x="' + (px - ms) + '" y="' + py + '" z="' + zBot + '" />'
+            + '<p nr="1" x="' + (px + ms) + '" y="' + py + '" z="' + zBot + '" />'
+            + '<p nr="2" x="' + px + '" y="' + (py - ms) + '" z="' + zBot + '" />'
+            + '<p nr="3" x="' + px + '" y="' + (py + ms) + '" z="' + zBot + '" />'
+            + '<l p1="0" p2="1" /><l p1="2" p2="3" />'
+            + '</objectLines>';
+        var mbId = s(await vdcApp.createObjectFromXml(parentId, bottomXml));
+        log("  marker bottom -> " + mbId, "info");
+        if (mbId.charAt(0) !== '-') vizCreatedIds.push(mbId);
+
+        var topXml = '<objectLines ID="lrp_mtop_' + Date.now() + '" name="Punkt Brücke">'
+            + '<color r="0.0" g="0.8" b="0.0" a="1.0" />'
+            + '<p nr="0" x="' + (px - ms) + '" y="' + py + '" z="' + zTop + '" />'
+            + '<p nr="1" x="' + (px + ms) + '" y="' + py + '" z="' + zTop + '" />'
+            + '<p nr="2" x="' + px + '" y="' + (py - ms) + '" z="' + zTop + '" />'
+            + '<p nr="3" x="' + px + '" y="' + (py + ms) + '" z="' + zTop + '" />'
+            + '<l p1="0" p2="1" /><l p1="2" p2="3" />'
+            + '</objectLines>';
+        var mtId = s(await vdcApp.createObjectFromXml(parentId, topXml));
+        log("  marker top -> " + mtId, "info");
+        if (mtId.charAt(0) !== '-') vizCreatedIds.push(mtId);
+
+        try {
+            await vdcApp.setElementsVisible(true, vizCreatedIds.join(";"));
+            log("  Neue Objekte sichtbar gemacht", "ok");
+        } catch(rp) {
+            log("  setElementsVisible: " + rp, "warn");
+        }
+
+        log("Visualisierung erstellt: " + vizCreatedIds.length + " Objekte", "ok");
+        show("btnRemoveViz");
+        document.getElementById("btnDrawLine").disabled = true;
+
+    } catch(e) {
+        log("Fehler beim Zeichnen: " + e, "err");
+        if (e.stack) log("Stack: " + e.stack, "err");
+    }
+}
+
+async function drawAllRays() {
+    if (!lastRayData || lastRayData.length === 0) {
+        log("Keine Strahlen-Daten vorhanden. Zuerst Berechnung starten.", "warn");
+        return;
+    }
+
+    log("Zeichne " + lastRayData.length + " Strahlen...", "info");
+
+    try {
+        var parentId = await findOrCreateVizParent();
+        if (!parentId) {
+            log("FEHLER: Kein beschreibbarer Container gefunden!", "err");
+            return;
+        }
+
+        var minG = Infinity, maxG = -Infinity;
+        for (var i = 0; i < lastRayData.length; i++) {
+            if (lastRayData[i].gap < minG) minG = lastRayData[i].gap;
+            if (lastRayData[i].gap > maxG) maxG = lastRayData[i].gap;
+        }
+        var range = maxG - minG;
+        if (range < 0.001) range = 0.001;
+
+        var batchSize = 500;
+        var batchCount = Math.ceil(lastRayData.length / batchSize);
+
+        for (var b = 0; b < batchCount; b++) {
+            var start = b * batchSize;
+            var end = Math.min(start + batchSize, lastRayData.length);
+
+            var buckets = { red: [], yellow: [], green: [] };
+            for (var j = start; j < end; j++) {
+                var ray = lastRayData[j];
+                var t = (ray.gap - minG) / range;
+                if (t < 0.33) buckets.red.push(ray);
+                else if (t < 0.66) buckets.yellow.push(ray);
+                else buckets.green.push(ray);
+            }
+
+            var colors = [
+                { key: "red", r: "1.0", g: "0.15", b: "0.15", label: "Kritisch" },
+                { key: "yellow", r: "1.0", g: "0.85", b: "0.0", label: "Mittel" },
+                { key: "green", r: "0.0", g: "0.8", b: "0.0", label: "Sicher" }
+            ];
+
+            for (var ci = 0; ci < colors.length; ci++) {
+                var col = colors[ci];
+                var rays = buckets[col.key];
+                if (rays.length === 0) continue;
+
+                var xml = '<objectLines ID="lrp_rays_' + col.key + '_' + b + '_' + Date.now() + '" name="Strahlen ' + col.label + '">';
+                xml += '<color r="' + col.r + '" g="' + col.g + '" b="' + col.b + '" a="1.0" />';
+                var pNr = 0;
+                for (var k = 0; k < rays.length; k++) {
+                    xml += '<p nr="' + pNr + '" x="' + rays[k].px + '" y="' + rays[k].py + '" z="' + rays[k].roadZ + '" />';
+                    xml += '<p nr="' + (pNr + 1) + '" x="' + rays[k].px + '" y="' + rays[k].py + '" z="' + rays[k].bridgeZ + '" />';
+                    xml += '<l p1="' + pNr + '" p2="' + (pNr + 1) + '" />';
+                    pNr += 2;
+                }
+                xml += '</objectLines>';
+
+                var objId = s(await vdcApp.createObjectFromXml(parentId, xml));
+                log("  Batch " + b + " " + col.label + " (" + rays.length + " Strahlen) -> " + objId, "info");
+                if (objId.charAt(0) !== '-') vizCreatedIds.push(objId);
+            }
+
+            if (b < batchCount - 1) await sleep(0);
+        }
+
+        try {
+            await vdcApp.setElementsVisible(true, vizCreatedIds.join(";"));
+        } catch(e) {}
+
+        log("Alle Strahlen gezeichnet: " + lastRayData.length + " Strahlen", "ok");
+        show("btnRemoveViz");
+        document.getElementById("btnDrawRays").disabled = true;
+
+    } catch(e) {
+        log("Fehler beim Zeichnen der Strahlen: " + e, "err");
+        if (e.stack) log("Stack: " + e.stack, "err");
+    }
+}
+
+async function removeVisualization() {
+    log("Entferne Visualisierung...", "info");
+
+    for (var i = 0; i < vizCreatedIds.length; i++) {
+        try {
+            await vdcApp.deleteObject(vizCreatedIds[i]);
+        } catch(e) {}
+    }
+    vizCreatedIds = [];
+
+    if (vizModelID) {
+        try {
+            var result = await vdcApp.deleteModel(vizModelID);
+            log("  deleteModel -> " + result, "info");
+        } catch(e) {
+            log("  deleteModel Fehler: " + e, "warn");
+        }
+        vizModelID = null;
+    }
+
+    hide("btnRemoveViz");
+    document.getElementById("btnDrawLine").disabled = false;
+    document.getElementById("btnDrawRays").disabled = false;
+    log("Visualisierung entfernt", "ok");
+}
+
+async function zoomToCritical() {
+    if (vizCreatedIds.length === 0) {
+        log("Zeichnen Sie zuerst die Linie, um zum Punkt zu navigieren.", "warn");
+        return;
+    }
+    try {
+        var idStr = vizCreatedIds.join(";");
+        await vdcApp.clearSelection(true);
+        await vdcApp.selectElements(idStr, true, "geometry");
+        await vdcApp.zoomToSelected();
+        log("Zoom auf Visualisierung", "ok");
+    } catch(e) {
+        log("Fehler beim Zoomen: " + e, "err");
+    }
+}
+</script>
+</body>
+</html>
