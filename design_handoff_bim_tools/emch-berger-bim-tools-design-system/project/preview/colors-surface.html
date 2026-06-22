@@ -1,0 +1,21 @@
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="_card.css"><style>
+.h { display: flex; align-items: baseline; gap: 12px; margin-bottom: 14px; }
+.h .ti { font-family: var(--f-display); font-weight: 600; font-size: 13px; }
+.h .sub { font-size: 11.5px; color: var(--c-ink-4); }
+.row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+.sw .chip { height: 64px; border-radius: 9px; box-shadow: inset 0 0 0 1px rgba(14,23,25,0.06); display: flex; align-items: flex-end; padding: 8px; color: var(--c-ink-3); font-size: 10.5px; font-family: var(--f-mono); }
+.sw .chip.dark { color: rgba(255,255,255,0.85); }
+.sw { display: flex; flex-direction: column; gap: 6px; }
+.name { font-size: 11px; font-weight: 600; color: var(--c-ink); }
+.tag { font-size: 10px; color: var(--c-ink-4); }
+</style></head><body>
+<div class="card">
+    <div class="h"><span class="ti">Paper &amp; Surface</span><span class="sub">Warm off-whites — never pure white for canvas</span></div>
+    <div class="row">
+        <div class="sw"><div class="chip" style="background:#fafaf7">FAFAF7</div><div class="name">paper</div><div class="tag">page canvas</div></div>
+        <div class="sw"><div class="chip" style="background:#f4f3ee">F4F3EE</div><div class="name">paper-deep</div><div class="tag">sunken tracks</div></div>
+        <div class="sw"><div class="chip" style="background:#ffffff">FFFFFF</div><div class="name">surface</div><div class="tag">cards, modals</div></div>
+        <div class="sw"><div class="chip" style="background:#fbfbf8">FBFBF8</div><div class="name">surface-2</div><div class="tag">zebra rows</div></div>
+    </div>
+</div>
+</body></html>

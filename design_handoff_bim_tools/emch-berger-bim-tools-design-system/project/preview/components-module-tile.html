@@ -1,0 +1,43 @@
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="_card.css"><style>
+.card { padding: 22px 26px; background: #fafaf7; }
+.h { font-family: var(--f-display); font-weight: 600; font-size: 13px; margin-bottom: 14px; }
+.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.tile { position: relative; background: #fff; border: 1px solid #e6e3dc; border-radius: 14px; padding: 18px; min-height: 156px; display: flex; flex-direction: column; gap: 12px; box-shadow: 0 1px 2px rgba(14,23,25,0.04); overflow: hidden; }
+.tile.hov { border-color: #003B4D; box-shadow: 0 1px 3px rgba(14,23,25,0.05), 0 4px 12px rgba(14,23,25,0.04); }
+.tile.hov::before { content: ''; position: absolute; inset: 0; background: radial-gradient(120% 80% at 100% 0%, rgba(0,59,77,0.05), transparent 60%); pointer-events: none; }
+.tile.disabled { background: #fafaf7; }
+.icn { width: 38px; height: 38px; border-radius: 9px; background: #e6ecef; color: #003B4D; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.icn svg { width: 18px; height: 18px; }
+.tile.disabled .icn { background: #f0eee7; color: #8a939a; }
+.tag { position: absolute; top: 14px; right: 14px; font-size: 10px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; padding: 3px 8px; border-radius: 999px; }
+.tag.active { color: #003B4D; background: #e6ecef; }
+.tag.soon { color: #8a939a; background: #f4f3ee; }
+.label { font-family: var(--f-display); font-size: 16px; font-weight: 600; color: #0e1719; letter-spacing: -0.005em; }
+.desc { font-size: 13px; color: #5d676e; line-height: 1.5; flex: 1; }
+.tile.disabled .label, .tile.disabled .desc { color: #8a939a; }
+.arrow { align-self: flex-end; width: 28px; height: 28px; border-radius: 50%; background: #003B4D; color: #fff; display: flex; align-items: center; justify-content: center; position: relative; z-index: 1; }
+.arrow svg { width: 14px; height: 14px; }
+</style></head><body>
+<div class="card">
+    <div class="h">Module tile · default · hover · disabled</div>
+    <div class="grid">
+        <div class="tile hov">
+            <span class="tag active">Aktiv</span>
+            <div class="icn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
+            <div>
+                <div class="label">Sitzungsprotokolle</div>
+                <div class="desc">Besprechungsserien, Tagesordnungen und chronologische Nachverfolgung</div>
+            </div>
+            <div class="arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></div>
+        </div>
+        <div class="tile disabled">
+            <span class="tag soon">Bald</span>
+            <div class="icn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg></div>
+            <div>
+                <div class="label">BIM-Koordination</div>
+                <div class="desc">Modell­koordination, Kollisions­prüfungen und Freigabe­läufe</div>
+            </div>
+        </div>
+    </div>
+</div>
+</body></html>

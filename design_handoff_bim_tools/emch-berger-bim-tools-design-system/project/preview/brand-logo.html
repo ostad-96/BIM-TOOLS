@@ -1,0 +1,46 @@
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="_card.css"><style>
+.card { display: flex; align-items: center; gap: 28px; }
+.logo-tile {
+    width: 96px; height: 96px;
+    background: #000;
+    display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-end;
+    padding: 12px;
+    box-sizing: border-box;
+    flex-shrink: 0;
+}
+.logo-tile img { width: 100%; height: auto; display: block; }
+.logo-text {
+    color: #fff;
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    line-height: 1.05;
+    letter-spacing: -0.01em;
+}
+.meta { flex: 1; }
+.meta h2 { font-family: var(--f-display); font-weight: 600; font-size: 22px; letter-spacing: -0.012em; margin: 0 0 4px 0; }
+.meta p { margin: 0; color: var(--c-ink-3); font-size: 13px; line-height: 1.5; }
+.usage { display: flex; gap: 10px; margin-top: 10px; }
+.usage span {
+    font-size: 10.5px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.08em;
+    color: var(--c-ink-3);
+    padding: 3px 9px; border-radius: 999px;
+    background: #fff; border: 1px solid var(--c-line);
+}
+</style></head><body>
+<div class="card">
+    <div class="logo-tile">
+        <img src="../assets/emch-berger-logo.gif" alt="Emch+Berger logo">
+    </div>
+    <div class="meta">
+        <h2>Emch+Berger</h2>
+        <p>Black square mark with white "Emch+Berger" wordmark stacked over two lines. Always rendered with <strong>zero border-radius</strong> — the corner-tweak rules force this.</p>
+        <div class="usage">
+            <span>Square only</span>
+            <span>Min 24px</span>
+            <span>No bg fills</span>
+        </div>
+    </div>
+</div>
+</body></html>

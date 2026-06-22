@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>VDC Manager erforderlich — BIM Tools</title>
+<link rel="stylesheet" href="../../shared/css/acc-variables.css">
+<link rel="stylesheet" href="../../shared/css/acc-base.css">
+<link rel="stylesheet" href="../../shared/css/acc-components.css">
+<link rel="stylesheet" href="../../shared/css/acc-corporate.css">
+<style>
+html, body { background: var(--c-brand); overflow: hidden; }
+.tool-name { display: none; }
+</style>
+</head>
+<body class="corp">
+
+<div class="auth-stage">
+    <canvas id="c"></canvas>
+
+    <div class="gate-shell" id="gateCard" style="display:none">
+        <div class="gate-top">
+            <div class="gate-icon-wrap">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+                    <line x1="12" y1="9" x2="12" y2="13"/>
+                    <line x1="12" y1="17" x2="12.01" y2="17"/>
+                </svg>
+            </div>
+            <span class="gate-tool" id="toolBadge">VDC Werkzeug</span>
+            <h1 class="gate-title">VDC Manager erforderlich</h1>
+        </div>
+        <p class="gate-message">
+            Dieses Werkzeug funktioniert nur innerhalb des <strong style="color:var(--c-ink);">VDC Managers</strong> (desite BIM).
+            Bitte öffnen Sie es als WebForm im VDC Manager.
+        </p>
+        <div class="gate-foot">
+            <a href="../../index.html" class="btn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+                Zurück zum Hub
+            </a>
+            <span class="pill pill-warn"><span class="dot"></span> Nur VDC Manager</span>
+        </div>
+    </div>
+</div>
+
+<script>
+(function() {
+    var params = new URLSearchParams(window.location.search);
+    var tool = params.get('tool') || '';
+
+    var toolFiles = { 'kollisionsmatrix': 'kollisionsmatrix.html', 'agent': 'agent.html', 'lichtraumprofil': 'lichtraumprofil.html' };
+    var toolLabels = { 'kollisionsmatrix': 'Kollisionsmatrix', 'agent': 'VDC Agent', 'lichtraumprofil': 'Lichtraumprofil' };
+    var badge = document.getElementById('toolBadge');
+    if (toolLabels[tool]) badge.textContent = toolLabels[tool];
+
+    var ua = navigator.userAgent || '';
+    var isQtBrowser = /QtWebEngine/i.test(ua);
+    function redirect() { var target = toolFiles[tool]; if (target) window.location.replace(target); }
+
+    if (isQtBrowser) { redirect(); return; }
+    if (typeof vdcApp !== 'undefined') { redirect(); return; }
+
+    var attempts = 0;
+    var poll = setInterval(function() {
+        attempts++;
+        if (typeof vdcApp !== 'undefined') { clearInterval(poll); redirect(); }
+        else if (attempts >= 10) {
+            clearInterval(poll);
+            document.getElementById('gateCard').style.display = '';
+        }
+    }, 100);
+})();
+
+// ── Background particle field (matches login) ──
+var canvas = document.getElementById('c');
+var ctx = canvas.getContext('2d');
+var W, H;
+function resize() { W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; }
+resize(); window.addEventListener('resize', resize);
+
+var nodes = [];
+for (var i = 0; i < 50; i++) {
+    nodes.push({
+        x: Math.random()*2000, y: Math.random()*1200,
+        vx: (Math.random()-0.5)*0.2, vy: (Math.random()-0.5)*0.2,
+        r: Math.random()*1.4+0.4, pulse: Math.random()*Math.PI*2
+    });
+}
+function draw(t) {
+    ctx.clearRect(0,0,W,H);
+    for (var i = 0; i < nodes.length; i++) {
+        var n = nodes[i];
+        n.x += n.vx; n.y += n.vy;
+        if (n.x < 0 || n.x > W) n.vx *= -1;
+        if (n.y < 0 || n.y > H) n.vy *= -1;
+        for (var j = i+1; j < nodes.length; j++) {
+            var m = nodes[j], dx = n.x-m.x, dy = n.y-m.y, dist = Math.sqrt(dx*dx+dy*dy);
+            if (dist < 130) {
+                ctx.beginPath(); ctx.moveTo(n.x,n.y); ctx.lineTo(m.x,m.y);
+                ctx.strokeStyle='rgba(255,255,255,'+(0.10*(1-dist/130))+')'; ctx.stroke();
+            }
+        }
+        var pr = n.r + Math.sin(t/1200+n.pulse)*0.35;
+        ctx.beginPath(); ctx.arc(n.x,n.y,pr,0,Math.PI*2);
+        ctx.fillStyle='rgba(255,255,255,0.25)'; ctx.fill();
+    }
+    requestAnimationFrame(draw);
+}
+draw(0);
+</script>
+</body>
+</html>

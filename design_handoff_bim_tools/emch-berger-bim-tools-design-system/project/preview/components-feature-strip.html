@@ -1,0 +1,82 @@
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="_card.css"><style>
+body { background: #fafaf7; }
+.card { background: transparent; padding: 24px 26px; }
+.hello {
+    display: flex; align-items: baseline; gap: 10px;
+    margin-bottom: 18px;
+}
+.hello .greet {
+    font-family: 'Inter Tight', sans-serif;
+    font-size: 18px; font-weight: 600;
+    color: #0e1719;
+    letter-spacing: -0.005em;
+}
+.hello .greet strong { font-weight: 600; }
+.hello .when {
+    font-size: 12.5px;
+    color: #8a939a;
+    font-variant-numeric: tabular-nums;
+}
+.hello .when::before { content: '·'; margin-right: 8px; opacity: 0.6; }
+
+.stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    border-top: 1px solid #e6e3dc;
+    border-bottom: 1px solid #e6e3dc;
+}
+.st {
+    padding: 14px 18px 14px 0;
+    display: flex; flex-direction: column;
+    gap: 4px;
+    border-left: 1px solid #e6e3dc;
+    padding-left: 18px;
+}
+.st:first-child { border-left: 0; padding-left: 0; }
+.st .v {
+    font-family: 'Inter Tight', sans-serif;
+    font-size: 22px; font-weight: 600;
+    color: #0e1719;
+    letter-spacing: -0.018em;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.1;
+    display: flex; align-items: baseline; gap: 6px;
+}
+.st .v .pct {
+    font-size: 11px; font-weight: 500;
+    color: #14694a;
+    letter-spacing: 0;
+}
+.st .v .pct.down { color: #5d676e; }
+.st .k {
+    font-size: 11.5px;
+    color: #5d676e;
+}
+.st a.k:hover { color: #003B4D; text-decoration: underline; }
+.st .accent { color: #b45309; }
+</style></head><body>
+<div class="card">
+    <div class="hello">
+        <div class="greet">Guten Tag, <strong>Andrea</strong>.</div>
+        <div class="when">Mittwoch, 13. Mai · KW 20</div>
+    </div>
+    <div class="stats">
+        <div class="st">
+            <div class="v">128</div>
+            <div class="k">Serien</div>
+        </div>
+        <div class="st">
+            <div class="v">1 042</div>
+            <div class="k">Sitzungen</div>
+        </div>
+        <div class="st">
+            <div class="v"><span class="accent">37</span></div>
+            <div class="k">Offene Themen</div>
+        </div>
+        <div class="st">
+            <div class="v">3</div>
+            <div class="k">Heute fällig</div>
+        </div>
+    </div>
+</div>
+</body></html>

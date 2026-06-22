@@ -1,0 +1,27 @@
+/* Shared card frame for preview cards. Cards render at 700px wide. */
+@import url('../colors_and_type.css');
+
+html, body { background: transparent; }
+body {
+    font-family: var(--f-body);
+    color: var(--c-ink);
+    margin: 0;
+    padding: 0;
+    -webkit-font-smoothing: antialiased;
+}
+.card {
+    background: var(--c-paper);
+    padding: 22px 24px;
+    width: 700px;
+    min-height: 120px;
+    box-sizing: border-box;
+}
+.card-tight { padding: 16px 20px; }
+.row { display: flex; align-items: center; gap: 12px; }
+.col { display: flex; flex-direction: column; gap: 8px; }
+.label {
+    font-size: 10px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.08em;
+    color: var(--c-ink-4);
+}
+.value { font-family: var(--f-mono); font-size: 11px; color: var(--c-ink-3); }

@@ -1,0 +1,23 @@
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="_card.css"><style>
+.card { padding: 24px 26px; background: #f4f3ee; }
+.h { font-family: var(--f-display); font-weight: 600; font-size: 13px; margin-bottom: 18px; }
+.row { display: flex; gap: 22px; }
+.sw { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.tile { width: 130px; height: 80px; background: #fff; border-radius: 14px; display: flex; align-items: center; justify-content: center; color: var(--c-ink-3); font-family: var(--f-mono); font-size: 11px; }
+.t1 { box-shadow: 0 1px 2px rgba(14,23,25,0.04), 0 0 0 1px rgba(14,23,25,0.04); }
+.t2 { box-shadow: 0 1px 3px rgba(14,23,25,0.05), 0 4px 12px rgba(14,23,25,0.04), 0 0 0 1px rgba(14,23,25,0.05); }
+.t3 { box-shadow: 0 4px 16px rgba(14,23,25,0.08), 0 12px 32px rgba(14,23,25,0.06), 0 0 0 1px rgba(14,23,25,0.05); }
+.tg { width: 130px; height: 80px; background: #fff; border-radius: 14px; box-shadow: 0 0 0 4px rgba(0,59,77,0.10); display: flex; align-items: center; justify-content: center; color: var(--c-ink-3); font-family: var(--f-mono); font-size: 11px; border: 1px solid #003B4D; }
+.k { font-size: 11px; font-weight: 600; color: var(--c-ink); }
+.lbl { font-family: var(--f-mono); font-size: 10.5px; color: var(--c-ink-4); }
+</style></head><body>
+<div class="card">
+    <div class="h">Elevation — paired hairline + soft shadow</div>
+    <div class="row">
+        <div class="sw"><div class="tile t1">card · rest</div><div class="k">el-1</div><div class="lbl">cards default</div></div>
+        <div class="sw"><div class="tile t2">card · hover</div><div class="k">el-2</div><div class="lbl">hover · sticky bar</div></div>
+        <div class="sw"><div class="tile t3">modal</div><div class="k">el-3</div><div class="lbl">popovers · modals</div></div>
+        <div class="sw"><div class="tg">focus</div><div class="k">el-glow</div><div class="lbl">4 px teal ring</div></div>
+    </div>
+</div>
+</body></html>

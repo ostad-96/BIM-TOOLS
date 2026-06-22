@@ -1,0 +1,3516 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kollisionsmatrix - WebForms</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+    font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+    background: #ffffff;
+    color: #1a1a1a;
+    font-size: 13px;
+    line-height: 1.6;
+    min-height: 100vh;
+    padding-bottom: 50px;
+}
+
+/* ── Header ── */
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 24px;
+    background: #003B4D;
+    color: #fff;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    position: sticky; top: 0; z-index: 50;
+}
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+.header .back-btn {
+    background: rgba(255,255,255,0.10);
+    border: 1px solid rgba(255,255,255,0.18);
+    color: rgba(255,255,255,0.85);
+    width: 34px; height: 34px;
+    border-radius: 7px;
+    cursor: pointer;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+}
+.header .back-btn:hover { background: rgba(255,255,255,0.20); border-color: rgba(255,255,255,0.30); color: #fff; }
+.header h1 {
+    font-size: 15px;
+    font-weight: 600;
+    color: #fff;
+    letter-spacing: -0.005em;
+}
+.header .header-subtitle {
+    font-size: 10.5px;
+    color: rgba(255,255,255,0.65);
+    font-weight: 500;
+    margin-top: 1px;
+    letter-spacing: 0.06em; text-transform: uppercase;
+}
+.model-count {
+    font-size: 11px;
+    font-weight: 600;
+    color: #fff;
+    background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.18);
+    padding: 4px 12px;
+    border-radius: 999px;
+    letter-spacing: 0.04em;
+}
+
+/* ── Main content ── */
+.main-content {
+    padding: 16px 32px 16px 32px;
+}
+
+/* ── Panels ── */
+.panel {
+    background: white;
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
+    margin-bottom: 12px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+}
+.panel-header {
+    padding: 10px 16px;
+    background: #ffffff;
+    border-bottom: 2px solid #4a5d6b;
+    font-weight: 600;
+    font-size: 13px;
+    color: #4a5d6b;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.panel-body { padding: 12px 16px; }
+.setup-row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 8px;
+}
+.setup-row:last-child { margin-bottom: 0; }
+.setup-label { width: 160px; font-weight: 500; color: #6b7280; flex-shrink: 0; }
+.setup-value {
+    flex: 1;
+    padding: 6px 10px;
+    background: #f8f9fb;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    font-size: 12px;
+    color: #1a1a1a;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.setup-value.empty { color: #9ca3af; font-style: italic; }
+
+/* ── Buttons ── */
+.btn {
+    padding: 6px 14px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 600;
+    transition: all 0.15s;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.btn-primary { background: #c8d5de; color: #1a1a1a; }
+.btn-primary:hover:not(:disabled) { background: #b0bec8; }
+.btn-secondary { background: #e8edf1; color: #1a1a1a; border: 1px solid #e5e7eb; }
+.btn-secondary:hover:not(:disabled) { background: #dce2e8; }
+.btn-success { background: #c8d5de; color: #1a1a1a; }
+.btn-success:hover:not(:disabled) { background: #b0bec8; }
+.btn-large { font-size: 14px; padding: 10px 28px; }
+.btn-pick { background: #c8d5de; color: #1a1a1a; }
+.btn-pick:hover:not(:disabled) { background: #b0bec8; }
+
+/* ── Toolbar ── */
+.toolbar {
+    display: flex;
+    gap: 6px;
+    padding: 10px 16px;
+    background: #f8f9fb;
+    border-bottom: 1px solid #e5e7eb;
+    align-items: center;
+    flex-wrap: wrap;
+}
+.toolbar .sep { width: 1px; height: 22px; background: #e5e7eb; }
+.toolbar .stats { font-size: 12px; color: #4a5d6b; margin-left: auto; font-weight: 600; }
+
+/* ── Kürzel-Index picker ── */
+.kuerzel-picker-wrap { position: relative; display: inline-block; }
+/* Invisible bridge covering the 6px gap between the dropdown and the
+   tooltip. Lives on the wrap (not the tooltip) because overflow:auto on
+   the tooltip would clip any ::before positioned outside its box.
+   Pseudo-elements count as part of the parent for hit-testing, so the
+   cursor moving across this strip keeps mouseenter/leave on the wrap. */
+.kuerzel-picker-wrap::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    height: 10px;
+    background: transparent;
+    pointer-events: auto;
+}
+.kuerzel-tooltip {
+    position: fixed;
+    z-index: 9999;
+    background: #ffffff;
+    border: 1px solid #4a5d6b;
+    border-radius: 6px;
+    padding: 10px 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+    font-size: 11px;
+    color: #1a1a1a;
+    white-space: nowrap;
+    max-width: 90vw;
+    overflow-x: auto;
+}
+.kuerzel-tooltip .kt-title {
+    font-weight: 600;
+    color: #4a5d6b;
+    margin-bottom: 6px;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.kuerzel-tooltip .kt-tokens { display: flex; gap: 4px; }
+.kuerzel-tooltip .kt-token {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 4px 8px;
+    background: #f0f2f5;
+    border: 1px solid #e5e7eb;
+    border-radius: 4px;
+    min-width: 32px;
+    cursor: pointer;
+    transition: background 0.1s, border-color 0.1s;
+}
+.kuerzel-tooltip .kt-token:hover { background: #dce5eb; border-color: #4a5d6b; }
+.kuerzel-tooltip .kt-token .kt-text { font-family: "Consolas", "Courier New", monospace; font-size: 12px; color: #1a1a1a; }
+.kuerzel-tooltip .kt-token .kt-idx  { font-size: 10px; color: #6b7280; margin-top: 2px; }
+.kuerzel-tooltip .kt-token.kt-selected {
+    background: #e8edf1;
+    border-color: #4a5d6b;
+}
+.kuerzel-tooltip .kt-token.kt-selected .kt-text { font-weight: 700; color: #4a5d6b; }
+
+/* ── Matrix ── */
+.matrix-wrap {
+    overflow: auto;
+    max-height: calc(100vh - 240px);
+}
+
+/* Group label editing */
+th.group-label { cursor: pointer; user-select: none; }
+th.group-label:hover { outline: 2px solid #4a5d6b; outline-offset: -2px; }
+th.group-label input.group-rename-input {
+    width: auto;
+    min-width: 50px;
+    padding: 2px 6px;
+    font-size: 11px;
+    font-weight: 700;
+    color: #4a5d6b;
+    border: 1px solid #4a5d6b;
+    border-radius: 3px;
+    background: #fff;
+    text-align: center;
+    box-sizing: content-box;
+}
+th.group-new {
+    color: #6b7280;
+    font-style: italic;
+    cursor: copy;
+    background: #fafbfc;
+    font-size: 14px;
+}
+
+/* Drag-and-drop */
+th.fm-drag[draggable="true"] { cursor: grab; }
+th.fm-drag[draggable="true"]:active { cursor: grabbing; }
+th.fm-drag.dragging { opacity: 0.4; }
+.drop-target { background: #fef3c7 !important; outline: 2px dashed #4a5d6b; outline-offset: -2px; }
+table { border-collapse: collapse; }
+th, td {
+    width: 42px; height: 42px; min-width: 42px;
+    text-align: center;
+    font-size: 10px;
+    border: 1px solid #e5e7eb;
+    position: relative;
+}
+th {
+    background: #f8f9fb;
+    font-weight: 600;
+    color: #1a1a1a;
+    position: sticky;
+    top: 0;
+    z-index: 2;
+}
+th.row-header {
+    position: sticky;
+    left: 0;
+    z-index: 3;
+    background: #f8f9fb;
+    text-align: right;
+    padding-right: 6px;
+    white-space: nowrap;
+    width: auto;
+    min-width: 50px;
+}
+th.corner { position: sticky; left: 0; top: 0; z-index: 4; background: #f8f9fb; }
+th.col-header {
+    writing-mode: vertical-lr;
+    text-orientation: mixed;
+    transform: rotate(180deg);
+    padding: 5px 2px;
+    height: 80px;
+}
+td.cell-empty { background: #ffffff; border-color: transparent; }
+td.cell-active { cursor: pointer; }
+td.cell-active.type-F { background: #dce5eb; }
+td.cell-active.type-K { background: #e4ddd6; }
+td.cell-active.type-F.checked { background: #4a5d6b; color: #ffffff; }
+td.cell-active.type-K.checked { background: #7a909e; color: #ffffff; }
+td.cell-active.type-F.checked.from-history { background: #1e40af; color: #ffffff; }
+td.cell-active.type-K.checked.from-history { background: #4338ca; color: #ffffff; }
+td.cell-active.type-F.checked.new-addition { background: #059669; color: #ffffff; }
+td.cell-active.type-K.checked.new-addition { background: #047857; color: #ffffff; }
+td.cell-active.type-F:hover:not(.checked) { background: #b8c8d2; }
+td.cell-active.type-K:hover:not(.checked) { background: #cfc7be; }
+.check-mark::after { content: "\2715"; font-size: 18px; font-weight: 700; }
+
+/* ── Log ── */
+.log-wrap {
+    max-height: 250px;
+    overflow-y: auto;
+    padding: 10px 16px;
+    font-family: "Consolas", "Courier New", monospace;
+    font-size: 11px;
+    line-height: 1.6;
+    background: #1a1a2e;
+    color: #94a3b8;
+}
+.log-wrap .ok { color: #4ade80; }
+.log-wrap .err { color: #f87171; }
+.log-wrap .info { color: #60a5fa; }
+.log-wrap .warn { color: #fbbf24; }
+
+/* ── Progress ── */
+.progress-bar-wrap {
+    height: 6px;
+    background: #e5e7eb;
+    border-radius: 3px;
+    overflow: hidden;
+    margin: 8px 16px;
+}
+.progress-bar-fill {
+    height: 100%;
+    background: #4a5d6b;
+    border-radius: 3px;
+    transition: width 0.3s;
+    width: 0%;
+}
+.hidden { display: none !important; }
+
+/* ── Detail panel clash list ── */
+.clash-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.clash-table th {
+    position: sticky; top: 0; z-index: 1;
+    background: #f8f9fb; text-align: left; padding: 6px 10px;
+    font-weight: 600; color: #4a5d6b; font-size: 11px;
+    border-bottom: 2px solid #4a5d6b;
+    width: auto; height: auto; min-width: auto;
+}
+.clash-table td {
+    padding: 5px 10px; border-bottom: 1px solid #e5e7eb;
+    font-size: 12px; color: #1a1a1a;
+    width: auto; height: auto; min-width: auto;
+}
+.clash-table tr { cursor: pointer; }
+.clash-table tr:hover td { background: #e8edf1; }
+.clash-table tr.selected td { background: #e8edf1; }
+.clash-table .cb-cell { width: 28px; text-align: center; }
+.clash-table input[type="checkbox"] { cursor: pointer; accent-color: #4a5d6b; }
+.status-badge {
+    display: inline-block; padding: 1px 6px; border-radius: 20px;
+    font-size: 10px; font-weight: 600; white-space: nowrap;
+}
+.status-new { background: #e8edf1; color: #4a5d6b; }
+.status-open { background: #fef3c7; color: #92400e; }
+.status-assigned { background: #e0e7ff; color: #3730a3; }
+.status-critical { background: #fee2e2; color: #991b1b; }
+.status-resolved { background: #d1fae5; color: #065f46; }
+.status-accepted { background: #d1fae5; color: #065f46; }
+.status-ignored { background: #f3f4f6; color: #6b7280; }
+
+/* ── Page transitions ── */
+.page-transition {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    z-index: 9999;
+    pointer-events: none;
+}
+.page-transition .slide {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: #e8e8e8;
+    transform: translateX(100%);
+}
+.page-transition .slide-accent {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: #c8d5de;
+    transform: translateX(100%);
+}
+@keyframes entrance-slide {
+    0%   { transform: translateX(0); }
+    100% { transform: translateX(-100%); }
+}
+@keyframes entrance-accent {
+    0%   { transform: translateX(0); }
+    100% { transform: translateX(-100%); }
+}
+body.entering .page-transition .slide {
+    transform: translateX(0);
+    animation: entrance-slide 0.5s cubic-bezier(0.4, 0, 0.2, 1) 0.15s forwards;
+}
+body.entering .page-transition .slide-accent {
+    transform: translateX(0);
+    animation: entrance-accent 0.45s cubic-bezier(0.4, 0, 0.2, 1) 0.05s forwards;
+}
+@keyframes exit-slide {
+    0%   { transform: translateX(100%); }
+    100% { transform: translateX(0); }
+}
+@keyframes exit-accent {
+    0%   { transform: translateX(100%); }
+    100% { transform: translateX(0); }
+}
+body.exiting .page-transition { pointer-events: all; }
+body.exiting .page-transition .slide-accent {
+    animation: exit-accent 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.05s forwards;
+}
+body.exiting .page-transition .slide {
+    animation: exit-slide 0.45s cubic-bezier(0.4, 0, 0.2, 1) 0s forwards;
+}
+
+/* ── Footer ── */
+.footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: #f8f9fb;
+    border-top: 1px solid #e5e7eb;
+    padding: 10px 32px;
+    font-size: 11px;
+    color: #9ca3af;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 20;
+}
+</style>
+</head>
+<body class="entering">
+
+<div class="page-transition">
+    <div class="slide"></div>
+    <div class="slide-accent"></div>
+</div>
+
+<div class="header">
+    <div class="header-left">
+        <button class="back-btn" onclick="navigateBack()" title="Zurück zur Übersicht" aria-label="Zurück">&#8592;</button>
+        <div style="display:flex; align-items:center; gap:10px;">
+            <img src="../../shared/assets/emch-berger-logo.gif" alt="Emch+Berger" style="width:30px; height:30px; border-radius:8px; object-fit:cover;">
+            <div>
+                <h1>Geometrische Qualitätssicherung</h1>
+                <div class="header-subtitle">Kollisionsmatrix · VDC Manager</div>
+            </div>
+        </div>
+    </div>
+    <div style="display:flex; align-items:center; gap:14px;">
+        <div class="model-count" id="modelCountBadge">-</div>
+    </div>
+</div>
+
+<div class="main-content">
+
+<div class="panel" id="matrixPanel">
+    <div class="panel-header" style="display:flex; justify-content:space-between; align-items:center;">
+        <span>Kollisionsmatrix</span>
+        <div style="display:flex; gap:6px;">
+            <button class="btn btn-secondary" onclick="loadModelsAndBuildMatrix()" id="btnRefresh" style="font-size:11px; padding:4px 10px;">
+                &#8635; Aktualisieren
+            </button>
+            <button class="btn btn-secondary" onclick="loadExistingClashRuns()" id="btnLoadPrevious" style="font-size:11px; padding:4px 10px;">
+                &#128269; Vorherige Ergebnisse laden
+            </button>
+        </div>
+    </div>
+    <div id="matrixLoading" style="padding:20px; text-align:center; color:#94a3b8; font-size:12px;">
+        Modelle werden geladen...
+    </div>
+    <div class="panel-body hidden" id="kuerzelPickerRow" style="border-top:1px solid #e5e7eb; background:#f8f9fb;">
+        <div class="setup-row" style="align-items:center;">
+            <span class="setup-label">Kürzel-Index:</span>
+            <div class="kuerzel-picker-wrap"
+                 onmouseenter="showKuerzelTooltip()" onmouseleave="hideKuerzelTooltip()">
+                <select id="kuerzelIndexSelect"
+                        style="padding:6px 10px; font-size:12px; border:1px solid #e5e7eb; border-radius:6px; min-width:80px; background:#ffffff;"
+                        onchange="onKuerzelIndexChange(this.value)"
+                        onfocus="showKuerzelTooltip()">
+                    <option value="">-- wählen --</option>
+                </select>
+                <div id="kuerzelTooltip" class="kuerzel-tooltip" style="display:none;"></div>
+            </div>
+            <span id="kuerzelPickerHint" style="font-size:11px; color:#6b7280; margin-left:10px;">
+                Welcher Token im Dateinamen ist das Gewerk-Kürzel? Maus über das Feld halten für Vorschau — dann Dropdown oder Token anklicken.
+            </span>
+        </div>
+    </div>
+    <div class="toolbar hidden" id="matrixToolbar">
+        <button class="btn btn-secondary" onclick="selectAll()">Alle auswählen</button>
+        <button class="btn btn-secondary" onclick="deselectAll()">Alle abwählen</button>
+        <div class="sep"></div>
+        <button class="btn btn-primary" onclick="exportMatrix()" id="btnExport">Export Matrix</button>
+        <span class="stats" id="statsLabel">-</span>
+    </div>
+    <div class="matrix-wrap" id="matrixWrap"></div>
+    <div class="panel-body hidden" id="matrixRunSection" style="border-top:1px solid #e5e7eb;">
+        <div class="setup-row">
+            <span class="setup-label">Name der Prüfung:</span>
+            <input type="text" id="pruefungNameInput" placeholder="z.B. Prüfung 1 (optional)"
+                   style="flex:1; padding:6px 10px; font-size:12px; border:1px solid #e5e7eb; border-radius:6px;">
+        </div>
+        <div class="setup-row">
+            <span class="setup-label">Nachbearbeitungs-Skript:</span>
+            <span class="setup-value empty" id="ppFileLabel">Nicht ausgewählt (optional)</span>
+            <button class="btn btn-pick" onclick="pickPostProcessFile()" id="btnPickPP">Datei wählen...</button>
+        </div>
+    </div>
+</div>
+
+<div class="panel hidden" id="containerPanel">
+    <div class="panel-header">Container verwalten</div>
+    <div class="panel-body">
+        <div class="setup-row">
+            <span class="setup-label">Container auswählen:</span>
+            <select id="containerSelect" style="flex:1; padding:6px 10px; font-size:12px; border:1px solid #e5e7eb; border-radius:6px;" onchange="loadContainerSettings(this.value)">
+                <option value="">-- Alle Container --</option>
+            </select>
+        </div>
+
+        <details open style="margin-top:10px;">
+            <summary style="font-weight:600; font-size:12px; color:#1a1a1a; cursor:pointer; padding:6px 0;">Kollisionen</summary>
+            <div style="padding:6px 0 6px 16px; display:flex; flex-direction:column; gap:6px;">
+                <label style="font-size:12px; display:flex; align-items:center; gap:6px;">
+                    <input type="checkbox" id="csClashCheckEnabled" checked onchange="saveContainerSettings()"> Kollisionen berechnen
+                </label>
+                <label style="font-size:12px; display:flex; align-items:center; gap:6px;">
+                    <input type="checkbox" id="csCalculateCuttingLines" checked onchange="saveContainerSettings()"> Schnittlinien erzeugen
+                </label>
+                <label style="font-size:12px; display:flex; align-items:center; gap:6px;">
+                    <input type="checkbox" id="csAllowTouches" checked onchange="saveContainerSettings()"> Berührung erlauben
+                </label>
+                <label style="font-size:12px; display:flex; align-items:center; gap:6px;">
+                    <input type="checkbox" id="csCheckInclusions" onchange="saveContainerSettings(); toggleContainerVisibility();"> Einschlüsse prüfen
+                </label>
+                <div id="csInclusionsOptions" style="display:none;">
+                    <div class="setup-row" style="margin-top:2px;">
+                        <span style="font-size:12px; color:#6b7280; width:auto;">Nur Einschlüsse berücksichtigen:</span>
+                        <select id="csConsiderOnlyInclusions" style="padding:4px 8px; font-size:12px; border:1px solid #e5e7eb; border-radius:6px;" onchange="saveContainerSettings()">
+                            <option value="None">Kein(e)</option>
+                            <option value="LeftIncludesRight">Links schließt rechts ein</option>
+                            <option value="RightIncludesLeft">Rechts schließt links ein</option>
+                            <option value="Bidirectional">Bidirektional</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </details>
+
+        <details style="margin-top:4px;">
+            <summary style="font-weight:600; font-size:12px; color:#1a1a1a; cursor:pointer; padding:6px 0;">Kontakte</summary>
+            <div style="padding:6px 0 6px 16px; display:flex; flex-direction:column; gap:6px;">
+                <label style="font-size:12px; display:flex; align-items:center; gap:6px;">
+                    <input type="checkbox" id="csContactsCheckEnabled" onchange="saveContainerSettings(); toggleContainerVisibility();"> Kontakte prüfen
+                </label>
+                <div id="csContactsOptions" style="display:none; flex-direction:column; gap:6px;">
+                    <label style="font-size:12px; display:flex; align-items:center; gap:6px;">
+                        <input type="checkbox" id="csCreateAsObjects" onchange="saveContainerSettings()"> Kontaktflächen als 3D-Objekte
+                    </label>
+                    <div class="setup-row" style="margin-top:2px;">
+                        <span style="font-size:12px; color:#6b7280; width:auto;">Maximale Flächen-Distanz [m]:</span>
+                        <input type="number" id="csMaxFaceDistance" step="0.001" value="0.005" style="padding:4px 8px; font-size:12px; border:1px solid #e5e7eb; border-radius:6px; width:80px;" onchange="saveContainerSettings()">
+                    </div>
+                    <div class="setup-row" style="margin-top:2px;">
+                        <span style="font-size:12px; color:#6b7280; width:auto;">Maximale Winkelabweichung [°]:</span>
+                        <input type="number" id="csMaxAngleDeviation" step="0.001" value="5" style="padding:4px 8px; font-size:12px; border:1px solid #e5e7eb; border-radius:6px; width:80px;" onchange="saveContainerSettings()">
+                    </div>
+                    <label style="font-size:12px; display:flex; align-items:center; gap:6px;">
+                        <input type="checkbox" id="csCheckOppositeFacesOnly" checked onchange="saveContainerSettings()"> Nur gegenüberliegende Flächen
+                    </label>
+                    <label style="font-size:12px; display:flex; align-items:center; gap:6px;">
+                        <input type="checkbox" id="csCheckTop" checked onchange="saveContainerSettings()"> Kontakt oben prüfen
+                    </label>
+                    <label style="font-size:12px; display:flex; align-items:center; gap:6px;">
+                        <input type="checkbox" id="csCheckBottom" checked onchange="saveContainerSettings()"> Kontakt unten prüfen
+                    </label>
+                    <label style="font-size:12px; display:flex; align-items:center; gap:6px;">
+                        <input type="checkbox" id="csCheckLateral" checked onchange="saveContainerSettings()"> Seitlichen Kontakt prüfen
+                    </label>
+                </div>
+            </div>
+        </details>
+
+        <details style="margin-top:4px;">
+            <summary style="font-weight:600; font-size:12px; color:#1a1a1a; cursor:pointer; padding:6px 0;">Gleichheit</summary>
+            <div style="padding:6px 0 6px 16px; display:flex; flex-direction:column; gap:6px;">
+                <label style="font-size:12px; display:flex; align-items:center; gap:6px;">
+                    <input type="checkbox" id="csCompareBoundingBox" onchange="saveContainerSettings(); toggleContainerVisibility();"> Bounding-Box vergleichen
+                </label>
+                <div id="csEqualityOptions" style="display:none; flex-direction:column; gap:6px;">
+                    <div class="setup-row" style="margin-top:2px;">
+                        <span style="font-size:12px; color:#6b7280; width:auto;">Bounding-Box Toleranz [m]:</span>
+                        <input type="number" id="csBoundingBoxTolerance" step="0.001" value="0.01" style="padding:4px 8px; font-size:12px; border:1px solid #e5e7eb; border-radius:6px; width:80px;" onchange="saveContainerSettings()">
+                    </div>
+                    <label style="font-size:12px; display:flex; align-items:center; gap:6px;">
+                        <input type="checkbox" id="csCompareVolume" checked onchange="saveContainerSettings(); toggleContainerVisibility();"> Volumen vergleichen
+                    </label>
+                    <div id="csVolumeOptions" style="display:none;">
+                        <div class="setup-row" style="margin-top:2px;">
+                            <span style="font-size:12px; color:#6b7280; width:auto;">Volumen-Toleranz [m³]:</span>
+                            <input type="number" id="csVolumeTolerance" step="0.001" value="0.01" style="padding:4px 8px; font-size:12px; border:1px solid #e5e7eb; border-radius:6px; width:80px;" onchange="saveContainerSettings()">
+                        </div>
+                    </div>
+                    <label style="font-size:12px; display:flex; align-items:center; gap:6px;">
+                        <input type="checkbox" id="csCompareSurfaceArea" checked onchange="saveContainerSettings(); toggleContainerVisibility();"> Oberfläche vergleichen
+                    </label>
+                    <div id="csSurfaceAreaOptions" style="display:none;">
+                        <div class="setup-row" style="margin-top:2px;">
+                            <span style="font-size:12px; color:#6b7280; width:auto;">Oberflächen-Toleranz [m²]:</span>
+                            <input type="number" id="csSurfaceAreaTolerance" step="0.001" value="0.01" style="padding:4px 8px; font-size:12px; border:1px solid #e5e7eb; border-radius:6px; width:80px;" onchange="saveContainerSettings()">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </details>
+
+        <details style="margin-top:4px;">
+            <summary style="font-weight:600; font-size:12px; color:#1a1a1a; cursor:pointer; padding:6px 0;">Abstände</summary>
+            <div style="padding:6px 0 6px 16px; display:flex; flex-direction:column; gap:6px;">
+                <div class="setup-row">
+                    <span style="font-size:12px; color:#6b7280; width:auto;">Abstände prüfen:</span>
+                    <select id="csDistancesCheck" style="padding:4px 8px; font-size:12px; border:1px solid #e5e7eb; border-radius:6px;" onchange="saveContainerSettings(); toggleContainerVisibility();">
+                        <option value="None">Kein(e)</option>
+                        <option value="Minimum">Minimum</option>
+                        <option value="Maximum">Maximum</option>
+                    </select>
+                </div>
+                <div id="csMinDistanceRow" style="display:none;">
+                    <div class="setup-row" style="margin-top:2px;">
+                        <span style="font-size:12px; color:#6b7280; width:auto;">Minimum Abstand [m]:</span>
+                        <input type="number" id="csMinimumDistance" step="0.001" value="0" style="padding:4px 8px; font-size:12px; border:1px solid #e5e7eb; border-radius:6px; width:80px;" onchange="saveContainerSettings()">
+                    </div>
+                </div>
+                <div id="csMaxDistanceRow" style="display:none;">
+                    <div class="setup-row" style="margin-top:2px;">
+                        <span style="font-size:12px; color:#6b7280; width:auto;">Maximum Abstand [m]:</span>
+                        <input type="number" id="csMaximumDistance" step="0.001" value="0" style="padding:4px 8px; font-size:12px; border:1px solid #e5e7eb; border-radius:6px; width:80px;" onchange="saveContainerSettings()">
+                    </div>
+                </div>
+                <div id="csHorizontalOnlyRow" style="display:none;">
+                    <label style="font-size:12px; display:flex; align-items:center; gap:6px;">
+                        <input type="checkbox" id="csCheckHorizontalOnly" onchange="saveContainerSettings()"> Nur horizontale Abstände
+                    </label>
+                </div>
+            </div>
+        </details>
+
+        <div style="margin-top:12px; display:flex; gap:8px;">
+            <button class="btn btn-success btn-large" onclick="executeClashRuns()" id="btnRun" style="flex:1;">
+                &#9654; Prüfung starten
+            </button>
+            <button class="btn btn-secondary btn-large" onclick="saveClashRunsOnly()" id="btnSaveOnly" style="flex:1;">
+                Nur speichern
+            </button>
+        </div>
+        <div class="progress-bar-wrap hidden" id="progressWrap" style="margin:8px 0 0 0;">
+            <div class="progress-bar-fill" id="progressBar"></div>
+        </div>
+    </div>
+</div>
+
+<div class="panel hidden" id="historyPanel">
+    <div class="panel-header" style="display:flex; justify-content:space-between; align-items:center;">
+        <span>Prüfungshistorie</span>
+    </div>
+    <div class="panel-body" id="historyBody">
+        <div style="font-size:12px; color:#94a3b8;">Noch keine Prüfungen durchgeführt.</div>
+    </div>
+</div>
+
+<div class="panel hidden" id="auswertungPanel">
+    <div class="panel-header" style="display:flex; justify-content:space-between; align-items:center;">
+        <span>Auswertung</span>
+        <button class="btn btn-secondary" onclick="hide('auswertungPanel')" style="font-size:11px; padding:4px 10px;">&#10005; Schließen</button>
+    </div>
+    <div class="panel-body" id="auswertungBody">
+    </div>
+</div>
+
+<div class="panel hidden" id="detailPanel">
+    <div class="panel-header" style="display:flex; justify-content:space-between; align-items:center;">
+        <span id="detailTitle">Einzelauswertung</span>
+        <button class="btn btn-secondary" onclick="hide('detailPanel')" style="font-size:11px; padding:4px 10px;">&#10005; Schließen</button>
+    </div>
+    <div id="detailHeaderBar" style="padding:8px 16px; background:#e8edf1; border-bottom:1px solid #e5e7eb; font-size:12px; color:#4a5d6b; font-weight:600;"></div>
+    <div style="display:flex; gap:0; border-bottom:1px solid #e5e7eb;">
+        <div style="flex:1; padding:10px 16px;" id="detailSummary"></div>
+        <div style="width:140px; display:flex; align-items:center; justify-content:center; padding:10px;" id="detailChart"></div>
+    </div>
+    <div style="padding:0;">
+        <div style="display:flex; border-bottom:1px solid #e5e7eb;">
+            <div style="padding:8px 16px; font-weight:600; font-size:12px; color:#4a5d6b; border-bottom:2px solid #4a5d6b; cursor:default;">Einzelauswertung</div>
+        </div>
+        <div style="overflow:auto; max-height:350px;" id="detailClashListWrap"></div>
+    </div>
+    <div style="padding:8px 16px; background:#f8f9fb; border-top:1px solid #e5e7eb; display:flex; gap:10px; align-items:center;" id="detailFooter">
+        <span style="font-size:12px; color:#6b7280;">Kommentar:</span>
+        <input type="text" id="detailCommentInput" style="flex:1; padding:4px 8px; font-size:12px; border:1px solid #e5e7eb; border-radius:6px;" placeholder="Kommentar eingeben...">
+        <span style="font-size:12px; color:#6b7280;">Status:</span>
+        <select id="detailStatusSelect" style="padding:4px 8px; font-size:12px; border:1px solid #e5e7eb; border-radius:6px;">
+            <option value="">Bitte wählen</option>
+            <option value="New">New</option>
+            <option value="Open">Open</option>
+            <option value="Assigned">Assigned</option>
+            <option value="Critical">Critical</option>
+            <option value="Resolved">Resolved</option>
+            <option value="Resolved, Accepted">Resolved, Accepted</option>
+            <option value="Ignored">Ignored</option>
+        </select>
+        <button class="btn btn-primary" onclick="applyStatusToSelected()" style="font-size:11px;">Anwenden</button>
+        <button class="btn btn-success" onclick="exportDetailPDF()" style="font-size:11px;">PDF Export</button>
+    </div>
+</div>
+
+<div class="panel" id="logPanel">
+    <div class="panel-header">Protokoll</div>
+    <div class="log-wrap" id="logWrap"></div>
+</div>
+
+</div><!-- /main-content -->
+
+<footer class="footer">
+    <span>&copy; 2026 Emch+Berger GmbH</span>
+    <span>WebForms</span>
+</footer>
+
+<script>
+// ==================================================
+// GLOBALS
+// ==================================================
+var models = [];
+var matrixState = [];
+var postProcessCode = "";
+var postProcessFileName = "";
+var clashRunIDs = []; // track all created clash run IDs for Auswertung
+var plannedRuns = []; // local planned runs (before API creation)
+var containerSettings = {}; // key "rROW_cCOL" → local settings object
+var auswertungResults = []; // store Auswertung matrix for click-to-view navigation
+var detailClashes = []; // store loaded clashes for the detail panel
+var detailCurrentRow = -1; // track which cell the detail panel is showing
+var detailCurrentCol = -1;
+var runHistory = []; // array of { pruefungName, timestamp, label, clashRunIDs, parentIDs, cdModelID }
+var editingHistoryIndex = -1;
+var editingOriginalRuns = [];
+var editingOriginalMatrixState = [];
+
+// Kürzel-Index picker state (session-only, not persisted)
+var kuerzelTooltipTimer = null;
+var kuerzelTokenIndex = null;        // 1-based; null = not yet chosen this session
+var pendingModelFiles = [];          // raw [{modelID, rootNode, fileName}] fetched before matrix build
+var emchBergerLogoBase64 = "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";
+
+// ==================================================
+// HELPERS
+// ==================================================
+function log(msg, cls) {
+    var el = document.getElementById("logWrap");
+    var line = document.createElement("div");
+    if (cls) line.className = cls;
+    line.textContent = msg;
+    el.appendChild(line);
+    el.scrollTop = el.scrollHeight;
+}
+
+function setProgress(pct) {
+    document.getElementById("progressBar").style.width = pct + "%";
+}
+
+function show(id) { document.getElementById(id).classList.remove("hidden"); }
+function hide(id) { document.getElementById(id).classList.add("hidden"); }
+
+function getDefaultSettings() {
+    return {
+        clashes: {
+            checkEnabled: true,
+            calculateCuttingLines: true,
+            allowTouches: true,
+            checkInclusions: false,
+            considerOnlyInclusions: "None"
+        },
+        contacts: {
+            checkEnabled: false,
+            createAsObjects: false,
+            maxFaceDistance: 0.005,
+            maxAngleDeviation: 5,
+            checkOppositeFacesOnly: true,
+            checkTop: true,
+            checkBottom: true,
+            checkLateral: true
+        },
+        equality: {
+            compareBoundingBox: false,
+            boundingBoxTolerance: 0.01,
+            compareVolume: true,
+            volumeTolerance: 0.01,
+            compareSurfaceArea: true,
+            surfaceAreaTolerance: 0.01
+        },
+        distances: {
+            check: "None",
+            minimum: 0,
+            maximum: 0,
+            checkHorizontalOnly: false
+        }
+    };
+}
+
+function toggleContainerVisibility() {
+    var inclChecked = document.getElementById("csCheckInclusions").checked;
+    document.getElementById("csInclusionsOptions").style.display = inclChecked ? "block" : "none";
+
+    var contactsChecked = document.getElementById("csContactsCheckEnabled").checked;
+    document.getElementById("csContactsOptions").style.display = contactsChecked ? "flex" : "none";
+
+    var bbChecked = document.getElementById("csCompareBoundingBox").checked;
+    document.getElementById("csEqualityOptions").style.display = bbChecked ? "flex" : "none";
+
+    var volChecked = document.getElementById("csCompareVolume").checked;
+    document.getElementById("csVolumeOptions").style.display = (bbChecked && volChecked) ? "block" : "none";
+
+    var saChecked = document.getElementById("csCompareSurfaceArea").checked;
+    document.getElementById("csSurfaceAreaOptions").style.display = (bbChecked && saChecked) ? "block" : "none";
+
+    var distCheck = document.getElementById("csDistancesCheck").value;
+    document.getElementById("csMinDistanceRow").style.display = (distCheck === "Minimum") ? "block" : "none";
+    document.getElementById("csMaxDistanceRow").style.display = (distCheck === "Maximum") ? "block" : "none";
+    document.getElementById("csHorizontalOnlyRow").style.display = (distCheck !== "None") ? "block" : "none";
+}
+
+// Konvertiert awaited Qt-Rückgabe in JS Array
+function toArray(val) {
+    if (!val) return [];
+    if (Array.isArray(val)) return val;
+    // Nach dem await sollte der Wert aufgelöst sein
+    // Versuche alle bekannten Muster
+    var arr = [];
+    try {
+        var keys = Object.keys(val);
+        if (keys.length > 0) {
+            var numKeys = keys.filter(function(k) { return !isNaN(parseInt(k)); });
+            numKeys.sort(function(a, b) { return parseInt(a) - parseInt(b); });
+            if (numKeys.length > 0) {
+                for (var i = 0; i < numKeys.length; i++) arr.push(val[numKeys[i]]);
+                return arr;
+            }
+            for (var j = 0; j < keys.length; j++) arr.push(val[keys[j]]);
+            return arr;
+        }
+    } catch(e) {}
+    try {
+        for (var idx = 0; idx < 500; idx++) {
+            var v = val[idx];
+            if (v === undefined || v === null) break;
+            arr.push(v);
+        }
+    } catch(e) {}
+    return arr;
+}
+
+// Strip common BIM file extensions (not just .ifc) so token splitting ignores them
+function stripExtension(fileName) {
+    return fileName.replace(/\.(ifc|ifcxml|ifczip|dwg|dxf|tif|tiff|rvt)$/i, "");
+}
+
+function splitTokens(fileName) {
+    return stripExtension(fileName).split("_");
+}
+
+// Position-based Kürzel extraction. tokenIndex is 1-based.
+// Returns "" if the index is out of range for this filename.
+function extractKuerzelByIndex(fileName, tokenIndex) {
+    var parts = splitTokens(fileName);
+    if (tokenIndex < 1 || tokenIndex > parts.length) return "";
+    return parts[tokenIndex - 1];
+}
+
+// fmDetail = everything AFTER the chosen index, joined with "_".
+// Returns "" if the chosen index is the last (or beyond the last) token.
+function extractFMDetailByIndex(fileName, tokenIndex) {
+    var parts = splitTokens(fileName);
+    if (tokenIndex < 1 || tokenIndex >= parts.length) return "";
+    return parts.slice(tokenIndex).join("_");
+}
+
+function s(val) {
+    if (val === undefined || val === null) return "";
+    return String(val);
+}
+
+// ==================================================
+// 1. POST-PROCESSING DATEI WÄHLEN (async)
+// ==================================================
+async function pickPostProcessFile() {
+    try {
+        document.getElementById("btnPickPP").disabled = true;
+        document.getElementById("btnPickPP").textContent = "Warte...";
+
+        var path = await vdcApp.showOpenFileDialog(
+            "Nachbearbeitungs-Skript (.js) auswählen",
+            "",
+            "JavaScript Dateien (*.js)"
+        );
+        var pathStr = s(path);
+        log("Datei-Dialog Ergebnis: '" + pathStr + "'", "info");
+
+        if (pathStr && pathStr.length > 0) {
+            var rawCode = await vdcApp.readTextFileAsString(pathStr, "UTF-8");
+            postProcessCode = s(rawCode);
+
+            var idx = Math.max(pathStr.lastIndexOf("\\"), pathStr.lastIndexOf("/"));
+            postProcessFileName = (idx >= 0) ? pathStr.substring(idx + 1) : pathStr;
+
+            document.getElementById("ppFileLabel").textContent = postProcessFileName;
+            document.getElementById("ppFileLabel").classList.remove("empty");
+            log("Nachbearbeitungs-Skript geladen: " + postProcessFileName + " (" + postProcessCode.length + " Zeichen)", "ok");
+        } else {
+            log("Keine Datei ausgewählt", "warn");
+        }
+    } catch(e) {
+        log("FEHLER beim Laden des Skripts: " + e, "err");
+    }
+    document.getElementById("btnPickPP").disabled = false;
+    document.getElementById("btnPickPP").textContent = "Datei wählen...";
+}
+
+// ==================================================
+// 1b. KÜRZEL-INDEX: UI-Verhalten
+// ==================================================
+function escapeHtml(str) {
+    return String(str).replace(/[&<>"']/g, function(c) {
+        return { "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c];
+    });
+}
+
+function populateKuerzelDropdown(files) {
+    var sel = document.getElementById("kuerzelIndexSelect");
+    sel.innerHTML = '<option value="">-- wählen --</option>';
+    var maxTokens = 0;
+    for (var i = 0; i < files.length; i++) {
+        var t = splitTokens(files[i].fileName).length;
+        if (t > maxTokens) maxTokens = t;
+    }
+    for (var n = 1; n <= maxTokens; n++) {
+        var opt = document.createElement("option");
+        opt.value = String(n);
+        opt.textContent = String(n);
+        sel.appendChild(opt);
+    }
+    if (kuerzelTokenIndex && kuerzelTokenIndex <= maxTokens) {
+        sel.value = String(kuerzelTokenIndex);
+    }
+}
+
+function showKuerzelTooltip() {
+    if (kuerzelTooltipTimer) { clearTimeout(kuerzelTooltipTimer); kuerzelTooltipTimer = null; }
+    kuerzelTooltipTimer = setTimeout(function() { hideKuerzelTooltip(); }, 3000);
+    var tip = document.getElementById("kuerzelTooltip");
+    if (!tip || !pendingModelFiles.length) { if (tip) tip.style.display = "none"; return; }
+    // Prefer the first .ifc in the list; fall back to the first entry
+    var sample = pendingModelFiles[0];
+    for (var i = 0; i < pendingModelFiles.length; i++) {
+        if (/\.ifc$/i.test(pendingModelFiles[i].fileName)) { sample = pendingModelFiles[i]; break; }
+    }
+    var parts = splitTokens(sample.fileName);
+    var sel = document.getElementById("kuerzelIndexSelect");
+    var chosen = parseInt(sel.value, 10);
+    var html = '<div class="kt-title">Beispiel: ' + escapeHtml(sample.fileName) + ' &nbsp;·&nbsp; zum Auswählen klicken</div>';
+    html += '<div class="kt-tokens">';
+    for (var k = 0; k < parts.length; k++) {
+        var cls = (k + 1 === chosen) ? "kt-token kt-selected" : "kt-token";
+        var idx1 = k + 1;
+        html += '<div class="' + cls + '" onclick="onKuerzelIndexChange(' + idx1 + ')" title="Index ' + idx1 + ' wählen">'
+              + '<div class="kt-text">' + escapeHtml(parts[k]) + '</div>'
+              + '<div class="kt-idx">' + idx1 + '</div></div>';
+    }
+    html += '</div>';
+    tip.innerHTML = html;
+    tip.style.display = "block";
+
+    // Position with viewport coordinates so the tooltip can escape the
+    // matrix panel's overflow:hidden and isn't covered by sibling panels.
+    var wrap = tip.parentElement;
+    if (wrap) {
+        var rect = wrap.getBoundingClientRect();
+        tip.style.top = (rect.bottom + 6) + "px";
+        tip.style.left = rect.left + "px";
+    }
+}
+
+function hideKuerzelTooltip() {
+    if (kuerzelTooltipTimer) { clearTimeout(kuerzelTooltipTimer); kuerzelTooltipTimer = null; }
+    var tip = document.getElementById("kuerzelTooltip");
+    if (tip) tip.style.display = "none";
+}
+
+async function onKuerzelIndexChange(value) {
+    var n = parseInt(value, 10);
+    if (isNaN(n) || n < 1) return;
+    kuerzelTokenIndex = n;
+    // Keep <select> in sync when selection came from a token click
+    var sel = document.getElementById("kuerzelIndexSelect");
+    if (sel && sel.value !== String(n)) sel.value = String(n);
+    log("Kürzel-Index gewählt: " + n, "info");
+    // Refresh tooltip highlight if still open
+    var tip = document.getElementById("kuerzelTooltip");
+    if (tip && tip.style.display === "block") showKuerzelTooltip();
+    // Rebuild matrix with the new index
+    await rebuildMatrixFromPendingFiles();
+}
+
+// ==================================================
+// 2. MODELLE LADEN (async)
+// ==================================================
+async function loadModelsAndBuildMatrix() {
+    var btnRefresh = document.getElementById("btnRefresh");
+    btnRefresh.disabled = true;
+    btnRefresh.textContent = "Lade...";
+
+    var loadingEl = document.getElementById("matrixLoading");
+    if (loadingEl) loadingEl.style.display = "block";
+
+    log("", "");
+    log("=== Lade Geometry-Modelle ===", "info");
+
+    try {
+        // await: Warten bis das Promise aufgelöst ist
+        var rawList = await vdcApp.getModelListByDomain("geometry");
+
+        // Debug
+        log("typeof nach await: " + typeof rawList, "info");
+        log("Array.isArray: " + Array.isArray(rawList), "info");
+        try { log("JSON: " + JSON.stringify(rawList), "info"); } catch(e) {}
+        try { log("Object.keys: [" + Object.keys(rawList).join(", ") + "]", "info"); } catch(e) {}
+
+        var geomModels = toArray(rawList);
+        log("Konvertiert: " + geomModels.length + " Modelle", "info");
+
+        if (geomModels.length === 0) {
+            log("FEHLER: Keine Geometry-Modelle gefunden!", "err");
+            log("Tipp: Sind IFC-Modelle im Projekt geladen?", "warn");
+            if (loadingEl) loadingEl.textContent = "Keine Modelle gefunden.";
+            btnRefresh.disabled = false;
+            btnRefresh.textContent = "\u21BB Aktualisieren";
+            return;
+        }
+
+        // 1. Fetch raw filename list only (no Kürzel extraction yet)
+        pendingModelFiles = [];
+        for (var g = 0; g < geomModels.length; g++) {
+            var modelID = s(geomModels[g]);
+
+            var fileName = "";
+            try {
+                var meta = await vdcApp.getModelMetaData(modelID);
+                // Try SourceFileName first, then ExportFileName (full path), then SourceModelID (just filename)
+                var sourcePath = s(meta.SourceFileName) || s(meta.ExportFileName) || s(meta.SourceModelID) || "";
+                var lastSlash = Math.max(sourcePath.lastIndexOf("\\"), sourcePath.lastIndexOf("/"));
+                if (lastSlash >= 0) fileName = sourcePath.substring(lastSlash + 1);
+                else fileName = sourcePath;
+            } catch(e) {
+                log("  Warnung: Metadaten für " + modelID + ": " + e, "warn");
+            }
+            if (!fileName || fileName.length === 0) fileName = "Modell_" + (g + 1);
+
+            var rootNode = "";
+            try { rootNode = s(await vdcApp.getRootNodeByModel(modelID)); } catch(e) {}
+
+            // Read previously persisted Kürzel override (group rename / drag-drop)
+            var kuerzelOverride = "";
+            if (rootNode) {
+                try { kuerzelOverride = s(await vdcApp.getPropertyValue(rootNode, "KuerzelOverride", "xs:string")); } catch(e) {}
+            }
+
+            pendingModelFiles.push({
+                modelID: modelID,
+                rootNode: rootNode,
+                fileName: fileName,
+                kuerzelOverride: kuerzelOverride
+            });
+            log("  [" + (g+1) + "] " + fileName, "info");
+        }
+
+        // 2. Reset session index — user must pick fresh every load
+        kuerzelTokenIndex = null;
+
+        // 3. Populate dropdown + show picker row
+        populateKuerzelDropdown(pendingModelFiles);
+        show("kuerzelPickerRow");
+
+        document.getElementById("modelCountBadge").textContent = pendingModelFiles.length + " Modelle";
+
+        // 4. Wait for the user to pick an index before building the matrix
+        hide("matrixToolbar");
+        hide("matrixRunSection");
+        document.getElementById("matrixWrap").innerHTML = "";
+        if (loadingEl) loadingEl.style.display = "none";
+        log("Bitte Kürzel-Index im Dropdown auswählen.", "info");
+
+    } catch(e) {
+        log("FEHLER: " + e, "err");
+        if (e.stack) log("Stack: " + e.stack, "err");
+        if (loadingEl) loadingEl.textContent = "Fehler beim Laden.";
+    }
+
+    btnRefresh.disabled = false;
+    btnRefresh.textContent = "\u21BB Aktualisieren";
+}
+
+// Build the matrix from pendingModelFiles using the current kuerzelTokenIndex.
+// Called on first load (if index is known) and whenever the user changes the dropdown.
+async function rebuildMatrixFromPendingFiles() {
+    if (!kuerzelTokenIndex || !pendingModelFiles.length) return;
+
+    models = [];
+    for (var i = 0; i < pendingModelFiles.length; i++) {
+        var pf = pendingModelFiles[i];
+        var baseName = stripExtension(pf.fileName);
+        var kuerzel = extractKuerzelByIndex(pf.fileName, kuerzelTokenIndex);
+        var fmDetail = extractFMDetailByIndex(pf.fileName, kuerzelTokenIndex);
+        var override = pf.kuerzelOverride || "";
+        var displayKuerzel = override || kuerzel;
+        models.push({
+            modelID: pf.modelID,
+            rootNode: pf.rootNode,
+            fileName: pf.fileName,
+            baseName: baseName,
+            kuerzel: kuerzel,
+            kuerzelOverride: override,
+            persistedKuerzelOverride: override, // baseline; bumped after executeClashRuns persists
+            displayKuerzel: displayKuerzel,
+            fmDetail: fmDetail
+        });
+        log("  [" + (i+1) + "] " + displayKuerzel + " / " + fmDetail + "  -  " + pf.fileName, "ok");
+    }
+
+    // Sort by displayKuerzel, then by fmDetail
+    models.sort(function(a, b) {
+        if (a.displayKuerzel < b.displayKuerzel) return -1;
+        if (a.displayKuerzel > b.displayKuerzel) return 1;
+        if (a.fmDetail < b.fmDetail) return -1;
+        if (a.fmDetail > b.fmDetail) return 1;
+        return 0;
+    });
+
+    for (var idx = 0; idx < models.length; idx++) models[idx].nr = idx + 1;
+
+    document.getElementById("modelCountBadge").textContent = models.length + " Modelle";
+
+    var loadingEl = document.getElementById("matrixLoading");
+    if (loadingEl) loadingEl.style.display = "none";
+
+    buildMatrix();
+    show("matrixToolbar");
+    show("matrixRunSection");
+    log("Matrix erstellt mit Kürzel-Index " + kuerzelTokenIndex + " (" + models.length + " x " + models.length + ")", "ok");
+    syncPlannedRuns();
+
+    // Auto-load previous collision results from the project
+    await loadExistingClashRuns();
+}
+
+// ==================================================
+// 3. MATRIX
+// ==================================================
+function buildMatrix() {
+    var n = models.length;
+    matrixState = [];
+    for (var r = 0; r < n; r++) {
+        matrixState[r] = [];
+        for (var c = 0; c < n; c++) {
+            if (r === c) {
+                matrixState[r][c] = { type: "F", checked: false };
+            } else if (c > r) {
+                matrixState[r][c] = { type: "K", checked: false };
+            } else {
+                matrixState[r][c] = { type: "", checked: false };
+            }
+        }
+    }
+    var fileOrder = [];
+    for (var i = 0; i < n; i++) fileOrder.push(models[i].fileName);
+    window.__lastModelFileOrder = fileOrder;
+    renderMatrix();
+}
+
+// Prettify the part of the filename after the Kürzel for display only.
+// Underscores -> spaces; the raw value stays in models[i].fmDetail.
+function prettifyFmDetail(raw) {
+    return String(raw || "").replace(/_+/g, " ").trim();
+}
+
+// Persist a model's kuerzelOverride on its rootNode so it survives reloads.
+async function persistKuerzelOverride(model) {
+    if (!model || !model.rootNode) return;
+    try {
+        await vdcApp.setPropertyValue(model.rootNode, "KuerzelOverride", "xs:string", String(model.kuerzelOverride || ""));
+    } catch(e) {
+        log("KuerzelOverride konnte nicht gespeichert werden (" + model.fileName + "): " + e, "warn");
+    }
+}
+
+// Recompute display values, re-sort by group + detail, renumber, and re-render.
+function refreshAfterGroupChange() {
+    for (var i = 0; i < models.length; i++) {
+        var m = models[i];
+        m.displayKuerzel = m.kuerzelOverride || m.kuerzel;
+    }
+    models.sort(function(a, b) {
+        if (a.displayKuerzel < b.displayKuerzel) return -1;
+        if (a.displayKuerzel > b.displayKuerzel) return 1;
+        if (a.fmDetail < b.fmDetail) return -1;
+        if (a.fmDetail > b.fmDetail) return 1;
+        return 0;
+    });
+    // Rebuild matrixState by remapping checked cells via fileName, so user selections
+    // survive the row/column reorder.
+    var oldFiles = [];
+    for (var oi = 0; oi < models.length; oi++) oldFiles.push(null);
+    // (matrixState is already keyed by current model order — rebuild from scratch)
+    var n = models.length;
+    var prevState = matrixState;
+    var prevFileOrder = window.__lastModelFileOrder || [];
+    matrixState = [];
+    for (var r = 0; r < n; r++) {
+        matrixState[r] = [];
+        for (var c = 0; c < n; c++) {
+            if (r === c) matrixState[r][c] = { type: "F", checked: false };
+            else if (c > r) matrixState[r][c] = { type: "K", checked: false };
+            else matrixState[r][c] = { type: "", checked: false };
+        }
+    }
+    // Map previous checked state from prevFileOrder -> new model order
+    if (prevFileOrder.length === n && prevState && prevState.length === n) {
+        var idxByFile = {};
+        for (var k = 0; k < n; k++) idxByFile[models[k].fileName] = k;
+        for (var pr = 0; pr < n; pr++) {
+            var newR = idxByFile[prevFileOrder[pr]];
+            if (newR === undefined) continue;
+            for (var pc = 0; pc < n; pc++) {
+                var src = prevState[pr] && prevState[pr][pc];
+                if (!src || !src.checked) continue;
+                var newC = idxByFile[prevFileOrder[pc]];
+                if (newC === undefined) continue;
+                if (matrixState[newR][newC] && (matrixState[newR][newC].type === "F" || matrixState[newR][newC].type === "K")) {
+                    matrixState[newR][newC].checked = true;
+                } else if (matrixState[newC][newR] && (matrixState[newC][newR].type === "F" || matrixState[newC][newR].type === "K")) {
+                    matrixState[newC][newR].checked = true;
+                }
+            }
+        }
+    }
+    // Renumber and remember current file order for the next reorder
+    var fileOrder = [];
+    for (var idx = 0; idx < n; idx++) {
+        models[idx].nr = idx + 1;
+        fileOrder.push(models[idx].fileName);
+    }
+    window.__lastModelFileOrder = fileOrder;
+
+    renderMatrix();
+    syncPlannedRuns();
+}
+
+// Rename a group: update kuerzelOverride on every model currently in `oldKuerzel`.
+// In-memory only — KuerzelOverride is written to the model's rootNode only when
+// the user actually starts a clash detection run (see executeClashRuns).
+function renameGroup(oldKuerzel, newKuerzel) {
+    newKuerzel = String(newKuerzel || "").trim();
+    if (!newKuerzel || newKuerzel === oldKuerzel) return;
+    var changed = 0;
+    for (var i = 0; i < models.length; i++) {
+        if (models[i].displayKuerzel === oldKuerzel) {
+            models[i].kuerzelOverride = newKuerzel;
+            changed++;
+        }
+    }
+    if (!changed) return;
+    log("Gruppe '" + oldKuerzel + "' -> '" + newKuerzel + "' (" + changed + " Modelle, noch nicht gespeichert)", "info");
+    refreshAfterGroupChange();
+}
+
+// Move a single model into a different group (target may be a brand-new group name).
+// In-memory only — see renameGroup for persistence note.
+function moveModelToGroup(modelIdx, targetKuerzel) {
+    targetKuerzel = String(targetKuerzel || "").trim();
+    if (!targetKuerzel) return;
+    if (modelIdx < 0 || modelIdx >= models.length) return;
+    var m = models[modelIdx];
+    if (m.displayKuerzel === targetKuerzel) return;
+    m.kuerzelOverride = targetKuerzel;
+    log("Modell '" + m.fileName + "' in Gruppe '" + targetKuerzel + "' verschoben (noch nicht gespeichert)", "info");
+    refreshAfterGroupChange();
+}
+
+// Enter inline rename mode on a group-label <th>. Always leaves edit mode on
+// Enter, Escape, or blur (click outside). Saves only if the value changed.
+function startGroupRename(th) {
+    var raw = th.getAttribute("data-kuerzel");
+    var current = (raw && raw !== "NaN" && raw !== "null" && raw !== "undefined") ? raw : "";
+    var input = document.createElement("input");
+    input.type = "text";
+    input.className = "group-rename-input";
+    input.value = current;
+
+    // Hidden span to measure text width for dynamic input sizing
+    var measurer = document.createElement("span");
+    measurer.style.cssText = "position:absolute; visibility:hidden; white-space:pre; font-size:11px; font-weight:700; padding:0 6px;";
+    document.body.appendChild(measurer);
+
+    function resizeInput() {
+        measurer.textContent = input.value || " ";
+        var w = measurer.offsetWidth + 14;
+        if (w < 50) w = 50;
+        input.style.width = w + "px";
+    }
+
+    th.innerHTML = "";
+    th.appendChild(input);
+    resizeInput();
+    input.focus();
+    input.select();
+
+    var done = false;
+    function finish(saveChange) {
+        if (done) return;
+        done = true;
+        if (measurer.parentNode) measurer.parentNode.removeChild(measurer);
+        var v = String(input.value || "").trim();
+        th.innerHTML = escapeHtml((saveChange && v) ? v : current);
+        if (saveChange && v && v !== current) {
+            renameGroup(current, v);
+        }
+    }
+
+    input.addEventListener("input", resizeInput);
+    input.addEventListener("keydown", function(ev) {
+        var k = ev.key;
+        if (k === "Enter" || ev.keyCode === 13) {
+            ev.preventDefault();
+            ev.stopPropagation();
+            finish(true);
+        } else if (k === "Escape" || ev.keyCode === 27) {
+            ev.preventDefault();
+            ev.stopPropagation();
+            finish(false);
+        }
+    });
+    // Click-outside / focus-loss = cancel. Only Enter saves.
+    input.addEventListener("blur", function() { finish(false); });
+    // Don't let clicks inside the input bubble to the <th> click handler
+    input.addEventListener("click", function(ev) { ev.stopPropagation(); });
+    input.addEventListener("mousedown", function(ev) { ev.stopPropagation(); });
+}
+
+// Wire up click-to-rename and drag-and-drop on the freshly rendered matrix.
+function attachGroupEditingHandlers() {
+    var wrap = document.getElementById("matrixWrap");
+    if (!wrap) return;
+
+    // --- Click-to-rename on group labels ---
+    var groupLabels = wrap.querySelectorAll("th.group-label");
+    for (var i = 0; i < groupLabels.length; i++) {
+        (function(th) {
+            th.addEventListener("click", function(e) {
+                if (th.querySelector("input.group-rename-input")) return; // already editing
+                startGroupRename(th);
+            });
+        })(groupLabels[i]);
+    }
+
+    // --- Drag-and-drop: source = fmDetail row-headers ---
+    var sources = wrap.querySelectorAll("th.fm-drag[draggable='true']");
+    for (var s = 0; s < sources.length; s++) {
+        (function(th) {
+            th.addEventListener("dragstart", function(e) {
+                var idx = th.getAttribute("data-model-idx") || "";
+                e.dataTransfer.setData("text/plain", idx);
+                e.dataTransfer.effectAllowed = "move";
+                th.classList.add("dragging");
+            });
+            th.addEventListener("dragend", function() {
+                th.classList.remove("dragging");
+            });
+        })(sources[s]);
+    }
+
+    // --- Drop targets: group labels (rename target) + the trailing "+" cell (new group) ---
+    var targets = wrap.querySelectorAll("th.group-label, th.group-new");
+    for (var t = 0; t < targets.length; t++) {
+        (function(th) {
+            th.addEventListener("dragover", function(e) {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = "move";
+                th.classList.add("drop-target");
+            });
+            th.addEventListener("dragleave", function() {
+                th.classList.remove("drop-target");
+            });
+            th.addEventListener("drop", function(e) {
+                e.preventDefault();
+                th.classList.remove("drop-target");
+                var raw = e.dataTransfer.getData("text/plain");
+                var idx = parseInt(raw, 10);
+                if (isNaN(idx)) return;
+                var target;
+                if (th.hasAttribute("data-newgroup")) {
+                    target = window.prompt("Name der neuen Gruppe:", "Neu");
+                    if (target === null) return;
+                    target = String(target).trim();
+                    if (!target) return;
+                } else {
+                    target = th.getAttribute("data-kuerzel") || "";
+                }
+                moveModelToGroup(idx, target);
+            });
+        })(targets[t]);
+    }
+}
+
+function renderMatrix() {
+    var n = models.length;
+
+    // Build column header: Kürzel grouped row + number row
+    var t = '<table>';
+
+    // Row 1: Kürzel group headers (merged across same displayKuerzel)
+    t += '<tr><th class="corner" colspan="3" rowspan="2" style="min-width:180px;"></th>';
+    var ci = 0;
+    while (ci < n) {
+        var span = 1;
+        while (ci + span < n && models[ci + span].displayKuerzel === models[ci].displayKuerzel) span++;
+        var gk = escapeHtml(models[ci].displayKuerzel);
+        t += '<th class="group-label" data-kuerzel="' + gk + '" colspan="' + span + '" style="background:#e8edf1; color:#4a5d6b; font-size:11px; border:1px solid #e5e7eb; height:28px;" title="Klicken zum Umbenennen — hierhin ziehen zum Verschieben">' + gk + '</th>';
+        ci += span;
+    }
+    // Trailing "+" drop target to create a new group
+    t += '<th class="group-new" rowspan="2" data-newgroup="1" title="Modell hierhin ziehen, um eine neue Gruppe zu erstellen">+</th>';
+    t += '</tr>';
+
+    // Row 2: Number headers
+    t += '<tr>';
+    for (var h = 0; h < n; h++) {
+        t += '<th style="font-size:10px; height:28px; border:1px solid #e5e7eb;" title="' + escapeHtml(models[h].fileName) + '">' + models[h].nr + '</th>';
+    }
+    t += '</tr>';
+
+    // Data rows with 3-column row headers: Kürzel | fmDetail | Nr
+    var ri = 0;
+    while (ri < n) {
+        // Count how many rows share this displayKuerzel
+        var groupStart = ri;
+        var groupSpan = 1;
+        while (groupStart + groupSpan < n && models[groupStart + groupSpan].displayKuerzel === models[groupStart].displayKuerzel) groupSpan++;
+
+        for (var g = 0; g < groupSpan; g++) {
+            var r = groupStart + g;
+            t += '<tr>';
+
+            // Column 1: Kürzel (merged for group) — clickable to rename, drop target
+            if (g === 0) {
+                var rgk = escapeHtml(models[r].displayKuerzel);
+                t += '<th class="row-header group-label" data-kuerzel="' + rgk + '" rowspan="' + groupSpan + '" style="text-align:center; font-size:11px; font-weight:700; color:#4a5d6b; min-width:45px; background:#e8edf1;" title="Klicken zum Umbenennen — hierhin ziehen zum Verschieben">' + rgk + '</th>';
+            }
+
+            // Column 2: Fachmodell detail (draggable handle for moving the model between groups)
+            t += '<th class="row-header fm-drag" draggable="true" data-model-idx="' + r + '" style="text-align:left; padding-left:6px; font-size:10px; font-weight:400; color:#6b7280; min-width:90px; white-space:nowrap;" title="' + escapeHtml(models[r].fileName) + ' — ziehen, um die Gruppe zu wechseln">' + escapeHtml(prettifyFmDetail(models[r].fmDetail)) + '</th>';
+
+            // Column 3: Nr
+            t += '<th class="row-header" style="text-align:center; font-size:10px; font-weight:500; min-width:30px;">' + models[r].nr + '</th>';
+
+            // Matrix cells
+            for (var c = 0; c < n; c++) {
+                var cell = matrixState[r][c];
+                if (cell.type === "F" || cell.type === "K") {
+                    var cls = "cell-active type-" + cell.type;
+                    if (cell.checked) cls += " checked";
+                    if (cell.checked && editingHistoryIndex >= 0) {
+                        cls += cell.fromHistory ? " from-history" : " new-addition";
+                    }
+                    t += '<td class="' + cls + '" data-r="' + r + '" data-c="' + c + '" onclick="toggleCell(this)">';
+                    if (cell.checked) t += '<span class="check-mark"></span>';
+                    t += '</td>';
+                } else {
+                    t += '<td class="cell-empty"></td>';
+                }
+            }
+            t += '</tr>';
+        }
+        ri += groupSpan;
+    }
+    t += '</table>';
+    document.getElementById("matrixWrap").innerHTML = t;
+    attachGroupEditingHandlers();
+    updateStats();
+}
+
+// ==================================================
+// 4. INTERAKTION
+// ==================================================
+function toggleCell(td) {
+    var r = parseInt(td.getAttribute("data-r"));
+    var c = parseInt(td.getAttribute("data-c"));
+    matrixState[r][c].checked = !matrixState[r][c].checked;
+    if (matrixState[r][c].checked) {
+        td.classList.add("checked");
+        td.innerHTML = '<span class="check-mark"></span>';
+        if (editingHistoryIndex >= 0) {
+            td.classList.remove("from-history", "new-addition");
+            td.classList.add(matrixState[r][c].fromHistory ? "from-history" : "new-addition");
+        }
+    } else {
+        td.classList.remove("checked", "from-history", "new-addition");
+        td.innerHTML = '';
+    }
+    updateStats();
+    syncPlannedRuns();
+}
+
+function selectAll() { forEachActive(function(r, c) { matrixState[r][c].checked = true; }); renderMatrix(); syncPlannedRuns(); }
+function deselectAll() { forEachActive(function(r, c) { matrixState[r][c].checked = false; }); renderMatrix(); syncPlannedRuns(); }
+
+function forEachActive(fn) {
+    for (var r = 0; r < matrixState.length; r++) {
+        for (var c = 0; c < matrixState[r].length; c++) {
+            if (matrixState[r][c].type === "F" || matrixState[r][c].type === "K") fn(r, c);
+        }
+    }
+}
+
+function updateStats() {
+    var total = 0, checked = 0;
+    forEachActive(function(r, c) { total++; if (matrixState[r][c].checked) checked++; });
+    document.getElementById("statsLabel").textContent = checked + " / " + total + " ausgewählt";
+}
+
+// ==================================================
+// 4b. VORHERIGE ERGEBNISSE LADEN (async)
+// ==================================================
+async function loadExistingClashRuns() {
+    log("", "");
+    log("=== Lade vorherige Kollisionsergebnisse ===", "info");
+
+    var btnLoad = document.getElementById("btnLoadPrevious");
+    if (btnLoad) { btnLoad.disabled = true; btnLoad.textContent = "Lade..."; }
+
+    // Helper: parse a single clash run element into a run object
+    async function parseClashRun(clashRunID, containerName) {
+        var runName = "";
+        try {
+            runName = s(await vdcApp.getPropertyValue(clashRunID, "cpName", "xs:string"));
+        } catch(e) {}
+
+        if (!runName) return null;
+
+        var row = -1, col = -1, type = "", kA = "", kB = "";
+
+        var vsIndex = runName.indexOf(" vs ");
+        if (vsIndex >= 0) {
+            var fileA = runName.substring(0, vsIndex);
+            var fileB = runName.substring(vsIndex + 4);
+            type = "K";
+            for (var mi = 0; mi < models.length; mi++) {
+                if (models[mi].fileName === fileA) row = mi;
+                if (models[mi].fileName === fileB) col = mi;
+            }
+        } else {
+            type = "F";
+            for (var mi2 = 0; mi2 < models.length; mi2++) {
+                if (models[mi2].fileName === runName) {
+                    row = mi2;
+                    col = mi2;
+                    break;
+                }
+            }
+        }
+
+        try { kA = s(await vdcApp.getPropertyValue(clashRunID, "KuerzelA", "xs:string")); } catch(e) {}
+        try { kB = s(await vdcApp.getPropertyValue(clashRunID, "KuerzelB", "xs:string")); } catch(e) {}
+
+        if (!kA && containerName) {
+            if (type === "F") { kA = containerName; kB = containerName; }
+        }
+        if (!kA && row >= 0) kA = models[row].displayKuerzel || models[row].kuerzel;
+        if (!kB && col >= 0) kB = models[col].displayKuerzel || models[col].kuerzel;
+        if (type === "F" && kA && !kB) kB = kA;
+
+        var category = "";
+        if (type === "F" && kA) {
+            category = "Fachmodell/" + kA;
+        } else if (type === "K" && kA && kB) {
+            var sorted = [kA, kB].sort();
+            category = "Koordination/" + sorted[0] + "-" + sorted[1];
+        } else {
+            category = containerName || "Unbekannt";
+        }
+
+        return {
+            id: clashRunID,
+            type: type,
+            category: category,
+            runName: runName,
+            kA: kA,
+            kB: kB,
+            row: row,
+            col: col
+        };
+    }
+
+    try {
+        if (models.length === 0) {
+            log("Keine Modelle geladen - bitte zuerst Matrix erstellen.", "warn");
+            if (btnLoad) { btnLoad.disabled = false; btnLoad.textContent = "\uD83D\uDD0D Vorherige Ergebnisse laden"; }
+            return;
+        }
+
+        // 1. Find CD models
+        var rawCdModels = await vdcApp.getModelListByDomain("cd");
+        var cdModels = toArray(rawCdModels);
+
+        if (cdModels.length === 0) {
+            log("Keine vorherigen Kollisionsergebnisse gefunden.", "info");
+            if (btnLoad) { btnLoad.disabled = false; btnLoad.textContent = "\uD83D\uDD0D Vorherige Ergebnisse laden"; }
+            return;
+        }
+
+        log(cdModels.length + " CD-Modell(e) gefunden", "info");
+        var addedCount = 0;
+
+        // 2. For each CD model, traverse its structure
+        for (var m = 0; m < cdModels.length; m++) {
+            var thisCdModelID = s(cdModels[m]);
+
+            // Deduplication: skip if already in runHistory
+            var isDuplicate = false;
+            for (var dh = 0; dh < runHistory.length; dh++) {
+                if (runHistory[dh].cdModelID === thisCdModelID) {
+                    isDuplicate = true;
+                    break;
+                }
+                // Also check old split model IDs for backward compatibility
+                if (runHistory[dh].fachModelID === thisCdModelID || runHistory[dh].koordModelID === thisCdModelID) {
+                    isDuplicate = true;
+                    break;
+                }
+            }
+            if (isDuplicate) {
+                log("  CD-Modell bereits geladen (übersprungen): " + thisCdModelID, "info");
+                continue;
+            }
+
+            var modelName = "";
+            try {
+                var meta = await vdcApp.getModelMetaData(thisCdModelID);
+                modelName = s(meta.Name) || s(meta.SourceModelID) || "";
+            } catch(e) {}
+
+            // 3. Get root node
+            var rootNode = s(await vdcApp.getRootNodeByModel(thisCdModelID));
+
+            // Try our stored PruefungName, then cpName on root node as fallbacks
+            if (rootNode) {
+                if (!modelName) {
+                    try { modelName = s(await vdcApp.getPropertyValue(rootNode, "PruefungName", "xs:string")); } catch(e) {}
+                }
+                if (!modelName) {
+                    try { modelName = s(await vdcApp.getPropertyValue(rootNode, "cpName", "xs:string")); } catch(e) {}
+                }
+            }
+            if (!modelName) modelName = "CD-Modell " + (m + 1);
+
+            log("  CD-Modell: " + modelName + " (ID: " + thisCdModelID + ")", "info");
+            if (!rootNode) {
+                log("  Kein Root-Node fuer " + modelName, "warn");
+                continue;
+            }
+
+            // 4. Get top-level children (depth 1)
+            var topChildren = toArray(await vdcApp.getContainedElements(rootNode, 1));
+            log("  " + topChildren.length + " Top-Level-Elemente gefunden", "info");
+
+            var loadedClashRuns = [];
+            var parentIDs = [rootNode];
+
+            for (var ci = 0; ci < topChildren.length; ci++) {
+                var childID = s(topChildren[ci]);
+                parentIDs.push(childID);
+
+                // Get child name to determine traversal strategy
+                var childName = "";
+                try {
+                    childName = s(await vdcApp.getPropertyValue(childID, "cpName", "xs:string"));
+                } catch(e) {}
+
+                if (childName === "Fachmodell" || childName === "Koordinationsmodell") {
+                    // NEW hierarchy: category container -> Gewerk sub-containers -> cdRuns
+                    var subContainers = toArray(await vdcApp.getContainedElements(childID, 1));
+                    log("    " + childName + ": " + subContainers.length + " Gewerk-Container", "info");
+
+                    for (var si = 0; si < subContainers.length; si++) {
+                        var subContainerID = s(subContainers[si]);
+                        parentIDs.push(subContainerID);
+
+                        var subContainerName = "";
+                        try {
+                            subContainerName = s(await vdcApp.getPropertyValue(subContainerID, "cpName", "xs:string"));
+                        } catch(e) {}
+
+                        var cdRuns = toArray(await vdcApp.getContainedElements(subContainerID, 1));
+                        for (var ri = 0; ri < cdRuns.length; ri++) {
+                            var parsed = await parseClashRun(s(cdRuns[ri]), subContainerName);
+                            if (parsed) {
+                                loadedClashRuns.push(parsed);
+                                log("      Prueflauf: " + parsed.runName + " -> [" + parsed.row + "," + parsed.col + "]", parsed.row >= 0 && parsed.col >= 0 ? "ok" : "warn");
+                            }
+                        }
+                    }
+                } else {
+                    // OLD hierarchy (backward compat): Gewerk container -> cdRuns directly
+                    var cdRuns = toArray(await vdcApp.getContainedElements(childID, 1));
+                    for (var ri2 = 0; ri2 < cdRuns.length; ri2++) {
+                        var parsed2 = await parseClashRun(s(cdRuns[ri2]), childName);
+                        if (parsed2) {
+                            loadedClashRuns.push(parsed2);
+                            log("    Prueflauf: " + parsed2.runName + " -> [" + parsed2.row + "," + parsed2.col + "]", parsed2.row >= 0 && parsed2.col >= 0 ? "ok" : "warn");
+                        }
+                    }
+                }
+            }
+
+            if (loadedClashRuns.length > 0) {
+                // Try to read the stored timestamp from the root node
+                var storedTimestamp = "";
+                try {
+                    storedTimestamp = s(await vdcApp.getPropertyValue(rootNode, "PruefungZeitpunkt", "xs:string"));
+                } catch(e) {}
+
+                clashRunIDs = loadedClashRuns;
+
+                runHistory.push({
+                    pruefungName: modelName,
+                    timestamp: storedTimestamp,
+                    label: "geladen, " + loadedClashRuns.length + " Prüfläufe",
+                    clashRunIDs: loadedClashRuns,
+                    parentIDs: parentIDs,
+                    cdModelID: thisCdModelID
+                });
+
+                addedCount++;
+                log("  " + loadedClashRuns.length + " Prüfläufe geladen aus " + modelName, "ok");
+            }
+        }
+
+        if (runHistory.length > 0) {
+            populateHistory();
+            await runAuswertung();
+        } else {
+            log("Keine vorherigen Kollisionsergebnisse gefunden.", "info");
+        }
+
+        if (addedCount > 0) {
+            log(addedCount + " CD-Modell(e) neu geladen", "ok");
+        } else if (runHistory.length > 0) {
+            log("Alle CD-Modelle bereits geladen (keine Duplikate)", "info");
+        }
+
+    } catch(e) {
+        log("FEHLER beim Laden vorheriger Ergebnisse: " + e, "err");
+        if (e.stack) log("Stack: " + e.stack, "err");
+    }
+
+    if (btnLoad) { btnLoad.disabled = false; btnLoad.textContent = "\uD83D\uDD0D Vorherige Ergebnisse laden"; }
+}
+
+// ==================================================
+// 5. KOLLISIONSPRÜFUNG (async)
+// ==================================================
+function syncPlannedRuns() {
+    plannedRuns = [];
+
+    function getContainerName(kA, kB) {
+        if (kA === kB) return kA;
+        var sorted = [kA, kB].sort();
+        return sorted[0] + "-" + sorted[1];
+    }
+
+    forEachActive(function(r, c) {
+        if (!matrixState[r][c].checked) return;
+        var rowModel = models[r];
+        var colModel = models[c];
+        var kA = rowModel.displayKuerzel || rowModel.kuerzel;
+        var kB = colModel.displayKuerzel || colModel.kuerzel;
+        var type = matrixState[r][c].type;
+        var runName, category;
+
+        if (type === "F") {
+            category = "Fachmodell/" + kA;
+            runName = rowModel.fileName;
+        } else {
+            var cn = getContainerName(kA, kB);
+            category = "Koordination/" + cn;
+            runName = rowModel.fileName + " vs " + colModel.fileName;
+        }
+
+        var key = "r" + r + "_c" + c;
+
+        plannedRuns.push({
+            key: key,
+            type: type,
+            category: category,
+            runName: runName,
+            kA: kA,
+            kB: kB,
+            row: r,
+            col: c
+        });
+
+        if (!containerSettings[key]) {
+            containerSettings[key] = getDefaultSettings();
+        }
+    });
+
+    populateContainerDropdown();
+
+    if (plannedRuns.length > 0) {
+        show("containerPanel");
+    } else {
+        hide("containerPanel");
+    }
+}
+
+async function executeClashRuns() {
+    if (plannedRuns.length === 0) {
+        log("Keine geplanten Prüfläufe vorhanden.", "warn");
+        return;
+    }
+
+    var btnRun = document.getElementById("btnRun");
+    btnRun.disabled = true;
+    btnRun.textContent = "Läuft...";
+    show("progressWrap");
+    setProgress(0);
+    clashRunIDs = [];
+
+    var total = plannedRuns.length;
+    var okCount = 0, failCount = 0;
+
+    log("", "");
+    log("=== Kollisionsprüfung gestartet (" + total + " Prüfläufe) ===", "info");
+    if (postProcessFileName) log("Nachbearbeitung: " + postProcessFileName, "info");
+
+    // Persist any pending Kürzel-Gruppen-Änderungen now (deferred from rename/move).
+    var persistedCount = 0;
+    for (var pi = 0; pi < models.length; pi++) {
+        var pm = models[pi];
+        if (pm.kuerzelOverride && pm.kuerzelOverride !== pm.persistedKuerzelOverride) {
+            await persistKuerzelOverride(pm);
+            pm.persistedKuerzelOverride = pm.kuerzelOverride;
+            persistedCount++;
+        } else if (!pm.kuerzelOverride && pm.persistedKuerzelOverride) {
+            // Override was cleared — write empty string to clear the property
+            await persistKuerzelOverride(pm);
+            pm.persistedKuerzelOverride = "";
+            persistedCount++;
+        }
+    }
+    if (persistedCount > 0) log("Gruppen-Änderungen gespeichert (" + persistedCount + " Modelle)", "ok");
+
+    try {
+        // Determine Prüfung name
+        var pruefungNameEl = document.getElementById("pruefungNameInput");
+        var pruefungName = pruefungNameEl ? pruefungNameEl.value.trim() : "";
+        if (!pruefungName) {
+            pruefungName = "Prüfung " + (runHistory.length + 1);
+        }
+
+        // Create ONE unified CD model
+        var cdModelID = s(await vdcApp.createModel(pruefungName, false, "cd"));
+        var cdRootNode = s(await vdcApp.getRootNodeByModel(cdModelID));
+        var fachContainerID = s(await vdcApp.createObjectFromXml(cdRootNode, '<container name="Fachmodell"/>'));
+        var koordContainerID = s(await vdcApp.createObjectFromXml(cdRootNode, '<container name="Koordinationsmodell"/>'));
+        log("CD-Modell '" + pruefungName + "' erstellt (Fachmodell + Koordinationsmodell)", "ok");
+
+        // Store name and timestamp on the root node so they persist across loads
+        var runTimestamp = new Date().toLocaleString("de-DE", { day:"2-digit", month:"2-digit", year:"numeric", hour:"2-digit", minute:"2-digit", second:"2-digit" });
+        try {
+            await vdcApp.setPropertyValue(cdRootNode, "PruefungName", "xs:string", pruefungName);
+            await vdcApp.setPropertyValue(cdRootNode, "PruefungZeitpunkt", "xs:string", runTimestamp);
+        } catch(e) {
+            log("Metadaten konnten nicht gespeichert werden: " + e, "warn");
+        }
+
+        var fachContainers = {};
+        var koordContainers = {};
+
+        function getContainerName(kA, kB) {
+            if (kA === kB) return kA;
+            var sorted = [kA, kB].sort();
+            return sorted[0] + "-" + sorted[1];
+        }
+
+        for (var i = 0; i < total; i++) {
+            var run = plannedRuns[i];
+            var rowModel = models[run.row];
+            var colModel = models[run.col];
+            var isSame = (run.row === run.col);
+            var parentNode;
+
+            // Create sub-container if needed (under Fachmodell or Koordinationsmodell container)
+            if (run.type === "F") {
+                if (!fachContainers[run.kA]) {
+                    fachContainers[run.kA] = s(await vdcApp.createObjectFromXml(fachContainerID, '<container name="' + run.kA + '"/>'));
+                }
+                parentNode = fachContainers[run.kA];
+            } else {
+                var cn = getContainerName(run.kA, run.kB);
+                if (!koordContainers[cn]) {
+                    koordContainers[cn] = s(await vdcApp.createObjectFromXml(koordContainerID, '<container name="' + cn + '"/>'));
+                }
+                parentNode = koordContainers[cn];
+            }
+
+            // Create cdRun
+            var comment = isSame
+                ? rowModel.fileName + " vs itself"
+                : run.kA + " vs " + run.kB;
+
+            var cdXml = '<cdRun name="' + run.runName + '" active="true" cmt="' + comment + '"/>';
+            var clashRunID = s(await vdcApp.createObjectFromXml(parentNode, cdXml));
+
+            try {
+                await vdcApp.setPropertyValue(clashRunID, "KuerzelA", "xs:string", run.kA);
+                await vdcApp.setPropertyValue(clashRunID, "KuerzelB", "xs:string", run.kB);
+            } catch(e) {}
+
+            // Prüfbereich per Filter (ImportFileName) setzen – im VDC Manager GUI nachbearbeitbar
+            var rowFilter = [{ propertyTypeKey: "ImportFileName##xs:string", pattern: '"' + rowModel.fileName + '"' }];
+            var colFilter = isSame ? rowFilter : [{ propertyTypeKey: "ImportFileName##xs:string", pattern: '"' + colModel.fileName + '"' }];
+            var rcLeft  = await vdcApp.setCheckFilterList(clashRunID, rowFilter, false);
+            var rcRight = await vdcApp.setCheckFilterList(clashRunID, colFilter, true);
+            if (rcLeft !== 1 || rcRight !== 1) {
+                log("  Warnung: setCheckFilterList für " + run.runName + " lieferte rc=" + rcLeft + "/" + rcRight, "warn");
+            }
+
+            // Set post-processing code if configured
+            if (postProcessCode.length > 0) {
+                await vdcApp.setPostProcessingCode(clashRunID, postProcessCode);
+            }
+
+            // Apply local settings
+            var localSettings = containerSettings[run.key] || getDefaultSettings();
+            await vdcApp.setClashRunSettings(clashRunID, localSettings);
+
+            // Run check
+            var result = await vdcApp.runCheck(clashRunID);
+
+            // Track for Auswertung
+            clashRunIDs.push({
+                id: clashRunID,
+                type: run.type,
+                category: run.category,
+                runName: run.runName,
+                kA: run.kA,
+                kB: run.kB,
+                row: run.row,
+                col: run.col
+            });
+
+            var pct = Math.round(((i + 1) / total) * 100);
+            setProgress(pct);
+
+            if (result === 1) {
+                log("[" + (i+1) + "/" + total + "] \u2713 " + run.category + " - " + run.runName, "ok");
+                okCount++;
+            } else {
+                log("[" + (i+1) + "/" + total + "] \u2717 " + run.category + " - " + run.runName + " (Code: " + result + ")", "err");
+                failCount++;
+            }
+        }
+
+        log("", "");
+        log("=== Zusammenfassung ===", "info");
+        log("Erfolgreich:             " + okCount, "ok");
+        if (failCount > 0) log("Fehlgeschlagen:          " + failCount, "err");
+        log("=== Fertig ===", "info");
+
+        // Collect all parent container IDs for cleanup on delete
+        var allParentIDs = [];
+        var fk;
+        for (fk in fachContainers) { if (fachContainers.hasOwnProperty(fk)) allParentIDs.push(fachContainers[fk]); }
+        for (fk in koordContainers) { if (koordContainers.hasOwnProperty(fk)) allParentIDs.push(koordContainers[fk]); }
+        if (fachContainerID) allParentIDs.push(fachContainerID);
+        if (koordContainerID) allParentIDs.push(koordContainerID);
+        if (cdRootNode) allParentIDs.push(cdRootNode);
+
+    } catch(e) {
+        log("FEHLER: " + e, "err");
+        if (e.stack) log("Stack: " + e.stack, "err");
+    }
+
+    hide("progressWrap");
+    setProgress(0);
+
+    btnRun.disabled = false;
+    btnRun.textContent = "\u25B6 Prüfung starten";
+
+    if (clashRunIDs.length > 0) {
+        // Save to history
+        runHistory.push({
+            pruefungName: pruefungName,
+            timestamp: runTimestamp,
+            label: total + " Prüfläufe (" + okCount + " OK" + (failCount > 0 ? ", " + failCount + " Fehler" : "") + ")",
+            clashRunIDs: clashRunIDs.slice(),
+            parentIDs: allParentIDs || [],
+            cdModelID: cdModelID || ""
+        });
+        populateHistory();
+
+        if (pruefungNameEl) pruefungNameEl.value = "";
+        await runAuswertung();
+    }
+}
+
+// ==================================================
+// 5b. NUR SPEICHERN (ohne runCheck)
+// ==================================================
+async function saveClashRunsOnly() {
+    if (plannedRuns.length === 0) {
+        log("Keine geplanten Prüfläufe vorhanden.", "warn");
+        return;
+    }
+
+    var btnSave = document.getElementById("btnSaveOnly");
+    var btnRun = document.getElementById("btnRun");
+    btnSave.disabled = true;
+    btnRun.disabled = true;
+    btnSave.textContent = "Speichert...";
+    show("progressWrap");
+    setProgress(0);
+    clashRunIDs = [];
+
+    var total = plannedRuns.length;
+    var okCount = 0, failCount = 0;
+
+    log("", "");
+    log("=== Prüfläufe werden gespeichert (ohne Ausführung) ===", "info");
+    if (postProcessFileName) log("Nachbearbeitung: " + postProcessFileName, "info");
+
+    var persistedCount = 0;
+    for (var pi = 0; pi < models.length; pi++) {
+        var pm = models[pi];
+        if (pm.kuerzelOverride && pm.kuerzelOverride !== pm.persistedKuerzelOverride) {
+            await persistKuerzelOverride(pm);
+            pm.persistedKuerzelOverride = pm.kuerzelOverride;
+            persistedCount++;
+        } else if (!pm.kuerzelOverride && pm.persistedKuerzelOverride) {
+            await persistKuerzelOverride(pm);
+            pm.persistedKuerzelOverride = "";
+            persistedCount++;
+        }
+    }
+    if (persistedCount > 0) log("Gruppen-Änderungen gespeichert (" + persistedCount + " Modelle)", "ok");
+
+    try {
+        var pruefungNameEl = document.getElementById("pruefungNameInput");
+        var pruefungName = pruefungNameEl ? pruefungNameEl.value.trim() : "";
+        if (!pruefungName) {
+            pruefungName = "Prüfung " + (runHistory.length + 1);
+        }
+
+        var cdModelID = s(await vdcApp.createModel(pruefungName, false, "cd"));
+        var cdRootNode = s(await vdcApp.getRootNodeByModel(cdModelID));
+        var fachContainerID = s(await vdcApp.createObjectFromXml(cdRootNode, '<container name="Fachmodell"/>'));
+        var koordContainerID = s(await vdcApp.createObjectFromXml(cdRootNode, '<container name="Koordinationsmodell"/>'));
+        log("CD-Modell '" + pruefungName + "' erstellt (Fachmodell + Koordinationsmodell)", "ok");
+
+        var runTimestamp = new Date().toLocaleString("de-DE", { day:"2-digit", month:"2-digit", year:"numeric", hour:"2-digit", minute:"2-digit", second:"2-digit" });
+        try {
+            await vdcApp.setPropertyValue(cdRootNode, "PruefungName", "xs:string", pruefungName);
+            await vdcApp.setPropertyValue(cdRootNode, "PruefungZeitpunkt", "xs:string", runTimestamp);
+        } catch(e) {
+            log("Metadaten konnten nicht gespeichert werden: " + e, "warn");
+        }
+
+        var fachContainers = {};
+        var koordContainers = {};
+
+        function getContainerName(kA, kB) {
+            if (kA === kB) return kA;
+            var sorted = [kA, kB].sort();
+            return sorted[0] + "-" + sorted[1];
+        }
+
+        for (var i = 0; i < total; i++) {
+            var run = plannedRuns[i];
+            var rowModel = models[run.row];
+            var colModel = models[run.col];
+            var isSame = (run.row === run.col);
+            var parentNode;
+
+            if (run.type === "F") {
+                if (!fachContainers[run.kA]) {
+                    fachContainers[run.kA] = s(await vdcApp.createObjectFromXml(fachContainerID, '<container name="' + run.kA + '"/>'));
+                }
+                parentNode = fachContainers[run.kA];
+            } else {
+                var cn = getContainerName(run.kA, run.kB);
+                if (!koordContainers[cn]) {
+                    koordContainers[cn] = s(await vdcApp.createObjectFromXml(koordContainerID, '<container name="' + cn + '"/>'));
+                }
+                parentNode = koordContainers[cn];
+            }
+
+            var comment = isSame
+                ? rowModel.fileName + " vs itself"
+                : run.kA + " vs " + run.kB;
+
+            var cdXml = '<cdRun name="' + run.runName + '" active="true" cmt="' + comment + '"/>';
+            var clashRunID = s(await vdcApp.createObjectFromXml(parentNode, cdXml));
+
+            try {
+                await vdcApp.setPropertyValue(clashRunID, "KuerzelA", "xs:string", run.kA);
+                await vdcApp.setPropertyValue(clashRunID, "KuerzelB", "xs:string", run.kB);
+            } catch(e) {}
+
+            var rowFilter = [{ propertyTypeKey: "ImportFileName##xs:string", pattern: '"' + rowModel.fileName + '"' }];
+            var colFilter = isSame ? rowFilter : [{ propertyTypeKey: "ImportFileName##xs:string", pattern: '"' + colModel.fileName + '"' }];
+            var rcLeft  = await vdcApp.setCheckFilterList(clashRunID, rowFilter, false);
+            var rcRight = await vdcApp.setCheckFilterList(clashRunID, colFilter, true);
+            if (rcLeft !== 1 || rcRight !== 1) {
+                log("  Warnung: setCheckFilterList für " + run.runName + " lieferte rc=" + rcLeft + "/" + rcRight, "warn");
+            }
+
+            if (postProcessCode.length > 0) {
+                await vdcApp.setPostProcessingCode(clashRunID, postProcessCode);
+            }
+
+            var localSettings = containerSettings[run.key] || getDefaultSettings();
+            await vdcApp.setClashRunSettings(clashRunID, localSettings);
+
+            clashRunIDs.push({
+                id: clashRunID,
+                type: run.type,
+                category: run.category,
+                runName: run.runName,
+                kA: run.kA,
+                kB: run.kB,
+                row: run.row,
+                col: run.col
+            });
+
+            var pct = Math.round(((i + 1) / total) * 100);
+            setProgress(pct);
+            log("[" + (i+1) + "/" + total + "] ✓ " + run.category + " - " + run.runName + " (gespeichert)", "ok");
+            okCount++;
+        }
+
+        log("", "");
+        log("=== Zusammenfassung ===", "info");
+        log("Gespeichert (nicht ausgeführt): " + okCount, "ok");
+        if (failCount > 0) log("Fehlgeschlagen: " + failCount, "err");
+        log("=== Fertig ===", "info");
+
+        var allParentIDs = [];
+        var fk;
+        for (fk in fachContainers) { if (fachContainers.hasOwnProperty(fk)) allParentIDs.push(fachContainers[fk]); }
+        for (fk in koordContainers) { if (koordContainers.hasOwnProperty(fk)) allParentIDs.push(koordContainers[fk]); }
+        if (fachContainerID) allParentIDs.push(fachContainerID);
+        if (koordContainerID) allParentIDs.push(koordContainerID);
+        if (cdRootNode) allParentIDs.push(cdRootNode);
+
+        runHistory.push({
+            pruefungName: pruefungName,
+            timestamp: runTimestamp,
+            label: total + " Prüfläufe (gespeichert, nicht ausgeführt)",
+            clashRunIDs: clashRunIDs.slice(),
+            parentIDs: allParentIDs,
+            cdModelID: cdModelID
+        });
+        populateHistory();
+        if (pruefungNameEl) pruefungNameEl.value = "";
+
+    } catch(e) {
+        log("FEHLER: " + e, "err");
+        if (e.stack) log("Stack: " + e.stack, "err");
+    }
+
+    hide("progressWrap");
+    setProgress(0);
+    btnSave.disabled = false;
+    btnRun.disabled = false;
+    btnSave.textContent = "Nur speichern";
+}
+
+// ==================================================
+// 6. PRÜFUNGSHISTORIE
+// ==================================================
+function populateHistory() {
+    show("historyPanel");
+    var thStyle = 'text-align:left; padding:5px 8px; border-bottom:2px solid #e5e7eb; font-size:11px; color:#1a1a1a;';
+    var html = '<table style="width:100%; border-collapse:collapse; font-size:12px;">';
+    html += '<tr><th style="' + thStyle + '">Name</th>';
+    html += '<th style="' + thStyle + '">Zeitpunkt</th>';
+    html += '<th style="' + thStyle + '">Beschreibung</th>';
+    html += '<th style="text-align:center; padding:5px 8px; border-bottom:2px solid #e5e7eb; font-size:11px; color:#1a1a1a;">Aktion</th></tr>';
+    for (var i = runHistory.length - 1; i >= 0; i--) {
+        var entry = runHistory[i];
+        var isEditing = (editingHistoryIndex === i);
+        var isActive = isEditing ? ' style="background:#dbeafe; border-left:3px solid #2563eb;"' : ((entry.clashRunIDs === clashRunIDs) ? ' style="background:#e8edf1;"' : '');
+        html += '<tr' + isActive + '>';
+        html += '<td style="padding:5px 8px; border-bottom:1px solid #e5e7eb; font-weight:600; white-space:nowrap;">' + (entry.pruefungName || "") + (isEditing ? ' <span style="color:#2563eb; font-size:10px;">(wird bearbeitet)</span>' : '') + '</td>';
+        html += '<td style="padding:5px 8px; border-bottom:1px solid #e5e7eb; white-space:nowrap;">' + (entry.timestamp || "") + '</td>';
+        html += '<td style="padding:5px 8px; border-bottom:1px solid #e5e7eb;">' + entry.label + '</td>';
+        html += '<td style="padding:5px 8px; border-bottom:1px solid #e5e7eb; text-align:center; white-space:nowrap;">';
+        if (isEditing) {
+            html += '<span style="color:#2563eb; font-size:11px; font-weight:600;">Wird bearbeitet...</span>';
+        } else {
+            html += '<button class="btn btn-primary" onclick="loadHistoryRun(' + i + ')" style="font-size:11px; padding:3px 10px;"' + (editingHistoryIndex >= 0 ? ' disabled' : '') + '>Auswertung anzeigen</button>';
+            html += '<button class="btn" onclick="editHistoryRun(' + i + ')" style="background:#2563eb; color:white; font-size:11px; padding:3px 10px; margin-left:4px;"' + (editingHistoryIndex >= 0 ? ' disabled' : '') + '>Bearbeiten</button>';
+            html += '<button class="btn" onclick="deleteHistoryRun(' + i + ')" style="background:#dc2626; color:white; font-size:11px; padding:3px 10px; margin-left:4px;"' + (editingHistoryIndex >= 0 ? ' disabled' : '') + '>Löschen</button>';
+        }
+        html += '</td></tr>';
+    }
+    html += '</table>';
+    document.getElementById("historyBody").innerHTML = html;
+}
+
+async function loadHistoryRun(index) {
+    var entry = runHistory[index];
+    if (!entry) return;
+    clashRunIDs = entry.clashRunIDs;
+    log("Lade Auswertung vom " + entry.timestamp + "...", "info");
+    await runAuswertung();
+    populateHistory();
+}
+
+async function deleteHistoryRun(index) {
+    var entry = runHistory[index];
+    if (!entry) return;
+    var confirmLabel = entry.pruefungName || entry.timestamp || "Eintrag " + (index + 1);
+    if (!confirm("\"" + confirmLabel + "\" wirklich löschen?\n\nDie Kollisionsergebnisse werden unwiderruflich aus dem Projekt entfernt.")) return;
+
+    // 1. Delete individual clash run IDs (confirmed working)
+    var runIDs = [];
+    for (var i = 0; i < entry.clashRunIDs.length; i++) {
+        runIDs.push(entry.clashRunIDs[i].id);
+    }
+    if (runIDs.length > 0) {
+        try {
+            var d1 = await vdcApp.deleteObjects(runIDs.join(";"));
+            log("Prüfläufe gelöscht: " + d1 + " Objekte", "ok");
+        } catch(e) {
+            log("Fehler beim Löschen der Prüfläufe: " + e, "err");
+        }
+    }
+
+    // 2. Delete parent containers (Gewerk containers + root nodes) if saved
+    if (entry.parentIDs && entry.parentIDs.length > 0) {
+        try {
+            var d2 = await vdcApp.deleteObjects(entry.parentIDs.join(";"));
+            log("Container gelöscht: " + d2 + " Objekte", "ok");
+        } catch(e) {
+            log("Fehler beim Löschen der Container: " + e, "err");
+        }
+    }
+
+    // 3. Delete the CD model itself (unified model)
+    if (entry.cdModelID) {
+        try { await vdcApp.deleteModel(entry.cdModelID); log("CD-Modell gelöscht", "ok"); }
+        catch(e) {
+            // Fallback: try deleteObjects if deleteModel doesn't exist
+            try { await vdcApp.deleteObjects(entry.cdModelID); } catch(e2) {}
+            log("CD-Modell-Bereinigung versucht", "info");
+        }
+    }
+    // Backward compatibility: delete old split models if present
+    if (entry.fachModelID) {
+        try { await vdcApp.deleteModel(entry.fachModelID); } catch(e) {
+            try { await vdcApp.deleteObjects(entry.fachModelID); } catch(e2) {}
+        }
+    }
+    if (entry.koordModelID) {
+        try { await vdcApp.deleteModel(entry.koordModelID); } catch(e) {
+            try { await vdcApp.deleteObjects(entry.koordModelID); } catch(e2) {}
+        }
+    }
+
+    // If this was the active run, clear UI
+    if (clashRunIDs === entry.clashRunIDs) {
+        clashRunIDs = [];
+        hide("auswertungPanel");
+        hide("detailPanel");
+    }
+
+    runHistory.splice(index, 1);
+    if (runHistory.length === 0) {
+        hide("historyPanel");
+    } else {
+        populateHistory();
+    }
+}
+
+// ==================================================
+// 6b. PRÜFUNG BEARBEITEN
+// ==================================================
+function editHistoryRun(index) {
+    var entry = runHistory[index];
+    if (!entry) return;
+    if (models.length === 0) {
+        log("Keine Modelle geladen — bitte zuerst Matrix erstellen.", "warn");
+        return;
+    }
+
+    editingHistoryIndex = index;
+    editingOriginalRuns = entry.clashRunIDs.slice();
+    editingOriginalMatrixState = JSON.parse(JSON.stringify(matrixState));
+
+    forEachActive(function(r, c) {
+        matrixState[r][c].checked = false;
+        delete matrixState[r][c].fromHistory;
+    });
+
+    for (var i = 0; i < entry.clashRunIDs.length; i++) {
+        var run = entry.clashRunIDs[i];
+        if (run.row >= 0 && run.col >= 0 && run.row < models.length && run.col < models.length) {
+            matrixState[run.row][run.col].checked = true;
+            matrixState[run.row][run.col].fromHistory = true;
+        }
+    }
+
+    renderMatrix();
+    syncPlannedRuns();
+
+    var btnRun = document.getElementById("btnRun");
+    btnRun.textContent = "▶ Änderungen speichern & ausführen";
+    btnRun.setAttribute("onclick", "saveEditedHistoryRun(true)");
+
+    var btnSave = document.getElementById("btnSaveOnly");
+    btnSave.textContent = "Änderungen nur speichern";
+    btnSave.setAttribute("onclick", "saveEditedHistoryRun(false)");
+
+    var container = btnRun.parentElement;
+    var cancelBtn = document.createElement("button");
+    cancelBtn.id = "btnCancelEdit";
+    cancelBtn.className = "btn btn-large";
+    cancelBtn.style.cssText = "flex:1; background:#6b7280; color:white;";
+    cancelBtn.textContent = "Bearbeitung abbrechen";
+    cancelBtn.setAttribute("onclick", "cancelEditHistoryRun()");
+    container.appendChild(cancelBtn);
+
+    var nameInput = document.getElementById("pruefungNameInput");
+    if (nameInput) nameInput.value = entry.pruefungName || "";
+
+    populateHistory();
+    log("Bearbeitung gestartet für \"" + (entry.pruefungName || "Prüfung") + "\"", "info");
+    log("Bestehende Prüfläufe sind dunkelblau markiert. Neue Auswahl wird grün.", "info");
+}
+
+function cancelEditHistoryRun() {
+    matrixState = editingOriginalMatrixState;
+    editingHistoryIndex = -1;
+    editingOriginalRuns = [];
+    editingOriginalMatrixState = [];
+
+    var btnRun = document.getElementById("btnRun");
+    btnRun.textContent = "▶ Prüfung starten";
+    btnRun.setAttribute("onclick", "executeClashRuns()");
+
+    var btnSave = document.getElementById("btnSaveOnly");
+    btnSave.textContent = "Nur speichern";
+    btnSave.setAttribute("onclick", "saveClashRunsOnly()");
+
+    var cancelBtn = document.getElementById("btnCancelEdit");
+    if (cancelBtn) cancelBtn.remove();
+
+    renderMatrix();
+    syncPlannedRuns();
+    populateHistory();
+    log("Bearbeitung abgebrochen.", "info");
+}
+
+async function saveEditedHistoryRun(runChecks) {
+    var entry = runHistory[editingHistoryIndex];
+    if (!entry) return;
+
+    var btnRun = document.getElementById("btnRun");
+    var btnSave = document.getElementById("btnSaveOnly");
+    btnRun.disabled = true;
+    btnSave.disabled = true;
+    btnRun.textContent = "Speichert...";
+
+    syncPlannedRuns();
+
+    var originalByKey = {};
+    for (var i = 0; i < editingOriginalRuns.length; i++) {
+        var or = editingOriginalRuns[i];
+        originalByKey["r" + or.row + "_c" + or.col] = or;
+    }
+
+    var currentKeys = {};
+    forEachActive(function(r, c) {
+        if (matrixState[r][c].checked) currentKeys["r" + r + "_c" + c] = true;
+    });
+
+    var toDelete = [];
+    var toKeep = [];
+    for (var key in originalByKey) {
+        if (originalByKey.hasOwnProperty(key)) {
+            if (!currentKeys[key]) toDelete.push(originalByKey[key]);
+            else toKeep.push(originalByKey[key]);
+        }
+    }
+
+    var toAdd = [];
+    for (var pi = 0; pi < plannedRuns.length; pi++) {
+        if (!originalByKey[plannedRuns[pi].key]) toAdd.push(plannedRuns[pi]);
+    }
+
+    log("", "");
+    log("=== Prüfung wird aktualisiert ===", "info");
+    log("Beibehalten: " + toKeep.length + ", Entfernen: " + toDelete.length + ", Hinzufügen: " + toAdd.length, "info");
+
+    try {
+        if (toDelete.length > 0) {
+            var deleteIDs = [];
+            for (var di = 0; di < toDelete.length; di++) deleteIDs.push(toDelete[di].id);
+            try {
+                await vdcApp.deleteObjects(deleteIDs.join(";"));
+                log(toDelete.length + " Prüfläufe entfernt", "ok");
+            } catch(e) {
+                log("Fehler beim Entfernen: " + e, "err");
+            }
+        }
+
+        var newRuns = [];
+        if (toAdd.length > 0) {
+            var cdRootNode = s(await vdcApp.getRootNodeByModel(entry.cdModelID));
+            var topChildren = toArray(await vdcApp.getContainedElements(cdRootNode, 1));
+
+            var fachContainerID = null, koordContainerID = null;
+            var existingFachContainers = {};
+            var existingKoordContainers = {};
+
+            for (var ti = 0; ti < topChildren.length; ti++) {
+                var tcID = s(topChildren[ti]);
+                var tcName = "";
+                try { tcName = s(await vdcApp.getPropertyValue(tcID, "cpName", "xs:string")); } catch(e) {}
+                if (tcName === "Fachmodell") {
+                    fachContainerID = tcID;
+                    var subs = toArray(await vdcApp.getContainedElements(tcID, 1));
+                    for (var si = 0; si < subs.length; si++) {
+                        var sn = ""; try { sn = s(await vdcApp.getPropertyValue(s(subs[si]), "cpName", "xs:string")); } catch(e) {}
+                        if (sn) existingFachContainers[sn] = s(subs[si]);
+                    }
+                } else if (tcName === "Koordinationsmodell") {
+                    koordContainerID = tcID;
+                    var subs2 = toArray(await vdcApp.getContainedElements(tcID, 1));
+                    for (var si2 = 0; si2 < subs2.length; si2++) {
+                        var sn2 = ""; try { sn2 = s(await vdcApp.getPropertyValue(s(subs2[si2]), "cpName", "xs:string")); } catch(e) {}
+                        if (sn2) existingKoordContainers[sn2] = s(subs2[si2]);
+                    }
+                }
+            }
+
+            var needsFach = false, needsKoord = false;
+            for (var ci = 0; ci < toAdd.length; ci++) {
+                if (toAdd[ci].type === "F") needsFach = true;
+                else needsKoord = true;
+            }
+            if (!fachContainerID && needsFach) {
+                fachContainerID = s(await vdcApp.createObjectFromXml(cdRootNode, '<container name="Fachmodell"/>'));
+                entry.parentIDs.push(fachContainerID);
+            }
+            if (!koordContainerID && needsKoord) {
+                koordContainerID = s(await vdcApp.createObjectFromXml(cdRootNode, '<container name="Koordinationsmodell"/>'));
+                entry.parentIDs.push(koordContainerID);
+            }
+
+            for (var ai = 0; ai < toAdd.length; ai++) {
+                var addRun = toAdd[ai];
+                var rowModel = models[addRun.row];
+                var colModel = models[addRun.col];
+                var isSame = (addRun.row === addRun.col);
+                var parentNode;
+
+                if (addRun.type === "F") {
+                    if (!existingFachContainers[addRun.kA]) {
+                        existingFachContainers[addRun.kA] = s(await vdcApp.createObjectFromXml(fachContainerID, '<container name="' + addRun.kA + '"/>'));
+                        entry.parentIDs.push(existingFachContainers[addRun.kA]);
+                    }
+                    parentNode = existingFachContainers[addRun.kA];
+                } else {
+                    var cn = [addRun.kA, addRun.kB].sort().join("-");
+                    if (!existingKoordContainers[cn]) {
+                        existingKoordContainers[cn] = s(await vdcApp.createObjectFromXml(koordContainerID, '<container name="' + cn + '"/>'));
+                        entry.parentIDs.push(existingKoordContainers[cn]);
+                    }
+                    parentNode = existingKoordContainers[cn];
+                }
+
+                var cdXml = '<cdRun name="' + addRun.runName + '" active="true" cmt="' + addRun.kA + ' vs ' + addRun.kB + '"/>';
+                var newClashRunID = s(await vdcApp.createObjectFromXml(parentNode, cdXml));
+
+                try {
+                    await vdcApp.setPropertyValue(newClashRunID, "KuerzelA", "xs:string", addRun.kA);
+                    await vdcApp.setPropertyValue(newClashRunID, "KuerzelB", "xs:string", addRun.kB);
+                } catch(e) {}
+
+                var rowFilter = [{ propertyTypeKey: "ImportFileName##xs:string", pattern: '"' + rowModel.fileName + '"' }];
+                var colFilter = isSame ? rowFilter : [{ propertyTypeKey: "ImportFileName##xs:string", pattern: '"' + colModel.fileName + '"' }];
+                await vdcApp.setCheckFilterList(newClashRunID, rowFilter, false);
+                await vdcApp.setCheckFilterList(newClashRunID, colFilter, true);
+
+                if (postProcessCode.length > 0) {
+                    await vdcApp.setPostProcessingCode(newClashRunID, postProcessCode);
+                }
+
+                var localSettings = containerSettings[addRun.key] || getDefaultSettings();
+                await vdcApp.setClashRunSettings(newClashRunID, localSettings);
+
+                if (runChecks) {
+                    var result = await vdcApp.runCheck(newClashRunID);
+                    log("[" + (ai+1) + "/" + toAdd.length + "] " + (result === 1 ? "✓" : "✗") + " " + addRun.category + " - " + addRun.runName, result === 1 ? "ok" : "err");
+                } else {
+                    log("[" + (ai+1) + "/" + toAdd.length + "] ✓ " + addRun.category + " - " + addRun.runName + " (gespeichert)", "ok");
+                }
+
+                newRuns.push({
+                    id: newClashRunID,
+                    type: addRun.type,
+                    category: addRun.category,
+                    runName: addRun.runName,
+                    kA: addRun.kA,
+                    kB: addRun.kB,
+                    row: addRun.row,
+                    col: addRun.col
+                });
+            }
+        }
+
+        entry.clashRunIDs = toKeep.concat(newRuns);
+        entry.label = entry.clashRunIDs.length + " Prüfläufe (bearbeitet)";
+
+        var editTimestamp = new Date().toLocaleString("de-DE", { day:"2-digit", month:"2-digit", year:"numeric", hour:"2-digit", minute:"2-digit", second:"2-digit" });
+        try {
+            var cdRootNode2 = s(await vdcApp.getRootNodeByModel(entry.cdModelID));
+            await vdcApp.setPropertyValue(cdRootNode2, "PruefungZeitpunkt", "xs:string", editTimestamp);
+        } catch(e) {}
+        entry.timestamp = editTimestamp;
+
+        log("Prüfung \"" + entry.pruefungName + "\" aktualisiert: " + toDelete.length + " entfernt, " + toAdd.length + " hinzugefügt, " + toKeep.length + " beibehalten", "ok");
+
+    } catch(e) {
+        log("FEHLER beim Aktualisieren: " + e, "err");
+        if (e.stack) log("Stack: " + e.stack, "err");
+    }
+
+    forEachActive(function(r, c) { delete matrixState[r][c].fromHistory; });
+    editingHistoryIndex = -1;
+    editingOriginalRuns = [];
+    editingOriginalMatrixState = [];
+
+    btnRun.disabled = false;
+    btnRun.textContent = "▶ Prüfung starten";
+    btnRun.setAttribute("onclick", "executeClashRuns()");
+
+    btnSave.disabled = false;
+    btnSave.textContent = "Nur speichern";
+    btnSave.setAttribute("onclick", "saveClashRunsOnly()");
+
+    var cancelBtn = document.getElementById("btnCancelEdit");
+    if (cancelBtn) cancelBtn.remove();
+
+    clashRunIDs = entry.clashRunIDs;
+    populateHistory();
+    renderMatrix();
+    await runAuswertung();
+}
+
+// ==================================================
+// 7. AUSWERTUNG (async)
+// ==================================================
+function buildDisplayMap(runs) {
+    var map = [];
+    for (var i = 0; i < models.length; i++) map[i] = null;
+    for (var j = 0; j < runs.length; j++) {
+        var run = runs[j];
+        if (run.row >= 0 && run.row < models.length && run.kA && !map[run.row]) map[run.row] = run.kA;
+        if (run.col >= 0 && run.col < models.length && run.kB && !map[run.col]) map[run.col] = run.kB;
+    }
+    for (var k = 0; k < models.length; k++) {
+        if (!map[k]) map[k] = models[k].displayKuerzel || models[k].kuerzel;
+    }
+    return map;
+}
+
+async function runAuswertung() {
+    log("", "");
+    log("=== Auswertung wird erstellt ===", "info");
+
+    try {
+        // For each clash run, get its child elements (= clash results) directly
+        // using getContainedElements, then filter by Status property.
+        // Previous approach tried to use non-existent "cpLookupString" and "Result:Type"
+        // properties with filterByProperty, which returned no results.
+        var results = [];
+
+        for (var i = 0; i < clashRunIDs.length; i++) {
+            var run = clashRunIDs[i];
+            var total = 0;
+            var accepted = 0;
+            var ignored = 0;
+            var newCount = 0;
+
+            try {
+                // getContainedElements(id, maxDepth) returns direct children of the clash run
+                // maxDepth=1 gives us only the immediate clash results, not deeper nested items
+                var childElements = toArray(await vdcApp.getContainedElements(run.id, 1));
+
+                total = childElements.length;
+
+                if (total > 0) {
+                    // Use filterByProperty on the children to count by Status
+                    // filterByProperty pattern: space = OR, asterisk = wildcard
+                    var acceptedList = toArray(await vdcApp.filterByProperty(
+                        childElements, "Status", "xs:string", "Accepted", false, "cd"
+                    ));
+                    var resolvedList = toArray(await vdcApp.filterByProperty(
+                        childElements, "Status", "xs:string", "Resolved", false, "cd"
+                    ));
+                    var ignoredList = toArray(await vdcApp.filterByProperty(
+                        childElements, "Status", "xs:string", "Ignored", false, "cd"
+                    ));
+                    var newList = toArray(await vdcApp.filterByProperty(
+                        childElements, "Status", "xs:string", "New", false, "cd"
+                    ));
+                    accepted = acceptedList.length + resolvedList.length;
+                    ignored = ignoredList.length;
+                    newCount = newList.length;
+                }
+
+                log("  [" + (i+1) + "] " + run.category + ": " +
+                    total + " gesamt, " + accepted + " akzeptiert, " +
+                    ignored + " ignoriert, " + newCount + " neu", "info");
+
+            } catch(e) {
+                log("  Fehler bei " + run.category + ": " + e, "warn");
+                total = -1;
+            }
+
+            var notAccepted = (total >= 0) ? total - accepted - ignored : 0;
+            results.push({
+                type: run.type,
+                category: run.category,
+                runName: run.runName,
+                kA: run.kA,
+                kB: run.kB,
+                row: run.row,
+                col: run.col,
+                total: total,
+                accepted: accepted,
+                ignored: ignored,
+                notAccepted: notAccepted
+            });
+        }
+
+        // Step 6: Build Auswertung matrix
+        // Store results globally for showClashList navigation
+        var n = models.length;
+        auswertungResults = [];
+        var matrixResults = [];
+        for (var mr = 0; mr < n; mr++) {
+            matrixResults[mr] = [];
+            for (var mc = 0; mc < n; mc++) {
+                matrixResults[mr][mc] = null;
+            }
+        }
+        for (var mi = 0; mi < results.length; mi++) {
+            matrixResults[results[mi].row][results[mi].col] = results[mi];
+        }
+        auswertungResults = matrixResults;
+
+        var displayMap = buildDisplayMap(clashRunIDs);
+
+        // Use same cell dimensions as the Prüfmatrix (42px cells)
+        var cellSize = "width:42px; height:42px; min-width:42px;";
+
+        var html = '<div style="overflow:auto; max-height:500px;">';
+        html += '<table style="border-collapse:collapse; font-size:11px;">';
+
+        // Column headers: Kürzel group
+        html += '<tr><th colspan="3" rowspan="2" style="border:1px solid #e5e7eb; background:#f8f9fb; min-width:160px;"></th>';
+        var ci = 0;
+        while (ci < n) {
+            var cspan = 1;
+            while (ci + cspan < n && displayMap[ci + cspan] === displayMap[ci]) cspan++;
+            html += '<th colspan="' + cspan + '" style="background:#e8edf1; color:#4a5d6b; font-size:11px; border:1px solid #e5e7eb; padding:4px;">' + displayMap[ci] + '</th>';
+            ci += cspan;
+        }
+        html += '</tr><tr>';
+        for (var h = 0; h < n; h++) {
+            html += '<th style="border:1px solid #e5e7eb; background:#f8f9fb; padding:4px; font-size:10px; ' + cellSize + '">' + models[h].nr + '</th>';
+        }
+        html += '</tr>';
+
+        // Data rows
+        var totalAll = 0, totalAccepted = 0, totalNotAccepted = 0;
+        var rIdx = 0;
+        while (rIdx < n) {
+            var groupStart = rIdx;
+            var groupSpan = 1;
+            while (groupStart + groupSpan < n && displayMap[groupStart + groupSpan] === displayMap[groupStart]) groupSpan++;
+
+            for (var g = 0; g < groupSpan; g++) {
+                var r = groupStart + g;
+                html += '<tr>';
+                if (g === 0) {
+                    html += '<td rowspan="' + groupSpan + '" style="border:1px solid #e5e7eb; padding:3px 6px; font-weight:700; color:#4a5d6b; background:#e8edf1; text-align:center;">' + displayMap[r] + '</td>';
+                }
+                html += '<td style="border:1px solid #e5e7eb; padding:3px 6px; font-size:10px; color:#6b7280; white-space:nowrap; background:#f8f9fb; height:42px;">' + models[r].fmDetail + '</td>';
+                html += '<td style="border:1px solid #e5e7eb; padding:3px 4px; text-align:center; font-size:10px; background:#f8f9fb; ' + cellSize + '">' + models[r].nr + '</td>';
+
+                for (var c = 0; c < n; c++) {
+                    var cr = matrixResults[r][c];
+                    if (cr !== null) {
+                        totalAll += cr.total;
+                        totalAccepted += cr.accepted;
+                        totalNotAccepted += cr.notAccepted;
+                        var bgColor, textColor;
+                        if (cr.total === 0) {
+                            bgColor = "#d1fae5"; textColor = "#065f46";
+                        } else if (cr.notAccepted > 0) {
+                            bgColor = "#fef08a"; textColor = "#713f12";
+                        } else {
+                            bgColor = "#d1fae5"; textColor = "#065f46";
+                        }
+                        var cellText = cr.accepted + " / " + cr.total;
+                        // Click navigates to the clash run via showClashList
+                        html += '<td style="border:1px solid #e5e7eb; padding:2px; text-align:center; font-size:10px; font-weight:600; background:' + bgColor + '; color:' + textColor + '; cursor:pointer; ' + cellSize + '" title="Gesamt: ' + cr.total + '&#10;Akzeptiert: ' + cr.accepted + '&#10;Ignoriert: ' + cr.ignored + '&#10;Offen: ' + cr.notAccepted + '&#10;&#10;Klick = Kollision anzeigen" onclick="showClashRun(' + r + ',' + c + ')">' + cellText + '</td>';
+                    } else if (c < r) {
+                        html += '<td style="border-color:transparent; background:#ffffff; ' + cellSize + '"></td>';
+                    } else {
+                        html += '<td style="border:1px solid #e5e7eb; background:#f5f5f5; ' + cellSize + '"></td>';
+                    }
+                }
+                html += '</tr>';
+            }
+            rIdx += groupSpan;
+        }
+        html += '</table></div>';
+
+        html += '<div style="margin-top:4px; padding:8px 12px; background:#f8f9fb; border-radius:6px; font-size:12px; display:flex; gap:20px;">';
+        html += '<span><strong>Gesamt:</strong> ' + totalAll + '</span>';
+        html += '<span style="color:#16a34a;"><strong>Akzeptiert:</strong> ' + totalAccepted + '</span>';
+        html += '<span style="color:#dc2626;"><strong>Offen:</strong> ' + totalNotAccepted + '</span>';
+        html += '</div>';
+
+        document.getElementById("auswertungBody").innerHTML = html;
+        show("auswertungPanel");
+        log("Auswertung erstellt: " + results.length + " Prüfläufe, " + totalAll + " Kollisionen gesamt", "ok");
+        log("Tipp: Klick auf eine Zelle zeigt die Kollision im 3D-Viewer an.", "info");
+
+    } catch(e) {
+        log("FEHLER bei Auswertung: " + e, "err");
+        if (e.stack) log("Stack: " + e.stack, "err");
+    }
+
+}
+
+// ==================================================
+// 7. EINZELAUSWERTUNG - DETAIL PANEL
+// ==================================================
+async function showClashRun(row, col) {
+    // Find the corresponding clash run for this matrix cell
+    var run = null;
+    for (var i = 0; i < clashRunIDs.length; i++) {
+        if (clashRunIDs[i].row === row && clashRunIDs[i].col === col) {
+            run = clashRunIDs[i];
+            break;
+        }
+    }
+    if (!run) {
+        log("Kein Prüflauf für Zelle [" + row + "," + col + "] gefunden.", "warn");
+        return;
+    }
+
+    log("Lade Einzelauswertung für " + run.category + "...", "info");
+    detailCurrentRow = row;
+    detailCurrentCol = col;
+
+    try {
+        // Get all clash results (children) of this run
+        var childElements = toArray(await vdcApp.getContainedElements(run.id, 1));
+
+        // Build header title
+        var titleText = "Auswertung des Prüfcontainers " + models[row].kuerzel + " - " + models[col].kuerzel;
+        document.getElementById("detailTitle").textContent = "Einzelauswertung";
+        document.getElementById("detailHeaderBar").textContent = titleText;
+
+        // For each clash, get: cpName, Status, Kollisionsnachbereitung, comments
+        detailClashes = [];
+        var clashCounter = 0;
+        var inclusionCounter = 0;
+
+        for (var ci = 0; ci < childElements.length; ci++) {
+            var cid = s(childElements[ci]);
+            var clashName = "";
+            var clashStatus = "";
+            var nachbearbeitung = "";
+            var comments = "";
+
+            try {
+                clashName = s(await vdcApp.getPropertyValue(cid, "cpName", "xs:string"));
+            } catch(e) {}
+            try {
+                clashStatus = s(await vdcApp.getPropertyValue(cid, "Status", "xs:string"));
+            } catch(e) {}
+            try {
+                nachbearbeitung = s(await vdcApp.getPropertyValue(cid, "Kollisionsnachbereitung", "xs:string"));
+            } catch(e) {}
+            try {
+                comments = s(await vdcApp.getPropertyValue(cid, "Comment", "xs:string"));
+            } catch(e) {}
+
+            // Detect type from cpName: INCLUSION or CLASH
+            var isInclusion = clashName.toUpperCase().indexOf("INCLUSION") >= 0;
+            var typePrefix = "";
+            if (isInclusion) {
+                inclusionCounter++;
+                typePrefix = "INCLUSION [" + inclusionCounter + "]";
+            } else {
+                clashCounter++;
+                typePrefix = "CLASH [" + clashCounter + "]";
+            }
+
+            // Build display name: "TYPE [n]: Nachbearbeitung" or just "TYPE [n]: cpName"
+            var displayName = typePrefix;
+            if (nachbearbeitung) {
+                displayName = typePrefix + ": " + nachbearbeitung;
+            } else if (clashName) {
+                displayName = typePrefix + ": " + clashName;
+            }
+
+            detailClashes.push({
+                id: cid,
+                index: ci + 1,
+                name: clashName,
+                displayName: displayName,
+                status: clashStatus,
+                nachbearbeitung: nachbearbeitung,
+                comments: comments,
+                checked: false
+            });
+        }
+
+        // Count statuses (exclude Ignored for the "not accepted" count)
+        var total = detailClashes.length;
+        var accepted = 0;
+        var ignored = 0;
+        var notAccepted = 0;
+        for (var si = 0; si < detailClashes.length; si++) {
+            var st = detailClashes[si].status;
+            if (st === "Accepted" || st === "Resolved" || st === "Resolved, Accepted") {
+                accepted++;
+            } else if (st === "Ignored") {
+                ignored++;
+            }
+        }
+        notAccepted = total - accepted - ignored;
+        var pctAccepted = total > 0 ? Math.round((accepted / (total - ignored)) * 1000) / 10 : 0;
+        if (total - ignored === 0) pctAccepted = 100;
+
+        // Build summary (left side)
+        var sumHtml = '<div style="font-size:11px; color:#6b7280; margin-bottom:4px;">Auswertung fertiggestellt</div>';
+        sumHtml += '<table style="border-collapse:collapse; width:100%; font-size:12px;">';
+        sumHtml += '<tr style="background:#e8edf1;">';
+        sumHtml += '<th style="text-align:left; padding:5px 8px; font-size:11px; color:#4a5d6b; border:1px solid #e5e7eb; width:auto; height:auto; min-width:auto;">Prüflauf</th>';
+        sumHtml += '<th style="text-align:center; padding:5px 8px; font-size:11px; color:#4a5d6b; border:1px solid #e5e7eb; width:auto; height:auto; min-width:auto;">Akzeptiert</th>';
+        sumHtml += '<th style="text-align:center; padding:5px 8px; font-size:11px; color:#4a5d6b; border:1px solid #e5e7eb; width:auto; height:auto; min-width:auto;">Nicht akzeptiert</th>';
+        sumHtml += '<th style="text-align:center; padding:5px 8px; font-size:11px; color:#4a5d6b; border:1px solid #e5e7eb; width:auto; height:auto; min-width:auto;"></th>';
+        sumHtml += '</tr>';
+        sumHtml += '<tr>';
+        sumHtml += '<td style="padding:5px 8px; border:1px solid #e5e7eb; font-weight:500; width:auto; height:auto; min-width:auto;">' + run.runName + '</td>';
+        sumHtml += '<td style="padding:5px 8px; border:1px solid #e5e7eb; text-align:center; width:auto; height:auto; min-width:auto;"><span style="background:#16a34a; color:white; border-radius:10px; padding:2px 10px; font-weight:600; font-size:11px;">' + accepted + '</span></td>';
+        sumHtml += '<td style="padding:5px 8px; border:1px solid #e5e7eb; text-align:center; width:auto; height:auto; min-width:auto;"><span style="background:#dc2626; color:white; border-radius:10px; padding:2px 10px; font-weight:600; font-size:11px;">' + notAccepted + '</span></td>';
+        sumHtml += '<td style="padding:5px 8px; border:1px solid #e5e7eb; text-align:center; font-size:11px; color:#6b7280; width:auto; height:auto; min-width:auto;">' + pctAccepted + '%</td>';
+        sumHtml += '</tr>';
+        sumHtml += '</table>';
+        document.getElementById("detailSummary").innerHTML = sumHtml;
+
+        // Build donut chart (SVG)
+        var chartSize = 100;
+        var radius = 40;
+        var stroke = 14;
+        var cx = chartSize / 2;
+        var cy = chartSize / 2;
+        var circumference = 2 * Math.PI * radius;
+        var greenArc = (pctAccepted / 100) * circumference;
+        var redArc = circumference - greenArc;
+
+        var chartHtml = '<svg width="' + chartSize + '" height="' + chartSize + '" viewBox="0 0 ' + chartSize + ' ' + chartSize + '">';
+        // Red background circle (not accepted)
+        chartHtml += '<circle cx="' + cx + '" cy="' + cy + '" r="' + radius + '" fill="none" stroke="#dc2626" stroke-width="' + stroke + '"/>';
+        // Green arc overlay (accepted) - starts at top
+        if (pctAccepted > 0) {
+            chartHtml += '<circle cx="' + cx + '" cy="' + cy + '" r="' + radius + '" fill="none" stroke="#16a34a" stroke-width="' + stroke + '" stroke-dasharray="' + greenArc + ' ' + redArc + '" stroke-dashoffset="' + (circumference * 0.25) + '" transform="rotate(-90 ' + cx + ' ' + cy + ')"/>';
+        }
+        // Center text
+        chartHtml += '<text x="' + cx + '" y="' + (cy + 1) + '" text-anchor="middle" dominant-baseline="middle" font-size="13" font-weight="700" fill="#334155">' + pctAccepted + '%</text>';
+        chartHtml += '</svg>';
+        document.getElementById("detailChart").innerHTML = chartHtml;
+
+        // Build clash list table
+        var listHtml = '<table class="clash-table">';
+        listHtml += '<tr><th class="cb-cell"><input type="checkbox" onclick="toggleAllDetailClashes(this.checked)" /></th>';
+        listHtml += '<th>Kollision</th><th style="width:100px;">Status</th><th>Kommentar</th></tr>';
+
+        for (var di = 0; di < detailClashes.length; di++) {
+            var dc = detailClashes[di];
+            // Skip Ignored clashes (per the requirement: show non-ignored)
+            var statusCls = getStatusClass(dc.status);
+            listHtml += '<tr ondblclick="showSingleClash(' + di + ')" id="detailRow_' + di + '">';
+            listHtml += '<td class="cb-cell"><input type="checkbox" onclick="event.stopPropagation(); toggleDetailClash(' + di + ', this.checked)" id="detailCb_' + di + '" /></td>';
+            listHtml += '<td style="font-weight:500;">' + dc.displayName + '</td>';
+            listHtml += '<td><span class="status-badge ' + statusCls + '">' + (dc.status || "-") + '</span></td>';
+            listHtml += '<td style="color:#6b7280; font-size:11px;">' + (dc.comments || "") + '</td>';
+            listHtml += '</tr>';
+        }
+        listHtml += '</table>';
+
+        document.getElementById("detailClashListWrap").innerHTML = listHtml;
+
+        show("detailPanel");
+
+        log("Einzelauswertung geladen: " + total + " Kollisionen, " + accepted + " akzeptiert, " + notAccepted + " offen, " + ignored + " ignoriert", "ok");
+
+    } catch(e) {
+        log("FEHLER bei Einzelauswertung: " + e, "err");
+        if (e.stack) log("Stack: " + e.stack, "err");
+    }
+}
+
+function getStatusClass(status) {
+    if (!status) return "";
+    var s = status.toLowerCase();
+    if (s === "new") return "status-new";
+    if (s === "open") return "status-open";
+    if (s === "assigned") return "status-assigned";
+    if (s === "critical") return "status-critical";
+    if (s === "resolved" || s === "resolved, accepted") return "status-resolved";
+    if (s === "accepted") return "status-accepted";
+    if (s === "ignored") return "status-ignored";
+    return "";
+}
+
+function selectDetailRow(event, idx) {
+    if (event.target.tagName === "INPUT") return;
+    var cb = document.getElementById("detailCb_" + idx);
+    cb.checked = !cb.checked;
+    toggleDetailClash(idx, cb.checked);
+}
+
+function toggleDetailClash(idx, checked) {
+    detailClashes[idx].checked = checked;
+    var row = document.getElementById("detailRow_" + idx);
+    if (checked) row.classList.add("selected");
+    else row.classList.remove("selected");
+}
+
+function toggleAllDetailClashes(checked) {
+    for (var i = 0; i < detailClashes.length; i++) {
+        detailClashes[i].checked = checked;
+        var cb = document.getElementById("detailCb_" + i);
+        if (cb) cb.checked = checked;
+        var row = document.getElementById("detailRow_" + i);
+        if (row) {
+            if (checked) row.classList.add("selected");
+            else row.classList.remove("selected");
+        }
+    }
+}
+
+// Double-click on a single clash: show in 3D viewer
+async function showSingleClash(idx) {
+    var dc = detailClashes[idx];
+    if (!dc) return;
+    try {
+        var ok = await vdcApp.showClashList([dc.id]);
+        if (ok) {
+            log("Kollision angezeigt: " + dc.displayName, "ok");
+        } else {
+            log("showClashList fehlgeschlagen für " + dc.displayName, "warn");
+        }
+    } catch(e) {
+        log("Fehler beim Anzeigen der Kollision: " + e, "err");
+    }
+}
+
+// Apply status and/or comment to checked clashes, then refresh everything
+async function applyStatusToSelected() {
+    var newStatus = document.getElementById("detailStatusSelect").value;
+    var commentText = document.getElementById("detailCommentInput").value;
+    var selected = detailClashes.filter(function(dc) { return dc.checked; });
+
+    if (selected.length === 0) {
+        log("Keine Kollisionen ausgewählt.", "warn");
+        return;
+    }
+    if (!newStatus && !commentText) {
+        log("Bitte einen Status oder Kommentar eingeben.", "warn");
+        return;
+    }
+
+    var actions = [];
+    if (commentText) actions.push("Kommentar");
+    if (newStatus) actions.push("Status '" + newStatus + "'");
+    log("Setze " + actions.join(" + ") + " für " + selected.length + " Kollisionen...", "info");
+
+    var okCount = 0;
+    for (var i = 0; i < selected.length; i++) {
+        try {
+            var ok = true;
+            if (newStatus) {
+                var ret = await vdcApp.setPropertyValue(selected[i].id, "Status", "xs:string", newStatus);
+                if (ret === 1) {
+                    selected[i].status = newStatus;
+                } else {
+                    ok = false;
+                    log("  Status-Fehler bei " + selected[i].displayName + " (Code: " + ret + ")", "warn");
+                }
+            }
+            if (commentText) {
+                var ret2 = await vdcApp.setPropertyValue(selected[i].id, "Comment", "xs:string", commentText);
+                if (ret2 === 1) {
+                    selected[i].comments = commentText;
+                } else {
+                    ok = false;
+                    log("  Kommentar-Fehler bei " + selected[i].displayName + " (Code: " + ret2 + ")", "warn");
+                }
+            }
+            if (ok) okCount++;
+        } catch(e) {
+            log("  Fehler bei " + selected[i].displayName + ": " + e, "err");
+        }
+    }
+    log("Aktualisiert: " + okCount + " / " + selected.length, okCount === selected.length ? "ok" : "warn");
+
+    // Re-run the full Auswertung to update the result matrix
+    log("Aktualisiere Auswertung...", "info");
+    await runAuswertung();
+
+    // Re-open the detail panel for the same cell
+    if (detailCurrentRow >= 0 && detailCurrentCol >= 0) {
+        await showClashRun(detailCurrentRow, detailCurrentCol);
+    }
+}
+
+// PDF Export — real PDF with viewport screenshots (SPBIM4DESITE reference design with Emch+Berger logo)
+async function exportDetailPDF() {
+    var btn = document.querySelector('#detailFooter .btn-success');
+    try {
+        var filePath = s(await vdcApp.showSaveFileDialog(
+            "Einzelauswertung als PDF exportieren",
+            "",
+            "PDF-Datei (*.pdf);; Alle Dateien (*.*)"
+        ));
+        if (!filePath || filePath.length === 0) {
+            log("PDF-Export abgebrochen.", "info");
+            return;
+        }
+        if (!filePath.toLowerCase().endsWith(".pdf")) filePath += ".pdf";
+
+        // Disable button and show progress
+        if (btn) { btn.disabled = true; btn.textContent = "Exportiere... (0/" + detailClashes.length + ")"; }
+
+        // Capture viewport screenshot for each clash
+        for (var i = 0; i < detailClashes.length; i++) {
+            var dc = detailClashes[i];
+            if (btn) btn.textContent = "Exportiere... (" + (i + 1) + "/" + detailClashes.length + ")";
+            try {
+                await vdcApp.showClashList([dc.id]);
+                await new Promise(function(r) { setTimeout(r, 300); });
+                dc.screenshot = s(await vdcApp.getCurrentViewAsImage(640, 480));
+            } catch(e) {
+                dc.screenshot = "";
+                log("Screenshot-Fehler bei " + dc.displayName + ": " + e, "warn");
+            }
+        }
+
+        // Gather metadata
+        var userName = "";
+        var projectName = "";
+        try { userName = s(await vdcApp.getUserName()); } catch(e) {}
+        try { projectName = s(await vdcApp.getProjectName()); } catch(e) {}
+
+        var headerText = document.getElementById("detailHeaderBar").textContent || "";
+        var now = new Date();
+        var pruefDatum = now.toLocaleDateString("de-DE", { day:"2-digit", month:"2-digit", year:"numeric" });
+
+        // Find which history entry this belongs to, for sequential number
+        var pruefNr = 1;
+        for (var hi = 0; hi < runHistory.length; hi++) {
+            if (runHistory[hi].clashRunIDs === clashRunIDs) {
+                pruefNr = hi + 1;
+                break;
+            }
+        }
+
+        // Gather summary stats
+        var total = detailClashes.length;
+        var accepted = 0;
+        var ignored = 0;
+        for (var si = 0; si < detailClashes.length; si++) {
+            var st = detailClashes[si].status;
+            if (st === "Accepted" || st === "Resolved" || st === "Resolved, Accepted") accepted++;
+            else if (st === "Ignored") ignored++;
+        }
+        var notAccepted = total - accepted - ignored;
+        var pctAccepted = total > 0 ? Math.round((accepted / (total - ignored)) * 1000) / 10 : 0;
+        if (total - ignored === 0) pctAccepted = 100;
+
+        // Build Gesamtauswertung rows from all clashRunIDs grouped by type & Gewerk
+        var fachRuns = [];
+        var koordRuns = [];
+        for (var gi = 0; gi < clashRunIDs.length; gi++) {
+            var gr = clashRunIDs[gi];
+            if (gr.type === "F") fachRuns.push(gr);
+            else koordRuns.push(gr);
+        }
+
+        function getRunResult(run) {
+            if (auswertungResults && auswertungResults[run.row] && auswertungResults[run.row][run.col]) {
+                return auswertungResults[run.row][run.col];
+            }
+            return null;
+        }
+
+        function groupByGewerk(runs) {
+            var groups = {};
+            var order = [];
+            for (var k = 0; k < runs.length; k++) {
+                var key = runs[k].type === "F" ? runs[k].kA : (runs[k].kA + " - " + runs[k].kB);
+                if (!groups[key]) { groups[key] = []; order.push(key); }
+                groups[key].push(runs[k]);
+            }
+            return { groups: groups, order: order };
+        }
+
+        function buildGroupRows(runs, categoryLabel) {
+            var rows = "";
+            if (runs.length === 0) return rows;
+            var grouped = groupByGewerk(runs);
+            rows += '<tr><td colspan="2" style="background:#e8edf3; font-weight:bold; color:#4a5d6b; padding:4px 8px; border:1px solid #e5e7eb; font-size:8pt;">' + categoryLabel + '</td></tr>';
+            for (var gi = 0; gi < grouped.order.length; gi++) {
+                var gewerkName = grouped.order[gi];
+                var gewerkRuns = grouped.groups[gewerkName];
+                rows += '<tr><td colspan="2" style="background:#f0f4fa; font-weight:bold; color:#1a1a1a; padding:3px 8px 3px 16px; border:1px solid #dde3ed; font-size:8pt;">' + gewerkName + '</td></tr>';
+                for (var ri = 0; ri < gewerkRuns.length; ri++) {
+                    var run = gewerkRuns[ri];
+                    var res = getRunResult(run);
+                    var runTotal = res ? res.total : 0;
+                    var runAccepted = res ? res.accepted : 0;
+                    var runNotAccepted = res ? res.notAccepted : 0;
+                    var runPct = runTotal > 0 ? Math.round((runAccepted / runTotal) * 1000) / 10 : 0;
+                    if (runTotal === 0) runPct = 100;
+                    var statusText = '<span style="color:#6b7280;">' + runTotal + ' gesamt</span>';
+                    if (runNotAccepted > 0) {
+                        statusText += ' &nbsp; <span style="color:#dc2626; font-weight:bold;">' + runNotAccepted + ' offen</span>';
+                    }
+                    statusText += ' &nbsp; <span style="color:#16a34a;">' + runAccepted + ' akz.</span>';
+                    statusText += ' &nbsp; <b>' + runPct + '%</b>';
+                    rows += '<tr>';
+                    rows += '<td style="padding:2px 8px 2px 30px; border:1px solid #e5e7eb; color:#1a1a1a; font-size:7pt;">' + run.runName + '</td>';
+                    rows += '<td style="padding:2px 8px; border:1px solid #e5e7eb; text-align:right; font-size:7pt;">' + statusText + '</td>';
+                    rows += '</tr>';
+                }
+            }
+            return rows;
+        }
+
+        // Build HTML template for PDF
+        // Use viewport meta to constrain renderer width + zoom for proper A4 scaling
+        var html = '<html><head>';
+        html += '<meta name="viewport" content="width=700" />';
+        html += '<style>';
+        html += 'body { font-family: Arial, sans-serif; font-size: 11pt; margin: 0; padding: 10px; color: #333; zoom: 3; -webkit-transform: scale(1); }';
+        html += 'table { border-collapse: collapse; }';
+        html += '</style></head><body>';
+
+        // HEADER BAR with logo
+        html += '<table width="100%" cellpadding="8" cellspacing="0" style="background:#c8d5de; margin-bottom:12px;">';
+        html += '<tr>';
+        html += '<td style="color:#1a1a1a; font-size:16pt; font-weight:bold; vertical-align:middle;">';
+        html += 'Geometrische Qualit&auml;tssicherung</td>';
+        html += '<td style="text-align:right; vertical-align:middle;" width="80">';
+        html += '<img src="data:image/gif;base64,' + emchBergerLogoBase64 + '" width="65" height="65" />';
+        html += '</td></tr></table>';
+
+        // TITLE
+        html += '<p style="font-size:15pt; font-weight:bold; color:#1a1a2e; margin:8px 0 10px 0;">Export Auswertung der Pr&uuml;fergebnisse</p>';
+
+        // ALLGEMEINE ANGABEN
+        html += '<table width="100%" cellpadding="5" cellspacing="0" style="background:#f8f9fb; border:1px solid #e5e7eb; margin-bottom:12px;">';
+        html += '<tr><td colspan="2" style="font-size:12pt; font-weight:bold; color:#4a5d6b; padding-bottom:4px;">Allgemeine Angaben:</td></tr>';
+        html += '<tr><td style="font-weight:bold; color:#1a1a1a; width:140px;">Gepr&uuml;ftes Modell:</td><td>' + (projectName || headerText) + '</td></tr>';
+        html += '<tr><td style="font-weight:bold; color:#1a1a1a;">Pr&uuml;fer:</td><td>' + (userName || "-") + '</td></tr>';
+        html += '<tr><td style="font-weight:bold; color:#1a1a1a;">Nr. des Pr&uuml;flaufes:</td><td>' + pruefNr + '</td></tr>';
+        html += '<tr><td style="font-weight:bold; color:#1a1a1a;">Pr&uuml;fdatum:</td><td>' + pruefDatum + '</td></tr>';
+        html += '</table>';
+
+        // GESAMTAUSWERTUNG TABLE
+        html += '<p style="font-size:10pt; font-weight:bold; color:#4a5d6b; margin:8px 0 4px 0;">Gesamtauswertung:</p>';
+        html += '<table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">';
+        html += '<tr><th style="background:#c8d5de; color:#1a1a1a; padding:4px 8px; text-align:left; border:1px solid #c8d5de; font-size:8pt;">Pr&uuml;flauf</th>';
+        html += '<th style="background:#c8d5de; color:#1a1a1a; padding:4px 8px; text-align:right; border:1px solid #c8d5de; font-size:8pt;">Pr&uuml;fstatus</th></tr>';
+        html += buildGroupRows(fachRuns, "Konsistenz innerhalb eines Gewerks");
+        html += buildGroupRows(koordRuns, "Konsistenz zwischen zwei Gewerken");
+        html += '</table>';
+
+        // PRÜFLAUF INFO (model vs model)
+        html += '<div style="page-break-before:always;"></div>';
+        html += '<table width="100%" cellpadding="8" cellspacing="0" style="background:#c8d5de; margin-bottom:8px;">';
+        html += '<tr>';
+        html += '<td style="color:#1a1a1a; font-size:16pt; font-weight:bold; vertical-align:middle;">';
+        html += 'Geometrische Qualit&auml;tssicherung</td>';
+        html += '<td style="text-align:right; vertical-align:middle;" width="80">';
+        html += '<img src="data:image/gif;base64,' + emchBergerLogoBase64 + '" width="65" height="65" />';
+        html += '</td></tr></table>';
+        html += '<p style="font-size:11pt; font-weight:bold; color:#4a5d6b; margin:6px 0 4px 0;">Pr&uuml;flauf: Einzelauswertung</p>';
+        var rowModelName = (detailCurrentRow >= 0 && models[detailCurrentRow]) ? models[detailCurrentRow].fileName : "-";
+        var colModelName = (detailCurrentCol >= 0 && models[detailCurrentCol]) ? models[detailCurrentCol].fileName : "-";
+        html += '<table width="100%" cellpadding="4" cellspacing="0" style="background:#f8f9fb; border:1px solid #e5e7eb; margin-bottom:10px; font-size:8pt;">';
+        if (detailCurrentRow === detailCurrentCol) {
+            html += '<tr><td style="font-weight:bold; color:#1a1a1a; width:120px;">Modell (Fachpr&uuml;fung):</td><td>' + rowModelName + '</td></tr>';
+        } else {
+            html += '<tr><td style="font-weight:bold; color:#1a1a1a; width:120px;">Modell Links:</td><td>' + rowModelName + '</td></tr>';
+            html += '<tr><td style="font-weight:bold; color:#1a1a1a;">Modell Rechts:</td><td>' + colModelName + '</td></tr>';
+        }
+        html += '<tr><td style="font-weight:bold; color:#1a1a1a;">Gesamt:</td><td>' + total + ' Kollisionen &nbsp; | &nbsp; <span style="color:#16a34a;">' + accepted + ' akzeptiert</span> &nbsp; | &nbsp; <span style="color:#dc2626;">' + notAccepted + ' offen</span> &nbsp; | &nbsp; ' + ignored + ' ignoriert</td></tr>';
+        html += '</table>';
+
+        // PER-CLASH DETAIL PAGES (2 per page)
+        for (var pi = 0; pi < detailClashes.length; pi++) {
+            var pc = detailClashes[pi];
+            // Page break every 2 clashes
+            if (pi > 0 && pi % 2 === 0) {
+                html += '<div style="page-break-before:always;"></div>';
+            }
+
+            var stColor = "#64748b"; var stBg = "#f1f5f9";
+            if (pc.status) {
+                var sl = pc.status.toLowerCase();
+                if (sl === "new") { stBg = "#e8edf1"; stColor = "#4a5d6b"; }
+                else if (sl === "accepted") { stBg = "#d1fae5"; stColor = "#065f46"; }
+                else if (sl === "resolved" || sl === "resolved, accepted") { stBg = "#d1fae5"; stColor = "#065f46"; }
+                else if (sl === "critical") { stBg = "#fee2e2"; stColor = "#991b1b"; }
+                else if (sl === "open" || sl === "assigned") { stBg = "#fef3c7"; stColor = "#92400e"; }
+                else if (sl === "ignored") { stBg = "#f1f5f9"; stColor = "#64748b"; }
+            }
+
+            html += '<table width="100%" cellpadding="5" cellspacing="0" style="border:1px solid #dde3ed; margin-bottom:8px;">';
+            html += '<tr><td style="font-weight:bold; font-size:9pt; color:#1a1a2e; border-bottom:1px solid #e5e7eb; padding:3px 5px;">' + pc.displayName + '</td></tr>';
+            html += '<tr><td style="color:#1a1a1a; font-size:7pt; padding:2px 5px;">';
+            html += 'Status: <span style="background:' + stBg + '; color:' + stColor + '; padding:1px 4px; font-weight:bold;">' + (pc.status || "-") + '</span>';
+            if (pc.comments) html += ' &nbsp;&nbsp; Kommentar: ' + pc.comments;
+            if (pc.nachbearbeitung) html += ' &nbsp;&nbsp; Nachbearbeitung: ' + pc.nachbearbeitung;
+            html += '</td></tr>';
+            if (pc.screenshot) {
+                html += '<tr><td style="padding:3px 5px;"><img src="data:image/png;base64,' + pc.screenshot + '" width="480" style="border:1px solid #ddd;" /></td></tr>';
+            }
+            html += '</table>';
+        }
+
+        html += '</body></html>';
+
+        // Write HTML template to a temporary file (createPdfByTemplate expects a file path)
+        var templatePath = filePath.replace(/\.pdf$/i, "_template.html");
+        await vdcApp.writeFile(templatePath, html, "UTF-8");
+        log("HTML-Vorlage geschrieben: " + templatePath, "info");
+
+        // Set paper size to A4 portrait before PDF creation
+        try { await vdcApp.setPaperSize(0); } catch(e) {} // 0 = A4
+        try { await vdcApp.setOrientation(0); } catch(e) {} // 0 = Portrait
+        try { await vdcApp.setPageMargins(10, 10, 10, 10); } catch(e) {} // 10mm margins
+
+        // Create PDF from template file
+        var result = await vdcApp.createPdfByTemplate(templatePath, filePath, {}, false);
+        if (result && result.toLowerCase && result.toLowerCase() === "error") {
+            log("PDF-Erstellung fehlgeschlagen. HTML-Vorlage gespeichert unter: " + templatePath, "err");
+        } else {
+            log("PDF exportiert: " + filePath, "ok");
+        }
+
+    } catch(e) {
+        log("FEHLER beim PDF-Export: " + e, "err");
+    }
+
+    // Re-enable button
+    if (btn) { btn.disabled = false; btn.textContent = "PDF Export"; }
+}
+
+// ==================================================
+// 8. EXPORT MATRIX AS CSV
+// ==================================================
+async function exportMatrix() {
+    if (models.length === 0) {
+        log("Keine Modelle geladen, Export nicht möglich.", "warn");
+        return;
+    }
+
+    try {
+        var sep = ";";
+        var lines = [];
+
+        // Header row 1: empty columns + Kürzel
+        var header1 = ["Kürzel", "Fachmodell", "Nr"];
+        for (var h = 0; h < models.length; h++) {
+            header1.push(models[h].kuerzel);
+        }
+        lines.push(header1.join(sep));
+
+        // Header row 2: empty columns + Nr
+        var header2 = ["", "", ""];
+        for (var h2 = 0; h2 < models.length; h2++) {
+            header2.push(models[h2].nr);
+        }
+        lines.push(header2.join(sep));
+
+        // Data rows
+        for (var r = 0; r < models.length; r++) {
+            var row = [models[r].kuerzel, models[r].fmDetail, models[r].nr];
+            for (var c = 0; c < models.length; c++) {
+                var cell = matrixState[r] && matrixState[r][c];
+                if (cell && (cell.type === "F" || cell.type === "K")) {
+                    // If Auswertung data exists, export results
+                    if (auswertungResults.length > 0 && auswertungResults[r] && auswertungResults[r][c]) {
+                        var cr = auswertungResults[r][c];
+                        row.push(cr.accepted + "/" + cr.total);
+                    } else {
+                        row.push(cell.checked ? cell.type : "-");
+                    }
+                } else {
+                    row.push("");
+                }
+            }
+            lines.push(row.join(sep));
+        }
+
+        var csvContent = lines.join("\r\n");
+
+        // Use showSaveFileDialog to let user choose location
+        var filePath = s(await vdcApp.showSaveFileDialog(
+            "Kollisionsmatrix exportieren",
+            "",
+            "CSV-Datei (*.csv);; Alle Dateien (*.*)"
+        ));
+
+        if (filePath && filePath.length > 0) {
+            // Ensure .csv extension
+            if (!filePath.toLowerCase().endsWith(".csv")) {
+                filePath += ".csv";
+            }
+            var ok = await vdcApp.writeFile(filePath, csvContent, "UTF-8");
+            if (ok) {
+                log("Matrix exportiert: " + filePath, "ok");
+            } else {
+                log("Fehler beim Schreiben der Datei.", "err");
+            }
+        } else {
+            log("Export abgebrochen.", "info");
+        }
+    } catch(e) {
+        log("FEHLER beim Export: " + e, "err");
+    }
+}
+
+// ==================================================
+// NAVIGATION
+// ==================================================
+function navigateBack() {
+    document.body.classList.remove('entering');
+    document.body.classList.add('exiting');
+    setTimeout(function() { window.location.href = "../../index.html"; }, 500);
+}
+
+// ==================================================
+// CONTAINER SETTINGS
+// ==================================================
+function populateContainerDropdown() {
+    var sel = document.getElementById("containerSelect");
+    sel.innerHTML = '<option value="">-- Alle Container --</option>';
+    for (var i = 0; i < plannedRuns.length; i++) {
+        var run = plannedRuns[i];
+        var opt = document.createElement("option");
+        opt.value = run.key;
+        opt.textContent = run.category + " - " + run.runName;
+        sel.appendChild(opt);
+    }
+}
+
+function loadContainerSettings(key) {
+    var s = key ? (containerSettings[key] || getDefaultSettings()) : getDefaultSettings();
+
+    document.getElementById("csClashCheckEnabled").checked = !!s.clashes.checkEnabled;
+    document.getElementById("csCalculateCuttingLines").checked = !!s.clashes.calculateCuttingLines;
+    document.getElementById("csAllowTouches").checked = !!s.clashes.allowTouches;
+    document.getElementById("csCheckInclusions").checked = !!s.clashes.checkInclusions;
+    document.getElementById("csConsiderOnlyInclusions").value = s.clashes.considerOnlyInclusions || "None";
+
+    document.getElementById("csContactsCheckEnabled").checked = !!s.contacts.checkEnabled;
+    document.getElementById("csCreateAsObjects").checked = !!s.contacts.createAsObjects;
+    document.getElementById("csMaxFaceDistance").value = s.contacts.maxFaceDistance != null ? s.contacts.maxFaceDistance : 0.005;
+    document.getElementById("csMaxAngleDeviation").value = s.contacts.maxAngleDeviation != null ? s.contacts.maxAngleDeviation : 5;
+    document.getElementById("csCheckOppositeFacesOnly").checked = s.contacts.checkOppositeFacesOnly !== false;
+    document.getElementById("csCheckTop").checked = s.contacts.checkTop !== false;
+    document.getElementById("csCheckBottom").checked = s.contacts.checkBottom !== false;
+    document.getElementById("csCheckLateral").checked = s.contacts.checkLateral !== false;
+
+    document.getElementById("csCompareBoundingBox").checked = !!s.equality.compareBoundingBox;
+    document.getElementById("csBoundingBoxTolerance").value = s.equality.boundingBoxTolerance != null ? s.equality.boundingBoxTolerance : 0.01;
+    document.getElementById("csCompareVolume").checked = s.equality.compareVolume !== false;
+    document.getElementById("csVolumeTolerance").value = s.equality.volumeTolerance != null ? s.equality.volumeTolerance : 0.01;
+    document.getElementById("csCompareSurfaceArea").checked = s.equality.compareSurfaceArea !== false;
+    document.getElementById("csSurfaceAreaTolerance").value = s.equality.surfaceAreaTolerance != null ? s.equality.surfaceAreaTolerance : 0.01;
+
+    document.getElementById("csDistancesCheck").value = s.distances.check || "None";
+    document.getElementById("csMinimumDistance").value = s.distances.minimum != null ? s.distances.minimum : 0;
+    document.getElementById("csMaximumDistance").value = s.distances.maximum != null ? s.distances.maximum : 0;
+    document.getElementById("csCheckHorizontalOnly").checked = !!s.distances.checkHorizontalOnly;
+
+    toggleContainerVisibility();
+    log("Container-Einstellungen geladen für: " + (key || "Alle Container"), "ok");
+}
+
+function saveContainerSettings() {
+    var key = document.getElementById("containerSelect").value;
+    var current = {
+        clashes: {
+            checkEnabled: document.getElementById("csClashCheckEnabled").checked,
+            calculateCuttingLines: document.getElementById("csCalculateCuttingLines").checked,
+            allowTouches: document.getElementById("csAllowTouches").checked,
+            checkInclusions: document.getElementById("csCheckInclusions").checked,
+            considerOnlyInclusions: document.getElementById("csConsiderOnlyInclusions").value
+        },
+        contacts: {
+            checkEnabled: document.getElementById("csContactsCheckEnabled").checked,
+            createAsObjects: document.getElementById("csCreateAsObjects").checked,
+            maxFaceDistance: parseFloat(document.getElementById("csMaxFaceDistance").value) || 0.005,
+            maxAngleDeviation: parseFloat(document.getElementById("csMaxAngleDeviation").value) || 5,
+            checkOppositeFacesOnly: document.getElementById("csCheckOppositeFacesOnly").checked,
+            checkTop: document.getElementById("csCheckTop").checked,
+            checkBottom: document.getElementById("csCheckBottom").checked,
+            checkLateral: document.getElementById("csCheckLateral").checked
+        },
+        equality: {
+            compareBoundingBox: document.getElementById("csCompareBoundingBox").checked,
+            boundingBoxTolerance: parseFloat(document.getElementById("csBoundingBoxTolerance").value) || 0.01,
+            compareVolume: document.getElementById("csCompareVolume").checked,
+            volumeTolerance: parseFloat(document.getElementById("csVolumeTolerance").value) || 0.01,
+            compareSurfaceArea: document.getElementById("csCompareSurfaceArea").checked,
+            surfaceAreaTolerance: parseFloat(document.getElementById("csSurfaceAreaTolerance").value) || 0.01
+        },
+        distances: {
+            check: document.getElementById("csDistancesCheck").value,
+            minimum: parseFloat(document.getElementById("csMinimumDistance").value) || 0,
+            maximum: parseFloat(document.getElementById("csMaximumDistance").value) || 0,
+            checkHorizontalOnly: document.getElementById("csCheckHorizontalOnly").checked
+        }
+    };
+    if (key) {
+        containerSettings[key] = current;
+        log("Container-Einstellungen gespeichert für: " + key, "ok");
+    } else {
+        for (var i = 0; i < plannedRuns.length; i++) {
+            containerSettings[plannedRuns[i].key] = JSON.parse(JSON.stringify(current));
+        }
+        log("Container-Einstellungen auf alle " + plannedRuns.length + " Prüfläufe angewendet.", "ok");
+    }
+}
+
+// ==================================================
+// AUTO-LOAD on page start (wait for vdcApp)
+// ==================================================
+(function waitForVdcApp() {
+    if (typeof vdcApp !== "undefined") {
+        loadModelsAndBuildMatrix();
+    } else {
+        // vdcApp is injected by VDC Manager after DOM is ready
+        // Retry every 200ms, up to 30 seconds
+        var attempts = 0;
+        var maxAttempts = 150;
+        var timer = setInterval(function() {
+            attempts++;
+            if (typeof vdcApp !== "undefined") {
+                clearInterval(timer);
+                loadModelsAndBuildMatrix();
+            } else if (attempts >= maxAttempts) {
+                clearInterval(timer);
+                log("vdcApp nicht gefunden nach 30s. Bitte 'Aktualisieren' klicken.", "warn");
+                var loadingEl = document.getElementById("matrixLoading");
+                if (loadingEl) loadingEl.textContent = "vdcApp nicht verfügbar. Bitte 'Aktualisieren' klicken.";
+            }
+        }, 200);
+    }
+})();
+</script>
+
+</body>
+</html>

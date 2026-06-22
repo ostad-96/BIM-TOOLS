@@ -1,0 +1,25 @@
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="_card.css"><style>
+.card { padding: 22px 26px; }
+.h { font-family: var(--f-display); font-weight: 600; font-size: 13px; margin-bottom: 14px; }
+.sec { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 12px 0 12px; }
+.sec .ti { font-family: 'Inter Tight', sans-serif; font-size: 18px; font-weight: 600; letter-spacing: -0.005em; color: #0e1719; }
+.sec .sub { font-size: 12px; color: #8a939a; text-transform: uppercase; letter-spacing: 0.08em; }
+.divider { height: 1px; background: #e6e3dc; margin: 6px 0; }
+.tabs { display: flex; gap: 4px; border-bottom: 1px solid #e6e3dc; }
+.tab { padding: 10px 14px; font-size: 13px; font-weight: 500; color: #5d676e; border-bottom: 2px solid transparent; cursor: pointer; }
+.tab.active { color: #003B4D; border-bottom-color: #003B4D; }
+.tab:hover:not(.active) { color: #0e1719; }
+</style></head><body>
+<div class="card">
+    <div class="h">Section header &amp; tabs</div>
+    <div class="sec"><div class="ti">Projektmanagement</div><div class="sub">Koordination &amp; Dokumentation</div></div>
+    <div class="divider"></div>
+    <div class="tabs" style="margin-top: 14px;">
+        <div class="tab active">Übersicht</div>
+        <div class="tab">Sitzungen</div>
+        <div class="tab">Themen</div>
+        <div class="tab">Teilnehmer</div>
+        <div class="tab">Anhänge</div>
+    </div>
+</div>
+</body></html>

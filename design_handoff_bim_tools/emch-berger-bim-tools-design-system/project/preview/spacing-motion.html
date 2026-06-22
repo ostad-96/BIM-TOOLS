@@ -1,0 +1,20 @@
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="_card.css"><style>
+.card { padding: 22px 26px; }
+.h { font-family: var(--f-display); font-weight: 600; font-size: 13px; margin-bottom: 14px; }
+.row { display: grid; grid-template-columns: 80px 1fr 100px; gap: 14px; align-items: center; padding: 9px 0; border-bottom: 1px solid var(--c-line); }
+.row:last-child { border-bottom: 0; }
+.lbl { font-family: var(--f-mono); font-size: 11px; color: var(--c-ink-3); }
+.curve { height: 28px; background: linear-gradient(90deg, #003B4D 0%, #003B4D 8%, #e6ecef 8%); border-radius: 4px; position: relative; overflow: hidden; }
+.dot { position: absolute; width: 10px; height: 10px; background: #003B4D; border-radius: 50%; top: 50%; transform: translateY(-50%); }
+@keyframes slide { 0%{left: 8%;} 100%{left: calc(100% - 18px);} }
+.curve .dot { animation: slide 1.2s var(--ease, cubic-bezier(0.2,0.7,0.2,1)) infinite alternate; }
+.dur { font-family: var(--f-mono); font-size: 11px; color: var(--c-ink-4); text-align: right; }
+</style></head><body>
+<div class="card">
+    <div class="h">Motion — one easing, three durations</div>
+    <div class="row"><div class="lbl">.12 s</div><div class="curve"><div class="dot" style="animation-duration: .9s"></div></div><div class="dur">hover · active</div></div>
+    <div class="row"><div class="lbl">.20 s</div><div class="curve"><div class="dot" style="animation-duration: 1.4s"></div></div><div class="dur">most transitions</div></div>
+    <div class="row"><div class="lbl">.35 s</div><div class="curve"><div class="dot" style="animation-duration: 2.0s"></div></div><div class="dur">entrances · modals</div></div>
+    <div style="margin-top: 8px; font-family: var(--f-mono); font-size: 10.5px; color: var(--c-ink-4);">cubic-bezier(0.2, 0.7, 0.2, 1) — single variable <code>--ease</code></div>
+</div>
+</body></html>

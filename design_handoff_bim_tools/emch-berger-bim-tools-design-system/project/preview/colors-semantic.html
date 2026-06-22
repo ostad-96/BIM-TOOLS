@@ -1,0 +1,37 @@
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="_card.css"><style>
+.h { display: flex; align-items: baseline; gap: 12px; margin-bottom: 14px; }
+.h .ti { font-family: var(--f-display); font-weight: 600; font-size: 13px; }
+.h .sub { font-size: 11.5px; color: var(--c-ink-4); }
+.row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+.sw { display: flex; flex-direction: column; gap: 6px; }
+.chip { height: 56px; border-radius: 9px; display: flex; align-items: flex-end; padding: 8px; font-size: 10.5px; font-family: var(--f-mono); }
+.chip.dark { color: rgba(255,255,255,0.92); }
+.chip.light { color: var(--c-ink-3); }
+.name { font-size: 11px; font-weight: 600; color: var(--c-ink); }
+.tag { font-size: 10px; color: var(--c-ink-4); }
+.pills { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+.pill { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 600; padding: 3px 9px; border-radius: 999px; letter-spacing: 0.02em; }
+.pill .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; opacity: 0.7; }
+.pill-brand { background:#e6ecef; color:#003B4D; }
+.pill-success { background:#e8f3ee; color:#14694a; }
+.pill-warn { background:#fdf3e4; color:#b45309; }
+.pill-danger { background:#fce8e8; color:#9b1c1c; }
+.pill-muted { background:#f4f3ee; color:#8a939a; }
+</style></head><body>
+<div class="card">
+    <div class="h"><span class="ti">Semantic — warm, muted</span><span class="sub">Each color has a soft fill counterpart for pills</span></div>
+    <div class="row">
+        <div class="sw"><div class="chip dark" style="background:#b45309">B45309</div><div class="name">accent</div><div class="tag">eyebrows · warn</div></div>
+        <div class="sw"><div class="chip dark" style="background:#14694a">14694A</div><div class="name">success</div><div class="tag">erledigt</div></div>
+        <div class="sw"><div class="chip dark" style="background:#9b1c1c">9B1C1C</div><div class="name">danger</div><div class="tag">fehler · löschen</div></div>
+        <div class="sw"><div class="chip dark" style="background:#003B4D">003B4D</div><div class="name">info</div><div class="tag">= brand</div></div>
+    </div>
+    <div class="pills">
+        <span class="pill pill-brand"><span class="dot"></span>Aktiv</span>
+        <span class="pill pill-success"><span class="dot"></span>Erledigt</span>
+        <span class="pill pill-warn"><span class="dot"></span>In Bearbeitung</span>
+        <span class="pill pill-danger"><span class="dot"></span>Hoch</span>
+        <span class="pill pill-muted"><span class="dot"></span>Storniert</span>
+    </div>
+</div>
+</body></html>

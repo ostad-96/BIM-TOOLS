@@ -4,3 +4,7 @@ data/attachments/
 uploads/
 scraps/
 node_modules/
+
+# Private, machine-local Claude context (connection details, secrets) — never commit
+CLAUDE.local.md
+CLAUDE.*.local.md

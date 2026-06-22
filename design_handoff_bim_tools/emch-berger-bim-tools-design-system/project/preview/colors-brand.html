@@ -1,0 +1,28 @@
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="_card.css"><style>
+.card { padding-bottom: 18px; }
+.h { display: flex; align-items: baseline; gap: 12px; margin-bottom: 14px; }
+.h .ti { font-family: var(--f-display); font-weight: 600; font-size: 13px; letter-spacing: 0; }
+.h .sub { font-size: 11.5px; color: var(--c-ink-4); }
+.swatches { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
+.sw { display: flex; flex-direction: column; gap: 6px; }
+.chip {
+    height: 64px; border-radius: 9px;
+    box-shadow: 0 0 0 1px rgba(14,23,25,0.05);
+    display: flex; align-items: flex-end; padding: 8px;
+    color: rgba(255,255,255,0.85); font-size: 10.5px; font-weight: 500; font-family: var(--f-mono);
+}
+.chip.light { color: var(--c-ink-3); }
+.meta { font-size: 11px; color: var(--c-ink-3); font-family: var(--f-mono); }
+.name { font-size: 11px; font-weight: 600; color: var(--c-ink); }
+</style></head><body>
+<div class="card">
+    <div class="h"><span class="ti">Brand · Teal anchor</span><span class="sub">The one saturated color in chrome</span></div>
+    <div class="swatches">
+        <div class="sw"><div class="chip" style="background:#002834">002834</div><div class="name">brand-dark</div></div>
+        <div class="sw"><div class="chip" style="background:#003B4D">003B4D</div><div class="name">brand</div></div>
+        <div class="sw"><div class="chip" style="background:#005A75">005A75</div><div class="name">brand-light</div></div>
+        <div class="sw"><div class="chip light" style="background:#e6ecef">E6ECEF</div><div class="name">brand-soft</div></div>
+        <div class="sw"><div class="chip light" style="background:#f2f5f6">F2F5F6</div><div class="name">brand-tint</div></div>
+    </div>
+</div>
+</body></html>

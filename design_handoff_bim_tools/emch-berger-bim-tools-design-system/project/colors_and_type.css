@@ -1,0 +1,230 @@
+/* ═══════════════════════════════════════════════════════════════════
+   Emch+Berger BIM Tools — Design Tokens
+   Colors, typography, spacing, radii, elevation, motion.
+
+   Sourced from the live product CSS (shared/css/acc-variables.css
+   and shared/css/acc-corporate.css). Two parallel naming systems
+   coexist in production:
+
+     --bim-*   utility tokens (older, used by `bim-*` legacy classes)
+     --c-* / --f-* / --r-* / --el-*   corporate refresh tokens
+                                       (newer, used inside `body.corp`)
+
+   All new work should prefer the corporate tokens. The bim-* tokens
+   are kept for backward-compat with existing modules.
+   ═══════════════════════════════════════════════════════════════════ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+:root {
+    /* ── BRAND ANCHOR ──────────────────────────────────────────── */
+    --c-brand:        #003B4D;   /* Emch+Berger dark teal — the one anchor color */
+    --c-brand-dark:   #002834;
+    --c-brand-light:  #005A75;
+    --c-brand-soft:   #e6ecef;   /* tinted surfaces, active pills, sidebar hover */
+    --c-brand-tint:   #f2f5f6;   /* hover backgrounds for links & rows */
+
+    /* ── PAPER & SURFACE ──────────────────────────────────────────
+       Warm off-whites. Never pure #fff for the canvas; pure white
+       is reserved for elevated surfaces (cards, modals, inputs).    */
+    --c-paper:        #fafaf7;   /* page canvas (warm) */
+    --c-paper-deep:   #f4f3ee;   /* segmented controls, sunken tracks */
+    --c-surface:      #ffffff;   /* card, modal, input bg */
+    --c-surface-2:    #fbfbf8;   /* zebra rows, card footers, side panels */
+
+    /* ── INK (text) ────────────────────────────────────────────── */
+    --c-ink:          #0e1719;   /* primary text — near-black with teal undertone */
+    --c-ink-2:        #364046;   /* secondary text, labels */
+    --c-ink-3:        #5d676e;   /* tertiary text, descriptions */
+    --c-ink-4:        #8a939a;   /* muted / placeholder / disabled */
+
+    /* ── LINES ────────────────────────────────────────────────── */
+    --c-line:         #e6e3dc;   /* warm hairline — the default border */
+    --c-line-strong:  #d0cec6;   /* hover borders */
+
+    /* ── SEMANTIC ─────────────────────────────────────────────────
+       Warm, muted — no neon. Each has a soft fill counterpart for
+       pills, banners and badges.                                    */
+    --c-accent:       #b45309;   /* warm amber — eyebrows, "warn" pills, "today" markers */
+    --c-accent-soft:  #fdf3e4;
+    --c-success:      #14694a;
+    --c-success-soft: #e8f3ee;
+    --c-danger:       #9b1c1c;
+    --c-danger-soft:  #fce8e8;
+    --c-info:         #003B4D;   /* same as brand on purpose */
+    --c-info-soft:    var(--c-brand-soft);
+
+    /* ── TYPOGRAPHY ────────────────────────────────────────────── */
+    --f-display: 'Inter Tight', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --f-body:    'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --f-mono:    'JetBrains Mono', 'Consolas', 'Courier New', monospace;
+
+    /* Type scale (px-based — German UI density is tight) */
+    --t-xs:   10.5px;   /* eyebrows, table headers */
+    --t-sm:   12px;     /* secondary, captions */
+    --t-base: 13px;     /* body default */
+    --t-md:   14px;     /* buttons, card titles */
+    --t-lg:   16px;     /* module tile labels */
+    --t-xl:   18px;     /* section headers */
+    --t-2xl:  20px;     /* modal h1, auth title */
+    --t-3xl:  24px;     /* page hero (mobile) */
+    --t-4xl:  30px;     /* page hero (desktop) */
+
+    /* Tracking — display gets tight, body neutral, eyebrows wide */
+    --tk-display: -0.018em;
+    --tk-tight:   -0.012em;
+    --tk-body:    0;
+    --tk-eyebrow: 0.12em;
+    --tk-allcaps: 0.08em;
+
+    /* ── SPACING (4 px base) ────────────────────────────────────── */
+    --s-1: 4px;
+    --s-2: 8px;
+    --s-3: 12px;
+    --s-4: 16px;
+    --s-5: 20px;
+    --s-6: 24px;
+    --s-7: 28px;
+    --s-8: 32px;
+    --s-10: 40px;
+    --s-12: 48px;
+
+    /* ── RADII ─────────────────────────────────────────────────────
+       The corner-style "Soft" preset is the default across the
+       product; users can tweak via the in-app Tweaks panel.         */
+    --r-sm: 6px;     /* segmented controls, pills inside cards */
+    --r-md: 9px;     /* icon containers, small panels */
+    --r-lg: 14px;    /* cards, module tiles, tables */
+    --r-xl: 20px;    /* modals, auth shell */
+    --r-full: 999px; /* pills, badges, user chip */
+
+    /* ── ELEVATION ─────────────────────────────────────────────────
+       Two-layer (hairline + shadow). Very soft — enterprise tone.   */
+    --el-1: 0 1px 2px rgba(14, 23, 25, 0.04),
+            0 0 0 1px rgba(14, 23, 25, 0.04);
+    --el-2: 0 1px 3px rgba(14, 23, 25, 0.05),
+            0 4px 12px rgba(14, 23, 25, 0.04),
+            0 0 0 1px rgba(14, 23, 25, 0.05);
+    --el-3: 0 4px 16px rgba(14, 23, 25, 0.08),
+            0 12px 32px rgba(14, 23, 25, 0.06),
+            0 0 0 1px rgba(14, 23, 25, 0.05);
+    --el-glow: 0 0 0 4px rgba(0, 59, 77, 0.10);   /* focus ring */
+
+    /* ── MOTION ─────────────────────────────────────────────────── */
+    --ease:        cubic-bezier(0.2, 0.7, 0.2, 1);
+    --dur-fast:    .12s;
+    --dur-normal:  .2s;
+    --dur-slow:    .35s;
+
+    /* ── STATUS COLORS (German vocabulary) ────────────────────────
+       Used by badges & timeline markers. Each has fg + soft bg.     */
+    --st-entwurf:     #6b7280;  --st-entwurf-bg:     #f3f4f6;
+    --st-aktiv:       #2563eb;  --st-aktiv-bg:       #dbeafe;
+    --st-abgeschlossen:#059669; --st-abgeschlossen-bg:#d1fae5;
+    --st-archiviert:  #9ca3af;  --st-archiviert-bg:  #f3f4f6;
+
+    --st-offen:       #2563eb;  --st-offen-bg:       #dbeafe;
+    --st-bearbeitung: #d97706;  --st-bearbeitung-bg: #fef3c7;
+    --st-erledigt:    #059669;  --st-erledigt-bg:    #d1fae5;
+    --st-storniert:   #9ca3af;  --st-storniert-bg:   #f3f4f6;
+
+    /* Priority */
+    --pr-hoch:    #dc2626;  --pr-hoch-bg:    #fee2e2;
+    --pr-mittel:  #d97706;  --pr-mittel-bg:  #fef3c7;
+    --pr-niedrig: #059669;  --pr-niedrig-bg: #d1fae5;
+
+    /* Role (admin portal) */
+    --role-admin:  #7c3aed;  --role-admin-bg:  #ede9fe;
+    --role-editor: #2563eb;  --role-editor-bg: #dbeafe;
+    --role-viewer: #6b7280;  --role-viewer-bg: #f3f4f6;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   SEMANTIC TYPE PRIMITIVES
+   Apply these classes (or extend with @extend / @apply) instead of
+   restyling per page. Mirrors what the live product does inside
+   page-hero, card-title, section-h-* etc.
+   ═══════════════════════════════════════════════════════════════════ */
+
+.ds-eyebrow {
+    font-size: var(--t-xs);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: var(--tk-eyebrow);
+    color: var(--c-accent);
+    display: inline-flex; align-items: center; gap: 8px;
+}
+.ds-eyebrow::before {
+    content: ''; display: inline-block;
+    width: 16px; height: 1px; background: var(--c-accent);
+}
+
+.ds-h1 {
+    font-family: var(--f-display);
+    font-size: var(--t-4xl);
+    font-weight: 600;
+    line-height: 1.1;
+    letter-spacing: var(--tk-display);
+    color: var(--c-ink);
+    text-wrap: balance;
+}
+
+.ds-h2 {
+    font-family: var(--f-display);
+    font-size: var(--t-xl);
+    font-weight: 600;
+    line-height: 1.25;
+    letter-spacing: -0.005em;
+    color: var(--c-ink);
+}
+
+.ds-h3 {
+    font-family: var(--f-display);
+    font-size: var(--t-md);
+    font-weight: 600;
+    line-height: 1.3;
+    color: var(--c-ink);
+}
+
+.ds-section-sub {
+    font-size: var(--t-sm);
+    color: var(--c-ink-4);
+    text-transform: uppercase;
+    letter-spacing: var(--tk-allcaps);
+}
+
+.ds-body {
+    font-family: var(--f-body);
+    font-size: var(--t-base);
+    line-height: 1.55;
+    color: var(--c-ink);
+}
+
+.ds-body-secondary {
+    font-size: var(--t-base);
+    color: var(--c-ink-3);
+    line-height: 1.6;
+    text-wrap: pretty;
+}
+
+.ds-caption {
+    font-size: var(--t-sm);
+    color: var(--c-ink-4);
+}
+
+.ds-overline {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: var(--tk-allcaps);
+    color: var(--c-ink-3);
+}
+
+.ds-mono {
+    font-family: var(--f-mono);
+    font-size: 12px;
+    color: var(--c-ink-2);
+    font-variant-numeric: tabular-nums;
+}
+
+.ds-numeric { font-variant-numeric: tabular-nums; }

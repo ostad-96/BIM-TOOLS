@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<title>VDC · Kollisionsmatrix · Auswertung</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+    font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+    background: #ffffff; color: #1a1a1a;
+    font-size: 13px; line-height: 1.6;
+    min-height: 100vh; padding-bottom: 50px;
+}
+
+/* Header (identical to other VDC tools) */
+.header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 24px; background: #003B4D; color: #fff;
+    position: sticky; top: 0; z-index: 50;
+}
+.header-left { display: flex; align-items: center; gap: 14px; }
+.back-btn {
+    background: rgba(255,255,255,0.10); border: 1px solid rgba(255,255,255,0.18);
+    color: rgba(255,255,255,0.85);
+    width: 34px; height: 34px; border-radius: 7px;
+    cursor: pointer; font-size: 16px;
+    display: flex; align-items: center; justify-content: center;
+    text-decoration: none;
+}
+.back-btn:hover { background: rgba(255,255,255,0.20); color: #fff; }
+.brand-row { display: flex; align-items: center; gap: 10px; }
+.brand-row img { width: 30px; height: 30px; object-fit: cover; }
+.header h1 { font-size: 15px; font-weight: 600; color: #fff; letter-spacing: -0.005em; }
+.header .header-subtitle { font-size: 10.5px; color: rgba(255,255,255,0.65); font-weight: 500; margin-top: 1px; letter-spacing: 0.06em; text-transform: uppercase; }
+.run-pill {
+    font-size: 11px; font-weight: 600; color: #fff;
+    background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.18);
+    padding: 4px 12px; border-radius: 999px; letter-spacing: 0.04em;
+    font-family: 'Consolas', monospace;
+}
+
+/* Breadcrumbs */
+.crumbs {
+    padding: 10px 32px; background: #f8f9fb;
+    border-bottom: 1px solid #e5e7eb;
+    display: flex; align-items: center; gap: 8px;
+    font-size: 12px; color: #6b7280;
+}
+.crumbs a { color: #4a5d6b; text-decoration: none; }
+.crumbs a:hover { color: #003B4D; text-decoration: underline; }
+.crumbs .sep { color: #d1d5db; }
+.crumbs .here { color: #1a1a1a; font-weight: 500; }
+
+/* Main */
+.main-content { padding: 16px 32px; }
+.panel { background: white; border-radius: 8px; border: 1px solid #e5e7eb; margin-bottom: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
+.panel-header {
+    padding: 10px 16px; background: #ffffff;
+    border-bottom: 2px solid #4a5d6b;
+    font-weight: 600; font-size: 13px; color: #4a5d6b;
+    text-transform: uppercase; letter-spacing: 0.5px;
+    display: flex; justify-content: space-between; align-items: center;
+}
+.panel-body { padding: 12px 16px; }
+
+.btn {
+    padding: 6px 14px; border: none; border-radius: 6px;
+    cursor: pointer; font-size: 12px; font-weight: 600;
+    display: inline-flex; align-items: center; gap: 4px;
+    font-family: inherit;
+}
+.btn-primary { background: #c8d5de; color: #1a1a1a; }
+.btn-primary:hover { background: #b0bec8; }
+.btn-secondary { background: #e8edf1; color: #1a1a1a; border: 1px solid #e5e7eb; }
+.btn-secondary:hover { background: #dce2e8; }
+.btn-pick { background: #003B4D; color: #fff; }
+
+/* Summary strip (donut + stats) */
+.summary {
+    display: grid;
+    grid-template-columns: 220px 1fr 1fr;
+    gap: 0;
+    border-bottom: 1px solid #e5e7eb;
+}
+.summary .cell { padding: 18px 22px; border-right: 1px solid #e5e7eb; }
+.summary .cell:last-child { border-right: 0; }
+.summary .cell.donut-cell {
+    display: flex; flex-direction: column; align-items: center;
+    gap: 14px; padding: 18px;
+}
+.donut-stack {
+    position: relative;
+    width: 130px; height: 130px;
+}
+.donut-svg { width: 130px; height: 130px; display: block; }
+.donut-center {
+    position: absolute;
+    inset: 0;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    pointer-events: none;
+}
+.donut-center .v { font-size: 22px; font-weight: 600; color: #1a1a1a; line-height: 1; letter-spacing: -0.018em; font-variant-numeric: tabular-nums; }
+.donut-center .k { font-size: 9.5px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: #6b7280; margin-top: 4px; }
+.legend { display: flex; flex-direction: column; gap: 6px; font-size: 11.5px; align-self: stretch; }
+.legend .item { display: flex; align-items: center; gap: 8px; color: #4b5563; }
+.legend .sw { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
+
+.stat-mini { display: flex; align-items: baseline; gap: 8px; margin-bottom: 8px; }
+.stat-mini:last-child { margin-bottom: 0; }
+.stat-mini .v { font-size: 22px; font-weight: 600; letter-spacing: -0.018em; line-height: 1; font-variant-numeric: tabular-nums; }
+.stat-mini .k { font-size: 11px; color: #6b7280; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; }
+.stat-mini .v.ok { color: #16a34a; }
+.stat-mini .v.danger { color: #dc2626; }
+.stat-mini .v.muted { color: #6b7280; }
+
+/* Aggregate matrix — same dimensions as the planning matrix on kollisionsmatrix.html */
+.agg-table { border-collapse: collapse; }
+.agg-table th, .agg-table td {
+    width: 42px; height: 42px; min-width: 42px;
+    text-align: center;
+    font-size: 10px;
+    border: 1px solid #e5e7eb;
+    position: relative;
+    box-sizing: border-box;
+}
+.agg-table th {
+    background: #f8f9fb;
+    font-weight: 600;
+    color: #1a1a1a;
+}
+.agg-table th.row-header {
+    background: #f8f9fb;
+    text-align: right; padding-right: 6px;
+    white-space: nowrap;
+    width: auto; min-width: 60px;
+    font-family: 'Consolas', monospace;
+    font-size: 10.5px; color: #1a1a1a;
+}
+.agg-table th.corner { background: #f8f9fb; }
+.agg-table th.col-header {
+    writing-mode: vertical-lr;
+    text-orientation: mixed;
+    transform: rotate(180deg);
+    padding: 5px 2px;
+    height: 80px;
+}
+.agg-table th.group-label {
+    color: #4a5d6b; font-weight: 700;
+    border-top: 2px solid #4a5d6b;
+    background: #f0f5f7;
+    font-size: 11px;
+}
+.agg-table td.cell {
+    font-size: 10px; font-weight: 600;
+    cursor: pointer; transition: filter .15s;
+}
+.agg-table td.cell:hover { filter: brightness(0.95); outline: 2px solid #4a5d6b; outline-offset: -2px; position: relative; z-index: 1; }
+.agg-table td.cell-empty { background: #ffffff; border-color: transparent; }
+.agg-table td.cell-na { background: #f5f5f5; }
+.agg-table td.cell-done { background: #d1fae5; color: #065f46; }
+.agg-table td.cell-pending { background: #fef08a; color: #713f12; }
+.agg-table td.cell-zero { background: #d1fae5; color: #065f46; font-weight: 500; }
+
+/* Status badges */
+.status-badge {
+    display: inline-block; padding: 2px 8px; border-radius: 999px;
+    font-size: 10.5px; font-weight: 600; white-space: nowrap;
+}
+.status-new { background: #e8edf1; color: #4a5d6b; }
+.status-open { background: #fef3c7; color: #92400e; }
+.status-assigned { background: #e0e7ff; color: #3730a3; }
+.status-critical { background: #fee2e2; color: #991b1b; }
+.status-resolved { background: #d1fae5; color: #065f46; }
+.status-accepted { background: #d1fae5; color: #065f46; }
+.status-ignored { background: #f3f4f6; color: #6b7280; }
+
+/* Clash list */
+.clash-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+.clash-table th {
+    background: #f8f9fb; text-align: left; padding: 8px 12px;
+    font-weight: 600; color: #4a5d6b; font-size: 11px;
+    border-bottom: 2px solid #4a5d6b;
+    text-transform: uppercase; letter-spacing: 0.04em;
+}
+.clash-table td { padding: 8px 12px; border-bottom: 1px solid #e5e7eb; font-size: 12.5px; color: #1a1a1a; vertical-align: top; }
+.clash-table tr { cursor: pointer; }
+.clash-table tr:hover td { background: #f8f9fb; }
+.clash-table tr.selected td { background: #e8edf1; }
+.clash-table .cb { width: 28px; text-align: center; }
+.clash-table input[type="checkbox"] { cursor: pointer; accent-color: #4a5d6b; }
+.clash-table .id { font-family: 'Consolas', monospace; font-size: 11.5px; color: #4a5d6b; font-weight: 600; }
+.clash-table .pos { font-family: 'Consolas', monospace; font-size: 11px; color: #6b7280; }
+.clash-table .comment { color: #4b5563; max-width: 320px; }
+
+/* Toolbar */
+.list-toolbar {
+    display: flex; gap: 6px; padding: 10px 16px;
+    background: #f8f9fb; border-bottom: 1px solid #e5e7eb;
+    align-items: center; flex-wrap: wrap;
+}
+.list-toolbar .sep { width: 1px; height: 22px; background: #e5e7eb; }
+.list-toolbar .right { margin-left: auto; font-size: 12px; color: #4a5d6b; font-weight: 600; }
+.list-toolbar select { padding: 5px 10px; border: 1px solid #e5e7eb; border-radius: 6px; font-size: 12px; background: #fff; font-family: inherit; }
+</style>
+</head>
+<body>
+
+<div class="header">
+    <div class="header-left">
+        <a class="back-btn" href="kollisionsmatrix.html" title="Zurück zur Matrix">←</a>
+        <div class="brand-row">
+            <img src="../assets/emch-berger-logo.gif" alt="Emch+Berger">
+            <div>
+                <h1>Auswertung · KW 19 · Etappe 2</h1>
+                <div class="header-subtitle">Prüfung vom 13.05.2026 09:42 · Kollisionsmatrix</div>
+            </div>
+        </div>
+    </div>
+    <div class="run-pill">VDC / Prüfungen / 2026 / KW 19</div>
+</div>
+
+<nav class="crumbs">
+    <a href="kollisionsmatrix.html">Kollisionsmatrix</a>
+    <span class="sep">/</span>
+    <a href="kollisionsmatrix.html">Prüfungshistorie</a>
+    <span class="sep">/</span>
+    <span class="here">KW 19 · Etappe 2</span>
+</nav>
+
+<div class="main-content">
+
+    <!-- ─────────── Summary strip with donut + stats ─────────── -->
+    <div class="panel">
+        <div class="panel-header">
+            <span>Gesamtauswertung</span>
+            <div style="display:flex; gap:6px;">
+                <button class="btn btn-primary">Export PDF</button>
+                <button class="btn btn-secondary">In Container speichern</button>
+            </div>
+        </div>
+
+        <div class="summary">
+            <div class="cell donut-cell">
+                <div class="donut-stack">
+                    <svg class="donut-svg" viewBox="0 0 130 130">
+                        <!-- 28 total: 18 accepted (#16a34a), 7 open (#dc2626), 3 ignored (#9ca3af) -->
+                        <circle cx="65" cy="65" r="50" fill="none" stroke="#e5e7eb" stroke-width="16"/>
+                        <!-- Accepted: 18/28 = 64.3% → 0.643 of 314.16 = 201.9 -->
+                        <circle cx="65" cy="65" r="50" fill="none" stroke="#16a34a" stroke-width="16"
+                                stroke-dasharray="201.9 314.16" transform="rotate(-90 65 65)" stroke-linecap="butt"/>
+                        <!-- Open: 7/28 = 25% → starts at 201.9, length 78.5 -->
+                        <circle cx="65" cy="65" r="50" fill="none" stroke="#dc2626" stroke-width="16"
+                                stroke-dasharray="78.5 314.16" stroke-dashoffset="-201.9" transform="rotate(-90 65 65)" stroke-linecap="butt"/>
+                        <!-- Ignored: 3/28 = 10.7% → starts at 280.4, length 33.7 -->
+                        <circle cx="65" cy="65" r="50" fill="none" stroke="#9ca3af" stroke-width="16"
+                                stroke-dasharray="33.7 314.16" stroke-dashoffset="-280.4" transform="rotate(-90 65 65)" stroke-linecap="butt"/>
+                    </svg>
+                    <div class="donut-center">
+                        <div class="v">64 %</div>
+                        <div class="k">Akzeptiert</div>
+                    </div>
+                </div>
+                <div class="legend">
+                    <div class="item"><span class="sw" style="background:#16a34a"></span>Akzeptiert · 18</div>
+                    <div class="item"><span class="sw" style="background:#dc2626"></span>Offen · 7</div>
+                    <div class="item"><span class="sw" style="background:#9ca3af"></span>Ignoriert · 3</div>
+                </div>
+            </div>
+
+            <div class="cell">
+                <div style="font-size: 10.5px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: #6b7280; margin-bottom: 14px;">Übersicht</div>
+                <div class="stat-mini"><span class="v">28</span><span class="k">Kollisionen gesamt</span></div>
+                <div class="stat-mini"><span class="v ok">18</span><span class="k">akzeptiert · resolved</span></div>
+                <div class="stat-mini"><span class="v danger">7</span><span class="k">offen · in bearbeitung</span></div>
+                <div class="stat-mini"><span class="v muted">3</span><span class="k">ignoriert</span></div>
+            </div>
+
+            <div class="cell">
+                <div style="font-size: 10.5px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: #6b7280; margin-bottom: 14px;">Eckdaten</div>
+                <div style="font-size: 12.5px; line-height: 1.85;">
+                    <div><span style="color:#6b7280;">Prüfung:</span> <strong>KW 19 · Etappe 2</strong></div>
+                    <div><span style="color:#6b7280;">Erstellt:</span> <span style="font-family: Consolas, monospace;">13.05.2026 09:42</span> · A. Huber</div>
+                    <div><span style="color:#6b7280;">Modelle:</span> 9 (BRG ·  ARC · STA · HLK)</div>
+                    <div><span style="color:#6b7280;">Prüfläufe:</span> 11 Felder · 9 mit Kollisionen</div>
+                    <div><span style="color:#6b7280;">Dauer:</span> 4 min 38 s</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ─────────── Aggregate matrix (color-coded results per cell) ─────────── -->
+    <div class="panel">
+        <div class="panel-header">
+            <span>Auswertungsmatrix · akzeptiert / gesamt pro Feld</span>
+            <span style="font-size: 11px; color: #6b7280; text-transform: none; letter-spacing: 0;">Klick auf Zelle → Kollisionsliste &amp; 3D-Vorschau</span>
+        </div>
+        <div style="padding: 14px 16px; overflow-x: auto;">
+            <table class="agg-table" id="aggTable"></table>
+        </div>
+    </div>
+
+    <!-- ─────────── Detail: clash list for selected cell ─────────── -->
+    <div class="panel" style="margin-bottom: 0;">
+        <div class="panel-header">
+            <span>Einzelauswertung · ARC ↔ HLK</span>
+            <div style="display:flex; gap:6px;">
+                <button class="btn btn-secondary">Im 3D-Viewer anzeigen</button>
+                <button class="btn btn-secondary">×&nbsp; Schließen</button>
+            </div>
+        </div>
+
+        <div style="padding: 8px 16px; background: #e8edf1; border-bottom: 1px solid #e5e7eb; font-size: 12px; color: #4a5d6b; font-weight: 600;">
+            Prüfcontainer ARC ↔ HLK · 8 Kollisionen · 5 akzeptiert · 3 offen
+        </div>
+
+        <div class="list-toolbar">
+            <button class="btn btn-secondary">Alle auswählen</button>
+            <button class="btn btn-secondary">Auswahl akzeptieren</button>
+            <div class="sep"></div>
+            <select>
+                <option>Alle Status</option>
+                <option>Nur offen</option>
+                <option>Nur akzeptiert</option>
+                <option>Nur ignoriert</option>
+            </select>
+            <select>
+                <option>Sortiert nach Nr.</option>
+                <option>Sortiert nach Status</option>
+                <option>Sortiert nach Volumen</option>
+            </select>
+            <span class="right">8 Kollisionen · 3 ausgewählt</span>
+        </div>
+
+        <table class="clash-table">
+            <thead><tr>
+                <th class="cb"><input type="checkbox"></th>
+                <th style="width:100px;">Kollision</th>
+                <th>Beschreibung</th>
+                <th style="width:130px;">Position (m)</th>
+                <th style="width:90px;">Volumen</th>
+                <th style="width:130px;">Status</th>
+                <th>Kommentar</th>
+            </tr></thead>
+            <tbody>
+                <tr class="selected">
+                    <td class="cb"><input type="checkbox" checked></td>
+                    <td class="id">CLASH [1]</td>
+                    <td>Lüftungskanal HLK-02 trifft Träger ARC-01 in Achse C/12</td>
+                    <td class="pos">2 645 218 / 1 245 691 / 415.9</td>
+                    <td class="pos">0.018 m³</td>
+                    <td><span class="status-badge status-critical">Kritisch · Offen</span></td>
+                    <td class="comment">Statiker prüft Umlenkung bis 20.05. — M. Frei</td>
+                </tr>
+                <tr>
+                    <td class="cb"><input type="checkbox"></td>
+                    <td class="id">CLASH [2]</td>
+                    <td>Bewehrungsstab BRG-Nord ↔ Steigleitung HLK-03</td>
+                    <td class="pos">2 645 224 / 1 245 698 / 414.1</td>
+                    <td class="pos">0.004 m³</td>
+                    <td><span class="status-badge status-open">Offen</span></td>
+                    <td class="comment">Versatz möglich, an L. Born übergeben</td>
+                </tr>
+                <tr>
+                    <td class="cb"><input type="checkbox" checked></td>
+                    <td class="id">CLASH [3]</td>
+                    <td>Sprinklerrohr durchstösst Wand ARC-02</td>
+                    <td class="pos">2 645 201 / 1 245 712 / 416.3</td>
+                    <td class="pos">0.002 m³</td>
+                    <td><span class="status-badge status-assigned">Zugewiesen</span></td>
+                    <td class="comment">Kernbohrung beauftragt — KW 22</td>
+                </tr>
+                <tr>
+                    <td class="cb"><input type="checkbox"></td>
+                    <td class="id">INCLUSION [1]</td>
+                    <td>Decke ARC-02 enthält Kabelkanal HLK-01 vollständig (≥ 95 % Überlapp)</td>
+                    <td class="pos">2 645 230 / 1 245 690 / 415.8</td>
+                    <td class="pos">0.142 m³</td>
+                    <td><span class="status-badge status-accepted">Akzeptiert</span></td>
+                    <td class="comment">Geplante Aussparung — laut Plan A-14.05</td>
+                </tr>
+                <tr>
+                    <td class="cb"><input type="checkbox"></td>
+                    <td class="id">CLASH [4]</td>
+                    <td>Verteilerschrank HLK-01 ↔ Wandöffnung ARC-03</td>
+                    <td class="pos">2 645 214 / 1 245 704 / 414.6</td>
+                    <td class="pos">0.052 m³</td>
+                    <td><span class="status-badge status-resolved">Resolved</span></td>
+                    <td class="comment">Wandöffnung nachträglich aufgenommen</td>
+                </tr>
+                <tr>
+                    <td class="cb"><input type="checkbox" checked></td>
+                    <td class="id">CLASH [5]</td>
+                    <td>Lüftungsschacht HLK-02 in Bereich Tragwerk ARC-01</td>
+                    <td class="pos">2 645 226 / 1 245 686 / 415.1</td>
+                    <td class="pos">0.072 m³</td>
+                    <td><span class="status-badge status-open">Offen</span></td>
+                    <td class="comment">—</td>
+                </tr>
+                <tr>
+                    <td class="cb"><input type="checkbox"></td>
+                    <td class="id">CLASH [6]</td>
+                    <td>Steckdosen-Backbox ARC-02 in Brandschutzwand HLK-03</td>
+                    <td class="pos">2 645 211 / 1 245 695 / 415.4</td>
+                    <td class="pos">0.001 m³</td>
+                    <td><span class="status-badge status-ignored">Ignoriert</span></td>
+                    <td class="comment">Toleriert · &lt; 5 mm</td>
+                </tr>
+                <tr>
+                    <td class="cb"><input type="checkbox"></td>
+                    <td class="id">CLASH [7]</td>
+                    <td>Bodendurchführung HLK-01 in Aussparung ARC-01</td>
+                    <td class="pos">2 645 220 / 1 245 693 / 414.9</td>
+                    <td class="pos">0.011 m³</td>
+                    <td><span class="status-badge status-accepted">Akzeptiert</span></td>
+                    <td class="comment">Wie geplant</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+<script>
+// Build the aggregate matrix — same shape as the planning matrix:
+//   - top row of "group labels" spanning their columns
+//   - second row of vertical column headers
+//   - each data row has a row label on the left + N cells
+(function () {
+    var groups = [
+        { label: 'BRG', cols: ['BRG-01', 'BRG-02'] },
+        { label: 'ARC', cols: ['ARC-01', 'ARC-02', 'ARC-03'] },
+        { label: 'STA', cols: ['STA-01'] },
+        { label: 'HLK', cols: ['HLK-01', 'HLK-02', 'HLK-03'] }
+    ];
+    var cols = [];
+    groups.forEach(function (g) { g.cols.forEach(function (c) { cols.push({ name: c, group: g.label }); }); });
+
+    // Results: { 'r,c': { a: accepted, t: total } } for c >= r
+    var results = {
+        '0,1': { a: 2, t: 2 },
+        '0,3': { a: 1, t: 3 },  // BRG-01 ↔ ARC-02 — open
+        '0,5': { a: 0, t: 0 },
+        '1,4': { a: 1, t: 1 },
+        '1,7': { a: 2, t: 4 },  // BRG-02 ↔ HLK-02
+        '2,3': { a: 3, t: 3 },
+        '2,5': { a: 1, t: 1 },
+        '3,7': { a: 5, t: 8 },  // ARC-02 ↔ HLK-02 — the highlighted detail
+        '4,7': { a: 0, t: 0 },
+        '5,8': { a: 3, t: 6 }
+    };
+
+    var n = cols.length;
+    var html = '';
+
+    // Row 1: group labels
+    html += '<tr><th class="corner"></th>';
+    groups.forEach(function (g) {
+        html += '<th colspan="' + g.cols.length + '" class="group-label">' + g.label + '</th>';
+    });
+    html += '</tr>';
+
+    // Row 2: vertical column headers
+    html += '<tr><th class="corner"></th>';
+    cols.forEach(function (c) { html += '<th class="col-header">' + c.name + '</th>'; });
+    html += '</tr>';
+
+    // Body
+    for (var r = 0; r < n; r++) {
+        html += '<tr><th class="row-header">' + cols[r].name + '</th>';
+        for (var c = 0; c < n; c++) {
+            if (c < r) {
+                html += '<td class="cell-empty"></td>';
+            } else if (c === r) {
+                html += '<td class="cell-na"></td>';
+            } else {
+                var key = r + ',' + c;
+                var res = results[key];
+                if (!res) {
+                    html += '<td class="cell-na"></td>';
+                } else if (res.t === 0) {
+                    html += '<td class="cell cell-zero" title="0 / 0 · keine Kollisionen">0/0</td>';
+                } else if (res.a < res.t) {
+                    html += '<td class="cell cell-pending" title="' + res.a + ' akzeptiert von ' + res.t + ' · ' + (res.t - res.a) + ' offen">' + res.a + '/' + res.t + '</td>';
+                } else {
+                    html += '<td class="cell cell-done" title="' + res.a + ' / ' + res.t + ' · alle akzeptiert">' + res.a + '/' + res.t + '</td>';
+                }
+            }
+        }
+        html += '</tr>';
+    }
+
+    document.getElementById('aggTable').innerHTML = html;
+})();
+</script>
+
+</body>
+</html>

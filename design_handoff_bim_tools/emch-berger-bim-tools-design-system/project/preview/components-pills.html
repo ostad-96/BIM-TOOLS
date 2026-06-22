@@ -1,0 +1,54 @@
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="_card.css"><style>
+.card { padding: 22px 26px; }
+.h { font-family: var(--f-display); font-weight: 600; font-size: 13px; margin-bottom: 14px; }
+.grp { margin-bottom: 12px; }
+.lbl { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--c-ink-4); margin-bottom: 8px; }
+.row { display: flex; gap: 8px; flex-wrap: wrap; }
+.pill { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 600; padding: 3px 9px; border-radius: 999px; letter-spacing: 0.02em; }
+.pill .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; opacity: 0.7; }
+.b-entwurf { background:#f3f4f6; color:#6b7280; }
+.b-aktiv { background:#dbeafe; color:#2563eb; }
+.b-abgeschlossen { background:#d1fae5; color:#059669; }
+.b-archiviert { background:#f3f4f6; color:#9ca3af; }
+.b-offen { background:#dbeafe; color:#2563eb; }
+.b-bearbeitung { background:#fef3c7; color:#d97706; }
+.b-erledigt { background:#d1fae5; color:#059669; }
+.b-hoch { background:#fee2e2; color:#dc2626; }
+.b-mittel { background:#fef3c7; color:#d97706; }
+.b-niedrig { background:#d1fae5; color:#059669; }
+.b-admin { background:#ede9fe; color:#7c3aed; }
+.b-editor { background:#dbeafe; color:#2563eb; }
+.b-viewer { background:#f3f4f6; color:#6b7280; }
+</style></head><body>
+<div class="card">
+    <div class="h">Status pills — German vocabulary</div>
+    <div class="grp">
+        <div class="lbl">Serie · Status</div>
+        <div class="row">
+            <span class="pill b-entwurf"><span class="dot"></span>Entwurf</span>
+            <span class="pill b-aktiv"><span class="dot"></span>Aktiv</span>
+            <span class="pill b-abgeschlossen"><span class="dot"></span>Abgeschlossen</span>
+            <span class="pill b-archiviert"><span class="dot"></span>Archiviert</span>
+        </div>
+    </div>
+    <div class="grp">
+        <div class="lbl">Aktionspunkt</div>
+        <div class="row">
+            <span class="pill b-offen"><span class="dot"></span>Offen</span>
+            <span class="pill b-bearbeitung"><span class="dot"></span>In Bearbeitung</span>
+            <span class="pill b-erledigt"><span class="dot"></span>Erledigt</span>
+        </div>
+    </div>
+    <div class="grp">
+        <div class="lbl">Priorität · Rolle</div>
+        <div class="row">
+            <span class="pill b-hoch"><span class="dot"></span>Hoch</span>
+            <span class="pill b-mittel"><span class="dot"></span>Mittel</span>
+            <span class="pill b-niedrig"><span class="dot"></span>Niedrig</span>
+            <span class="pill b-admin"><span class="dot"></span>Admin</span>
+            <span class="pill b-editor"><span class="dot"></span>Editor</span>
+            <span class="pill b-viewer"><span class="dot"></span>Viewer</span>
+        </div>
+    </div>
+</div>
+</body></html>

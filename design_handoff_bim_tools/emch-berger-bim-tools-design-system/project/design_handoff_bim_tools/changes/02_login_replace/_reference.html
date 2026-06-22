@@ -1,0 +1,207 @@
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="_card.css"><style>
+/* ──────────────────────────────────────────────────────────────────
+   Login — tight, centered, one card. Brand color is the canvas,
+   not a "marketing aside". A very faint blueprint grid + soft radial
+   highlight gives the dark surface a touch of texture without noise.
+   Inspired by the Linear / Mercury login feel.
+   ────────────────────────────────────────────────────────────────── */
+
+body {
+    background: #002834;
+    background-image:
+        linear-gradient(160deg, #002834 0%, #003B4D 100%),
+        radial-gradient(circle at 20% 18%, rgba(255,255,255,0.06) 0%, transparent 45%),
+        radial-gradient(circle at 86% 92%, rgba(180,83,9,0.10) 0%, transparent 50%);
+    background-blend-mode: normal, screen, screen;
+    min-height: 100%;
+}
+.card {
+    background: transparent;
+    width: 700px;
+    height: 460px;
+    padding: 0;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Faint blueprint grid — almost invisible, just texture */
+.card::before {
+    content: '';
+    position: absolute; inset: 0;
+    background-image:
+        linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+    background-size: 32px 32px;
+    pointer-events: none;
+}
+
+/* Centered shell */
+.shell {
+    position: relative;
+    width: 360px;
+    margin: 56px auto 0;
+    background: #ffffff;
+    border-radius: 14px;
+    padding: 30px 34px 26px;
+    box-shadow:
+        0 24px 60px rgba(0,0,0,0.34),
+        0 4px 12px rgba(0,0,0,0.18),
+        0 0 0 1px rgba(255,255,255,0.04);
+}
+
+/* Mark · always r=0, sized to match the brand block */
+.brand {
+    display: flex; align-items: center; gap: 12px;
+    padding-bottom: 18px;
+    margin-bottom: 22px;
+    border-bottom: 1px solid #f0eee7;
+}
+.brand .mk { width: 38px; height: 38px; background: #000; display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0; }
+.brand .mk img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.brand .nm { font-family: 'Inter Tight', sans-serif; font-weight: 600; font-size: 14px; color: #0e1719; letter-spacing: -0.005em; line-height: 1.2; }
+.brand .nm .sub { display: block; font-size: 10.5px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.08em; color: #8a939a; margin-top: 3px; }
+
+/* Floating-label field — Material / Facebook pattern.
+   Label sits inside the textbox at full size in rest state;
+   on focus or when filled it transitions to a small "hook"
+   at the top-left of the border.                          */
+.f-row { margin-bottom: 12px; }
+.fl {
+    position: relative;
+    width: 100%;
+}
+.fl .input {
+    width: 100%; box-sizing: border-box;
+    height: 52px;
+    padding: 18px 14px 6px;
+    background: #fbfbf8;
+    border: 1px solid #e6e3dc;
+    border-radius: 8px;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    color: #0e1719;
+    line-height: 1.2;
+    transition: border-color .15s cubic-bezier(0.2,0.7,0.2,1), background .15s cubic-bezier(0.2,0.7,0.2,1), box-shadow .15s cubic-bezier(0.2,0.7,0.2,1);
+}
+.fl .input:hover { border-color: #d0cec6; }
+.fl .input:focus {
+    outline: none;
+    background: #fff;
+    border-color: #003B4D;
+    box-shadow: 0 0 0 4px rgba(0,59,77,0.10);
+}
+.fl .lbl {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    padding: 0 4px;
+    background: transparent;
+    color: #8a939a;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 400;
+    pointer-events: none;
+    transition: top .15s cubic-bezier(0.2,0.7,0.2,1),
+                font-size .15s cubic-bezier(0.2,0.7,0.2,1),
+                color .15s cubic-bezier(0.2,0.7,0.2,1),
+                background-color .15s cubic-bezier(0.2,0.7,0.2,1);
+}
+/* Floated state: label hooks INSIDE the textbox top, not on the border */
+.fl .input:focus + .lbl,
+.fl .input:not(:placeholder-shown) + .lbl {
+    top: 8px;
+    transform: none;
+    font-size: 11px;
+    font-weight: 500;
+    color: #5d676e;
+    background: transparent;
+}
+.fl .input:focus + .lbl { color: #003B4D; }
+
+/* Submit — disabled by default; enables when Benutzername has content */
+.btn {
+    width: 100%;
+    background: #d0cec6;
+    color: rgba(255, 255, 255, 0.9);
+    border: 0;
+    padding: 13px 14px;
+    border-radius: 8px;
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    font-size: 13.5px;
+    cursor: not-allowed;
+    margin-top: 4px;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    transition:
+        background .28s cubic-bezier(0.2, 0.7, 0.2, 1),
+        color      .28s cubic-bezier(0.2, 0.7, 0.2, 1),
+        transform  .12s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.btn svg { width: 14px; height: 14px; opacity: 0.7; transition: opacity .28s cubic-bezier(0.2, 0.7, 0.2, 1), transform .28s cubic-bezier(0.2, 0.7, 0.2, 1); }
+
+/* When Benutzername has any content, the form becomes "armed" */
+.shell:has(#usr:not(:placeholder-shown)) .btn {
+    background: #003B4D;
+    color: #fff;
+    cursor: pointer;
+}
+.shell:has(#usr:not(:placeholder-shown)) .btn svg { opacity: 1; transform: translateX(2px); }
+.shell:has(#usr:not(:placeholder-shown)) .btn:hover { background: #002834; }
+.shell:has(#usr:not(:placeholder-shown)) .btn:hover svg { transform: translateX(4px); }
+.shell:has(#usr:not(:placeholder-shown)) .btn:active { transform: translateY(1px); }
+
+.forgot {
+    display: block;
+    text-align: center;
+    margin-top: 14px;
+    font-size: 11.5px; color: #5d676e; text-decoration: none;
+}
+.forgot:hover { color: #003B4D; text-decoration: underline; }
+
+/* Footer below the card */
+.foot {
+    position: relative;
+    text-align: center;
+    margin-top: 18px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10.5px;
+    color: rgba(255,255,255,0.45);
+    letter-spacing: 0.08em;
+}
+.foot .sep { margin: 0 6px; opacity: 0.5; }
+</style></head><body>
+<div class="card">
+    <div class="shell">
+        <div class="brand">
+            <div class="mk"><img src="../assets/emch-berger-logo.gif" alt="Emch+Berger"></div>
+            <div class="nm">BIM Tools<span class="sub">Bauprojekt-Koordination</span></div>
+        </div>
+
+        <div class="f-row">
+            <div class="fl">
+                <input class="input" id="usr" type="text" value="andrea.huber" placeholder=" ">
+                <label class="lbl" for="usr">Benutzername</label>
+            </div>
+        </div>
+
+        <div class="f-row">
+            <div class="fl">
+                <input class="input" id="pw" type="password" placeholder=" ">
+                <label class="lbl" for="pw">Passwort</label>
+            </div>
+        </div>
+
+        <button class="btn">
+            Anmelden
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/></svg>
+        </button>
+
+        <a href="#" class="forgot">Passwort vergessen?</a>
+    </div>
+
+    <div class="foot">
+        EMCH+BERGER<span class="sep">·</span>BIM TOOLS<span class="sep">·</span>v1.0
+    </div>
+</div>
+</body></html>

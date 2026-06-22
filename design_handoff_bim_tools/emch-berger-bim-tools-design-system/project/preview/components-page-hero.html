@@ -1,0 +1,28 @@
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="_card.css"><style>
+.card { padding: 24px 28px 22px; }
+.hero { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; padding-bottom: 22px; border-bottom: 1px solid #e6e3dc; }
+.l { max-width: 480px; }
+.ey { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.12em; color: #b45309; margin-bottom: 8px; display: inline-flex; align-items: center; gap: 8px; }
+.ey::before { content: ''; display: inline-block; width: 16px; height: 1px; background: #b45309; }
+.ti { font-family: 'Inter Tight', sans-serif; font-size: 30px; font-weight: 600; line-height: 1.1; letter-spacing: -0.018em; color: #0e1719; margin: 0 0 8px 0; text-wrap: balance; }
+.de { font-size: 14px; color: #5d676e; line-height: 1.6; text-wrap: pretty; margin: 0; }
+.r { display: flex; gap: 8px; align-items: center; }
+.btn { display: inline-flex; align-items: center; gap: 8px; padding: 8px 14px; min-height: 36px; background: #fff; color: #0e1719; border: 1px solid #e6e3dc; border-radius: 8px; font-size: 13px; font-weight: 500; cursor: pointer; }
+.btn.p { background: #003B4D; color: #fff; border-color: #003B4D; }
+.btn svg { width: 15px; height: 15px; }
+.select { padding: 8px 12px; background: #fff; border: 1px solid #e6e3dc; border-radius: 8px; font-size: 13px; color: #0e1719; }
+</style></head><body>
+<div class="card">
+    <div class="hero">
+        <div class="l">
+            <div class="ey">Sitzungsprotokolle</div>
+            <h1 class="ti">Besprechungsserien</h1>
+            <p class="de">Wiederkehrende Besprechungen mit chronologischen Aktualisierungen pro Diskussionspunkt — alles an einem Ort.</p>
+        </div>
+        <div class="r">
+            <select class="select"><option>Aus Vorlage erstellen …</option></select>
+            <button class="btn p"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Neue Serie</button>
+        </div>
+    </div>
+</div>
+</body></html>

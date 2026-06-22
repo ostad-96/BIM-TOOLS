@@ -1,0 +1,117 @@
+:root {
+    /* Emch+Berger brand palette */
+    --bim-primary: #003B4D;
+    --bim-primary-light: #005A75;
+    --bim-primary-50: #809DA6;
+    --bim-primary-30: #B3C4CA;
+    --bim-primary-10: #E6ECEF;
+
+    /* Neutrals */
+    --bim-white: #ffffff;
+    --bim-gray-50: #f8f9fa;
+    --bim-gray-100: #f0f2f5;
+    --bim-gray-200: #e5e7eb;
+    --bim-gray-300: #d1d5db;
+    --bim-gray-400: #9ca3af;
+    --bim-gray-500: #6b7280;
+    --bim-gray-600: #4b5563;
+    --bim-gray-700: #374151;
+    --bim-gray-800: #1f2937;
+    --bim-gray-900: #111827;
+
+    /* Surface */
+    --bim-surface: #f8f9fa;
+    --bim-surface-elevated: #ffffff;
+    --bim-border: #e5e7eb;
+    --bim-border-strong: #d1d5db;
+
+    /* Text */
+    --bim-text: #1a2a33;
+    --bim-text-secondary: #4b5563;
+    --bim-text-muted: #9ca3af;
+    --bim-text-inverse: #ffffff;
+
+    /* Semantic */
+    --bim-success: #059669;
+    --bim-success-light: #d1fae5;
+    --bim-warning: #d97706;
+    --bim-warning-light: #fef3c7;
+    --bim-danger: #dc2626;
+    --bim-danger-light: #fee2e2;
+    --bim-info: #2563eb;
+    --bim-info-light: #dbeafe;
+
+    /* Status */
+    --bim-status-entwurf: #6b7280;
+    --bim-status-entwurf-bg: #f3f4f6;
+    --bim-status-aktiv: #2563eb;
+    --bim-status-aktiv-bg: #dbeafe;
+    --bim-status-abgeschlossen: #059669;
+    --bim-status-abgeschlossen-bg: #d1fae5;
+    --bim-status-archiviert: #9ca3af;
+    --bim-status-archiviert-bg: #f3f4f6;
+
+    /* Action item status */
+    --bim-status-offen: #2563eb;
+    --bim-status-offen-bg: #dbeafe;
+    --bim-status-bearbeitung: #d97706;
+    --bim-status-bearbeitung-bg: #fef3c7;
+    --bim-status-erledigt: #059669;
+    --bim-status-erledigt-bg: #d1fae5;
+    --bim-status-storniert: #9ca3af;
+    --bim-status-storniert-bg: #f3f4f6;
+
+    /* Priority */
+    --bim-priority-hoch: #dc2626;
+    --bim-priority-hoch-bg: #fee2e2;
+    --bim-priority-mittel: #d97706;
+    --bim-priority-mittel-bg: #fef3c7;
+    --bim-priority-niedrig: #059669;
+    --bim-priority-niedrig-bg: #d1fae5;
+
+    /* Roles */
+    --bim-role-admin: #7c3aed;
+    --bim-role-admin-bg: #ede9fe;
+    --bim-role-editor: #2563eb;
+    --bim-role-editor-bg: #dbeafe;
+    --bim-role-viewer: #6b7280;
+    --bim-role-viewer-bg: #f3f4f6;
+
+    /* Typography */
+    --bim-font: 'Inter', 'Segoe UI', Arial, sans-serif;
+    --bim-font-mono: 'Consolas', 'Courier New', monospace;
+    --bim-font-size-xs: 10px;
+    --bim-font-size-sm: 12px;
+    --bim-font-size-base: 13px;
+    --bim-font-size-md: 14px;
+    --bim-font-size-lg: 16px;
+    --bim-font-size-xl: 20px;
+    --bim-font-size-2xl: 24px;
+
+    /* Spacing (4px base) */
+    --bim-space-1: 4px;
+    --bim-space-2: 8px;
+    --bim-space-3: 12px;
+    --bim-space-4: 16px;
+    --bim-space-5: 20px;
+    --bim-space-6: 24px;
+    --bim-space-8: 32px;
+    --bim-space-10: 40px;
+    --bim-space-12: 48px;
+
+    /* Radii */
+    --bim-radius-sm: 4px;
+    --bim-radius-md: 6px;
+    --bim-radius-lg: 8px;
+    --bim-radius-xl: 12px;
+    --bim-radius-full: 9999px;
+
+    /* Shadows */
+    --bim-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+    --bim-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+    --bim-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.05);
+
+    /* Transitions */
+    --bim-transition-fast: 0.15s ease;
+    --bim-transition-normal: 0.2s ease;
+}

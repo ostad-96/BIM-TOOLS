@@ -1,0 +1,23 @@
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="_card.css"><style>
+.card { padding: 24px 26px; }
+.h { font-family: var(--f-display); font-weight: 600; font-size: 13px; margin-bottom: 16px; }
+.row { display: flex; gap: 18px; align-items: flex-end; }
+.sw { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.tile { width: 92px; height: 78px; background: #fff; border: 1px solid #e6e3dc; box-shadow: 0 1px 2px rgba(14,23,25,0.04); }
+.lbl { font-family: var(--f-mono); font-size: 11px; color: var(--c-ink-3); }
+.k { font-size: 11px; font-weight: 600; color: var(--c-ink); }
+.note { margin-top: 14px; font-size: 11.5px; color: var(--c-ink-3); line-height: 1.55; max-width: 560px; }
+.note strong { color: var(--c-ink); font-weight: 600; }
+</style></head><body>
+<div class="card">
+    <div class="h">Radii — corners</div>
+    <div class="row">
+        <div class="sw"><div class="tile" style="border-radius:6px"></div><div class="k">r-sm</div><div class="lbl">6 px</div></div>
+        <div class="sw"><div class="tile" style="border-radius:9px"></div><div class="k">r-md</div><div class="lbl">9 px</div></div>
+        <div class="sw"><div class="tile" style="border-radius:14px"></div><div class="k">r-lg</div><div class="lbl">14 px</div></div>
+        <div class="sw"><div class="tile" style="border-radius:20px"></div><div class="k">r-xl</div><div class="lbl">20 px</div></div>
+        <div class="sw"><div class="tile" style="border-radius:999px; height: 36px;"></div><div class="k">r-full</div><div class="lbl">pills</div></div>
+    </div>
+    <div class="note"><strong>Default for cards &amp; module tiles is r-lg (14 px).</strong> Icon containers use r-md (9 px). The hub Tweaks panel can switch live between Kantig / Subtil / Soft / Weich presets. The Emch+Berger logo is always r=0.</div>
+</div>
+</body></html>

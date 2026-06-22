@@ -1,0 +1,28 @@
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="_card.css"><style>
+.card { padding: 18px 22px; }
+.h { font-family: var(--f-display); font-weight: 600; font-size: 13px; margin-bottom: 14px; }
+.tbl { width: 100%; border-collapse: separate; border-spacing: 0; background: #fff; border: 1px solid #e6e3dc; border-radius: 14px; overflow: hidden; box-shadow: 0 1px 2px rgba(14,23,25,0.04); font-size: 12.5px; }
+.tbl th { text-align: left; padding: 10px 14px; font-size: 10.5px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: #5d676e; background: #fbfbf8; border-bottom: 1px solid #e6e3dc; }
+.tbl td { padding: 11px 14px; border-bottom: 1px solid #e6e3dc; color: #0e1719; vertical-align: middle; }
+.tbl tbody tr:last-child td { border-bottom: 0; }
+.tbl tbody tr:hover { background: #f2f5f6; cursor: pointer; }
+.mono { font-family: 'JetBrains Mono', monospace; font-size: 11.5px; color: #364046; }
+.pill { display: inline-flex; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 999px; }
+.pill.a { background: #dbeafe; color: #2563eb; }
+.pill.b { background: #d1fae5; color: #059669; }
+.pill.c { background: #fef3c7; color: #d97706; }
+.muted { color: #8a939a; }
+</style></head><body>
+<div class="card">
+    <div class="h">Table — sticky head, hover, mono codes</div>
+    <table class="tbl">
+        <thead><tr><th>Code</th><th>Titel</th><th>Letzte Sitzung</th><th>Status</th><th>Themen</th></tr></thead>
+        <tbody>
+            <tr><td class="mono">SR-2026-014</td><td>BIM-Koordination Brücke Nord</td><td>13. Mai 2026</td><td><span class="pill a">Aktiv</span></td><td class="mono">12 / 17</td></tr>
+            <tr><td class="mono">SR-2026-009</td><td>Planungsbesprechung A14</td><td>06. Mai 2026</td><td><span class="pill a">Aktiv</span></td><td class="mono">8 / 23</td></tr>
+            <tr><td class="mono">SR-2026-003</td><td>Baustellenbesprechung Tunnel Süd</td><td>02. Mai 2026</td><td><span class="pill c">Entwurf</span></td><td class="mono">3 / 5</td></tr>
+            <tr><td class="mono">SR-2025-211</td><td>Abnahme Etappe 2</td><td>18. Apr 2026</td><td><span class="pill b">Abgeschlossen</span></td><td class="muted">—</td></tr>
+        </tbody>
+    </table>
+</div>
+</body></html>

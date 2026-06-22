@@ -1,0 +1,1700 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VDC Agent</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+    font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+    background: #ffffff;
+    color: #1a1a1a;
+    font-size: 13px;
+    line-height: 1.6;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+/* ── Banner ── */
+.banner {
+    position: relative;
+    height: 60px;
+    background: #003B4D;
+    overflow: hidden;
+    flex-shrink: 0;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.banner canvas {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    opacity: 0.5;
+}
+.banner-content {
+    position: relative; z-index: 1; height: 100%;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 18px 0 18px;
+    gap: 12px;
+}
+.banner-brand {
+    display: flex; align-items: center; gap: 10px;
+    color: #fff; text-decoration: none;
+}
+.banner-brand-mark {
+    width: 30px; height: 30px;
+    border-radius: 8px;
+    object-fit: cover;
+}
+.banner-title {
+    font-size: 14px; font-weight: 600; color: #fff;
+    letter-spacing: -0.005em; text-transform: none;
+}
+.banner-subtitle {
+    font-size: 10.5px; color: rgba(255,255,255,0.65);
+    font-weight: 500;
+    letter-spacing: 0.04em; text-transform: uppercase; margin-top: 1px;
+}
+.banner-actions {
+    display: flex; align-items: center; gap: 6px;
+}
+.logo-wrap { display: none; }
+
+/* ── Header actions ── */
+.header-actions { display: flex; gap: 6px; align-items: center; }
+.status-indicator { display: flex; align-items: center; gap: 5px; margin-right: 8px; }
+.status-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: #ef4444; position: relative;
+    transition: background 0.3s;
+}
+.status-dot::after {
+    content: ''; position: absolute; inset: -3px;
+    border-radius: 50%; border: 2px solid #ef4444;
+    opacity: 0; animation: pulse-ring 2s ease-out infinite;
+}
+.status-dot.connected { background: #22c55e; }
+.status-dot.connected::after { border-color: #22c55e; }
+@keyframes pulse-ring {
+    0% { opacity: 0.6; transform: scale(0.8); }
+    100% { opacity: 0; transform: scale(1.6); }
+}
+#statusLabel { font-size: 11px; color: rgba(255,255,255,0.75); white-space: nowrap; }
+.header-btn {
+    background: rgba(255,255,255,0.10); border: 1px solid rgba(255,255,255,0.18); color: rgba(255,255,255,0.85);
+    width: 32px; height: 32px; border-radius: 7px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; transition: all 0.15s;
+}
+.header-btn:hover { background: rgba(255,255,255,0.20); border-color: rgba(255,255,255,0.30); color: #fff; }
+.header-btn svg { width: 16px; height: 16px; }
+.debug-toggle-btn { color: #4a9aba !important; font-weight: 600; }
+.debug-toggle-btn.has-errors { color: #ef4444 !important; }
+
+/* ── MCP status badge ── */
+.mcp-status {
+    display: flex; align-items: center; gap: 4px;
+    margin-right: 8px; font-size: 10px; font-weight: 500;
+    color: #9ca3af; padding: 2px 8px; border-radius: 10px;
+    background: #f0f2f5; border: 1px solid #e5e7eb;
+    transition: all 0.3s;
+}
+.mcp-status-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: #d1d5db; transition: background 0.3s;
+}
+.mcp-status.connected { color: #065f46; background: #d1fae5; border-color: #a7f3d0; }
+.mcp-status.connected .mcp-status-dot { background: #22c55e; }
+
+/* ── Status line ── */
+.status-line {
+    padding: 4px 20px;
+    font-size: 11px;
+    color: #6b7280;
+    background: #f8f9fb;
+    border-bottom: 1px solid #e5e7eb;
+    flex-shrink: 0;
+    min-height: 24px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.status-line .spinner {
+    width: 12px; height: 12px;
+    border: 2px solid #e5e7eb; border-top-color: #4a6a7a;
+    border-radius: 50%; animation: spin 0.6s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Chat area ── */
+#chatArea {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    scroll-behavior: smooth;
+}
+
+/* ── Message bubbles ── */
+.msg {
+    max-width: 85%;
+    padding: 10px 14px;
+    border-radius: 12px;
+    font-size: 13px;
+    line-height: 1.6;
+    position: relative;
+    word-wrap: break-word;
+}
+.msg-user {
+    align-self: flex-end;
+    background: #4a6a7a;
+    color: #ffffff;
+    border-bottom-right-radius: 4px;
+}
+.msg-assistant {
+    align-self: flex-start;
+    background: #f0f2f5;
+    color: #1a1a1a;
+    border-bottom-left-radius: 4px;
+}
+.msg-assistant p { margin: 0 0 6px 0; }
+.msg-assistant p:last-child { margin-bottom: 0; }
+.msg-assistant strong { font-weight: 600; }
+.msg-assistant em { font-style: italic; }
+.msg-assistant code { background: #e5e7eb; padding: 1px 5px; border-radius: 3px; font-family: 'Consolas', monospace; font-size: 12px; }
+.msg-assistant pre { background: #1e293b; color: #e5e7eb; padding: 10px; border-radius: 6px; overflow-x: auto; margin: 6px 0; }
+.msg-assistant pre code { background: none; padding: 0; color: inherit; }
+.msg-assistant ul, .msg-assistant ol { margin: 4px 0 4px 18px; }
+.msg-assistant li { margin: 2px 0; }
+.msg-time { font-size: 10px; opacity: 0.5; margin-top: 4px; text-align: right; }
+.msg-error {
+    align-self: flex-start;
+    background: #fef2f2;
+    color: #991b1b;
+    border-left: 3px solid #ef4444;
+    border-radius: 0 8px 8px 0;
+}
+
+/* ── Thinking blocks ── */
+.thinking-block {
+    align-self: flex-start;
+    max-width: 85%;
+    border-left: 3px solid #6366f1;
+    background: #f8f7ff;
+    border-radius: 0 8px 8px 0;
+    margin: 2px 0;
+    font-size: 12px;
+}
+.thinking-block summary {
+    padding: 8px 12px;
+    cursor: pointer;
+    color: #6366f1;
+    font-weight: 500;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    user-select: none;
+}
+.thinking-block summary::-webkit-details-marker { display: none; }
+.thinking-block summary::before { content: '\25B6'; font-size: 9px; transition: transform 0.2s; }
+.thinking-block[open] summary::before { transform: rotate(90deg); }
+.thinking-block-body {
+    padding: 8px 12px;
+    border-top: 1px solid #ede9fe;
+    font-style: italic;
+    color: #6b7280;
+    line-height: 1.6;
+    max-height: 250px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+}
+
+/* ── Thinking dots (waiting indicator) ── */
+.thinking-dots {
+    align-self: flex-start;
+    display: flex; gap: 4px; padding: 12px 16px;
+}
+.thinking-dots span {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: #6366f1;
+    animation: bounce 1.2s ease-in-out infinite;
+}
+.thinking-dots span:nth-child(2) { animation-delay: 0.2s; }
+.thinking-dots span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes bounce {
+    0%, 80%, 100% { transform: translateY(0); opacity: 0.4; }
+    40% { transform: translateY(-6px); opacity: 1; }
+}
+
+/* ── Tool call cards ── */
+.tool-card {
+    align-self: flex-start;
+    max-width: 85%;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    background: #fafafa;
+    margin: 2px 0;
+    font-size: 12px;
+}
+.tool-card summary {
+    padding: 8px 12px;
+    cursor: pointer;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 500;
+    color: #374151;
+    user-select: none;
+}
+.tool-card summary::-webkit-details-marker { display: none; }
+.tool-card summary::before { content: '\25B6'; font-size: 9px; transition: transform 0.2s; color: #9ca3af; }
+.tool-card[open] summary::before { transform: rotate(90deg); }
+.tool-icon { font-size: 14px; }
+.tool-name { font-family: 'Consolas', monospace; font-size: 12px; }
+.tool-badge {
+    font-size: 9px; font-weight: 700; padding: 1px 6px;
+    border-radius: 3px; letter-spacing: 0.3px; margin-left: auto;
+    text-transform: uppercase;
+}
+.tool-badge.calling { background: #fef3c7; color: #92400e; }
+.tool-badge.done { background: #d1fae5; color: #065f46; }
+.tool-badge.error { background: #fee2e2; color: #991b1b; }
+.tool-section {
+    padding: 8px 12px;
+    border-top: 1px solid #e5e7eb;
+}
+.tool-section-label {
+    font-size: 10px; font-weight: 600; text-transform: uppercase;
+    color: #9ca3af; margin-bottom: 4px; letter-spacing: 0.5px;
+}
+.tool-json {
+    font-family: 'Consolas', monospace; font-size: 11px;
+    white-space: pre-wrap; color: #374151; background: #f0f2f5;
+    padding: 6px 8px; border-radius: 4px; max-height: 200px;
+    overflow-y: auto; word-break: break-word;
+}
+
+/* ── Input bar ── */
+.input-bar {
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+    padding: 12px 20px;
+    background: #fff;
+    border-top: 1px solid #e5e7eb;
+    flex-shrink: 0;
+}
+#chatInput {
+    flex: 1;
+    padding: 10px 14px;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 13px;
+    font-family: inherit;
+    outline: none;
+    resize: none;
+    min-height: 40px;
+    max-height: 120px;
+    line-height: 1.5;
+    background: #f8f9fb;
+    transition: border-color 0.15s;
+}
+#chatInput:focus { border-color: #4a6a7a; }
+.send-btn {
+    background: #4a6a7a;
+    border: none;
+    color: white;
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s;
+    flex-shrink: 0;
+}
+.send-btn:hover { background: #3d5a68; }
+.send-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.send-btn svg { width: 18px; height: 18px; }
+
+/* ── Settings panel ── */
+.settings-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.3); z-index: 100;
+}
+.settings-overlay.open { display: block; }
+.settings-panel {
+    position: fixed; top: 0; right: -360px; bottom: 0;
+    width: 340px; background: #fff; z-index: 101;
+    box-shadow: -4px 0 20px rgba(0,0,0,0.1);
+    transition: right 0.25s cubic-bezier(0.4,0,0.2,1);
+    display: flex; flex-direction: column;
+}
+.settings-panel.open { right: 0; }
+.settings-header {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 16px 20px; border-bottom: 1px solid #e5e7eb;
+}
+.settings-header h2 { font-size: 15px; font-weight: 600; }
+.settings-close {
+    background: none; border: none; font-size: 22px; cursor: pointer;
+    color: #6b7280; width: 32px; height: 32px; display: flex;
+    align-items: center; justify-content: center; border-radius: 6px;
+}
+.settings-close:hover { background: #f0f2f5; }
+.settings-body { padding: 16px 20px; overflow-y: auto; flex: 1; }
+.settings-section { margin-bottom: 20px; }
+.settings-section-title {
+    font-size: 11px; font-weight: 600; text-transform: uppercase;
+    color: #9ca3af; letter-spacing: 0.5px; margin-bottom: 10px;
+}
+.settings-field { margin-bottom: 12px; }
+.settings-field label {
+    display: block; font-size: 12px; font-weight: 500;
+    color: #374151; margin-bottom: 4px;
+}
+.settings-field input, .settings-field select {
+    width: 100%; padding: 8px 10px; border: 1px solid #e5e7eb;
+    border-radius: 6px; font-size: 12px; font-family: inherit;
+    background: #f8f9fb; outline: none; transition: border-color 0.15s;
+}
+.settings-field input:focus, .settings-field select:focus { border-color: #4a6a7a; }
+.api-key-wrap { position: relative; }
+.api-key-wrap input { padding-right: 36px; }
+.api-key-toggle {
+    position: absolute; right: 4px; top: 50%; transform: translateY(-50%);
+    background: none; border: none; cursor: pointer; font-size: 16px;
+    color: #9ca3af; padding: 4px;
+}
+.settings-note {
+    font-size: 11px; color: #9ca3af; margin-top: 8px; line-height: 1.5;
+}
+.settings-note code {
+    background: #f0f2f5; padding: 1px 4px; border-radius: 3px;
+    font-family: 'Consolas', monospace; font-size: 11px;
+}
+
+/* ── Footer ── */
+.footer {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 6px 20px; font-size: 10px; color: #9ca3af;
+    border-top: 1px solid #e5e7eb; flex-shrink: 0;
+}
+
+/* ── Debug panel ── */
+.debug-panel {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    height: 0; background: #1e293b; color: #e5e7eb;
+    transition: height 0.25s cubic-bezier(0.4,0,0.2,1);
+    z-index: 50; display: flex; flex-direction: column;
+    font-family: 'Consolas', monospace; font-size: 11px;
+}
+.debug-panel.open { height: 260px; }
+.debug-header {
+    display: flex; align-items: center; gap: 12px;
+    padding: 6px 12px; background: #0f172a;
+    border-bottom: 1px solid #334155; flex-shrink: 0;
+}
+.debug-header > span { font-weight: 600; font-size: 11px; white-space: nowrap; }
+.debug-tabs { display: flex; gap: 2px; flex: 1; }
+.debug-tab {
+    background: none; border: none; color: #94a3b8; cursor: pointer;
+    font-size: 10px; padding: 3px 8px; border-radius: 3px;
+    font-family: inherit; transition: all 0.15s;
+}
+.debug-tab:hover { color: #e5e7eb; background: #334155; }
+.debug-tab.active { color: #ffffff; background: #4a6a7a; }
+.debug-actions { display: flex; gap: 4px; }
+.debug-actions button {
+    background: #334155; border: none; color: #94a3b8; cursor: pointer;
+    font-size: 10px; padding: 3px 8px; border-radius: 3px;
+    font-family: inherit; transition: all 0.15s;
+}
+.debug-actions button:hover { color: #ffffff; background: #475569; }
+.debug-body { flex: 1; overflow-y: auto; padding: 6px 12px; }
+.debug-entry { padding: 2px 0; border-bottom: 1px solid #1e293b22; white-space: pre-wrap; word-break: break-word; }
+.debug-entry .de-time { color: #64748b; }
+.debug-entry .de-label { font-weight: 600; }
+.de-send .de-label { color: #60a5fa; }
+.de-recv .de-label { color: #34d399; }
+.de-tool-call .de-label { color: #fbbf24; }
+.de-tool-result .de-label { color: #fb923c; }
+.de-error .de-label { color: #f87171; }
+.de-info .de-label { color: #94a3b8; }
+.de-mcp .de-label { color: #c084fc; }
+.debug-entry .de-json { color: #8a8a8a; max-height: 200px; overflow-y: auto; }
+</style>
+</head>
+<body>
+
+<!-- Banner -->
+<div class="banner">
+    <canvas id="bannerCanvas"></canvas>
+    <div class="banner-content">
+        <a href="../../index.html" class="banner-brand">
+            <img src="../../shared/assets/emch-berger-logo.gif" alt="Emch+Berger" class="banner-brand-mark">
+            <div>
+                <div class="banner-title">VDC Agent</div>
+                <div class="banner-subtitle" id="modelLabel">BIM Tools · KI-Assistent</div>
+            </div>
+        </a>
+        <div class="banner-actions">
+            <div class="mcp-status" id="mcpStatus">
+                <div class="mcp-status-dot"></div>
+                <span id="mcpLabel">MCP</span>
+            </div>
+            <div class="status-indicator">
+                <div class="status-dot" id="statusDot"></div>
+                <span id="statusLabel">Verbinde...</span>
+            </div>
+            <button class="header-btn debug-toggle-btn" id="debugToggleBtn" onclick="toggleDebug()" title="Debug Console">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/>
+                </svg>
+            </button>
+            <button class="header-btn" onclick="clearChat()" title="Chat leeren">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/>
+                </svg>
+            </button>
+            <button class="header-btn" onclick="toggleSettings()" title="Einstellungen">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/>
+                </svg>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Status line -->
+<div class="status-line" id="statusLine">Bereit</div>
+
+<!-- Chat area -->
+<div id="chatArea"></div>
+
+<!-- Input bar -->
+<div class="input-bar">
+    <textarea id="chatInput" placeholder="Frage zum BIM-Modell eingeben..." rows="1"></textarea>
+    <button class="send-btn" id="sendBtn" onclick="sendMessage()" title="Senden">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
+        </svg>
+    </button>
+</div>
+
+<!-- Footer -->
+<footer class="footer">
+    <span>&copy; 2026 Emch+Berger GmbH</span>
+    <span>VDC Agent &middot; Kimi K2.5</span>
+</footer>
+
+<!-- Settings overlay + panel -->
+<div class="settings-overlay" id="settingsOverlay" onclick="toggleSettings()"></div>
+<div class="settings-panel" id="settingsPanel">
+    <div class="settings-header">
+        <h2>Einstellungen</h2>
+        <button class="settings-close" onclick="toggleSettings()">&times;</button>
+    </div>
+    <div class="settings-body">
+        <div class="settings-section">
+            <div class="settings-section-title">API Konfiguration</div>
+            <div class="settings-field">
+                <label>API Key</label>
+                <div class="api-key-wrap">
+                    <input type="password" id="apiKeyInput" placeholder="sk-..." oninput="saveSettings()">
+                    <button class="api-key-toggle" onclick="toggleKeyVisibility()">&#128065;</button>
+                </div>
+            </div>
+            <div class="settings-field">
+                <label>Modell</label>
+                <select id="modelSelect" onchange="saveSettings()">
+                    <option value="kimi-k2.5">Kimi K2.5 (empfohlen)</option>
+                    <option value="moonshot-v1-auto">Moonshot V1 Auto</option>
+                    <option value="moonshot-v1-128k">Moonshot V1 128K</option>
+                </select>
+            </div>
+            <div class="settings-field">
+                <label>Base URL</label>
+                <input type="text" id="baseUrlInput" value="https://api.moonshot.ai/v1" oninput="saveSettings()">
+            </div>
+            <div class="settings-field">
+                <label>Max Iterationen</label>
+                <input type="number" id="maxIterInput" value="10" min="1" max="20" oninput="saveSettings()">
+            </div>
+            <div class="settings-note">
+                API Key erhalten Sie unter <code>platform.kimi.ai</code><br>
+                Base URL fuer Kimi: <code>https://api.moonshot.ai/v1</code>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Debug panel -->
+<div class="debug-panel" id="debugPanel">
+    <div class="debug-header">
+        <span>Debug Console</span>
+        <div class="debug-tabs">
+            <button class="debug-tab active" onclick="switchDebugTab('all')" id="dtAll">All</button>
+            <button class="debug-tab" onclick="switchDebugTab('llm')" id="dtLlm">LLM</button>
+            <button class="debug-tab" onclick="switchDebugTab('tools')" id="dtTools">Tools</button>
+            <button class="debug-tab" onclick="switchDebugTab('mcp')" id="dtMcp">MCP</button>
+            <button class="debug-tab" onclick="switchDebugTab('errors')" id="dtErrors">Errors</button>
+        </div>
+        <div class="debug-actions">
+            <button onclick="copyDebugLog()">Copy</button>
+            <button onclick="clearDebugLog()">Clear</button>
+        </div>
+    </div>
+    <div class="debug-body" id="debugBody"></div>
+</div>
+
+<script>
+// ==================================================================
+// CONFIGURATION
+// ==================================================================
+var CONFIG = {
+    apiKey: '',
+    model: 'kimi-k2.5',
+    baseUrl: 'https://api.moonshot.ai/v1',
+    maxIterations: 10
+};
+var STORAGE_KEY = 'vdc_agent_kimi_settings';
+
+// Obfuscated default — prevents casual reading of source
+var _XK = [0x4B, 0x2A, 0x7F, 0x13, 0x5E, 0x6D, 0x3C, 0x48];
+var _DE = '3841527567547d3e0f7f356507554c0a215f15492d154b2f037c3966342b710b0f5d1b50040b0d00781c172069355e2d7d1c16';
+function _dk(enc) {
+    var out = '';
+    for (var i = 0; i < enc.length; i += 2) out += String.fromCharCode(parseInt(enc.substr(i, 2), 16) ^ _XK[(i / 2) % _XK.length]);
+    return out;
+}
+
+var SYSTEM_PROMPT = 'You are a BIM data assistant for VDC Manager 4.0 (desite). You interact with a live BIM model using tools.\n\n## Tools\n\n**count_objects(domain)** — Counts all elements in a domain.\n- "geometry" = 3D model objects\n- "structures" = structural hierarchy nodes\n- "documentation" = document objects\n- "all" = breakdown of every domain + total\n\n**filter_by_property(property_name, datatype, pattern, domain, source_model)** — Filters BIM elements by a property value. Returns a handle and count. The matching element IDs are stored server-side under the handle — they never appear in the conversation.\n- property_name: Use format "GroupName:PropertyName", e.g. "Objektklassifikation:Objekttyp"\n- datatype: Usually "xs:string"\n- pattern: Wildcard pattern, e.g. "Widerlagerwand" or "*wand*"\n- domain: Default "geometry"\n- source_model: Optional model name/filename to restrict results to a single IFC model. Omit to search all models. Use list_models() first to discover names.\n\nWhen source_model is set, the handle encodes the model: "Entwaesserung@DBIFRP_10000_0000_BauPl_OL_FM_3_N_DBF_-.ifc"\n\n**list_models(domain)** — Lists all loaded IFC/BIM models with filenames and metadata. Call this when the user references a specific model to discover the exact name.\n- domain: Default "geometry"\n\n**select_by_handle(handle)** — Selects (highlights) all elements of a stored set in the 3D view. No zoom applied.\n- handle: Name of a previously stored element set, e.g. "Rohr" or "Rohr@modelname.ifc"\n\n**list_element_sets()** — Lists all stored element set handles with counts. Use before select_by_handle to confirm a handle exists.\n\n## ADB Objektkatalog — Property Names\n\nObjects are classified using the ADB Objektkatalog A39. Use these property_name values:\n- "Objektklassifikation:Objektgruppe" = Level 1: Unterbau, Ueberbau, Bewehrung, Einfassung, Einfriedung, Annotation, Aufbauschicht, Baustelleneinrichtung, Altlast\n- "Objektklassifikation:Objektklasse" = Level 2: Widerlager, Fahrbahnplatte, Bewehrungsstab, Zaun, Pfeiler, Fundament, Bordstein\n- "Objektklassifikation:Objekttyp"    = Level 3: Widerlagerwand, Widerlagerfluegel, Pfosten, Stabstahl, Vermessungspunkt\n\nOther useful properties:\n- "Baustoff:Baustoff" = material: Stahl, Beton, Stahlbeton\n- "Lage:Abschnitt", "Lage:Bereich" = location info\n- "Bauphase:Bauzustand" = Neubau, Temporaer, Abbruch, Bestand\n\n## Strategy\nWhen user asks "how many Widerlagerwand?":\n1. Call filter_by_property with property_name="Objektklassifikation:Objekttyp", pattern="Widerlagerwand"\n2. If 0 results: try pattern="*Widerlagerwand*"\n3. If still 0: try property_name="Objektklassifikation:Objektklasse"\n\nWhen user asks "select all Rohr":\n1. Call filter_by_property to find and store them under a handle\n2. Call select_by_handle with that handle\n\nWhen user references a specific model (e.g. "select all Entwaesserung from model DBIFRP_10000..."):\n1. Call list_models() to discover available model names\n2. Call filter_by_property with source_model set to the matching model name\n3. Call select_by_handle with the resulting handle (e.g. "Entwaesserung@DBIFRP_10000...")\n\n**run_clash_detection(leftModels, rightModels, leftFilterProperty, leftFilterValue, rightFilterProperty, rightFilterValue, name, allowTouches, checkInclusions)** — Creates and runs a clash detection (Kollisionspruefung). Returns clash count.\n- leftModels: IFC filename(s) for left side. Space-separated for multiple models. Leave EMPTY to include ALL models in the project.\n- rightModels: IFC filename(s) for right side. Same format. If empty and leftModels is set, uses leftModels. If both empty, all models.\n- leftFilterProperty / leftFilterValue: Optional property filter for left, e.g. "Objektklassifikation:Objekttyp" / "Fenster"\n- rightFilterProperty / rightFilterValue: Optional property filter for right\n- name: Custom Pruefung name. Auto-generated if omitted\n- allowTouches: Default true\n- checkInclusions: Default false\n\nIMPORTANT: Do NOT set leftModels/rightModels when the user does not mention specific model names. When models are omitted, all models in the project are checked.\n\n**list_clash_runs(handle)** — Lists all clash runs or shows a specific run in the UI.\n- handle: If omitted, lists all runs. If set, displays clashes in VDC Manager.\n\n## Clash Detection Strategy\nIMPORTANT: Before calling run_clash_detection, ALWAYS validate inputs first:\n- For object names: call filter_by_property to check if the name exists as Objekttyp, then Objektklasse, then Objektgruppe. Try wildcards if 0 results. This tells you the correct property_name for leftFilterProperty/rightFilterProperty.\n- For model names: call list_models() to get the exact filename.\n\nExample 1 - "check Rohr vs Vermessungspunkt" (no models):\n1. filter_by_property(property_name="Objektklassifikation:Objekttyp", pattern="Rohr") -> verify count > 0\n2. filter_by_property(property_name="Objektklassifikation:Objekttyp", pattern="Vermessungspunkt") -> verify count > 0\n3. run_clash_detection(leftFilterProperty="Objektklassifikation:Objekttyp", leftFilterValue="Rohr", rightFilterProperty="Objektklassifikation:Objekttyp", rightFilterValue="Vermessungspunkt")\n\nExample 2 - "check model1.ifc vs model2.ifc" (models only):\n1. list_models() to get exact filenames\n2. run_clash_detection(leftModels="model1.ifc", rightModels="model2.ifc")\n\nExample 3 - "check Fenster in model1.ifc vs Tuer in model2.ifc":\n1. list_models() for exact filenames\n2. filter_by_property to verify "Fenster" is Objekttyp/Objektklasse/Objektgruppe\n3. filter_by_property to verify "Tuer" is Objekttyp/Objektklasse/Objektgruppe\n4. run_clash_detection(leftModels="model1.ifc", leftFilterProperty="Objektklassifikation:Objekttyp", leftFilterValue="Fenster", rightModels="model2.ifc", rightFilterProperty="Objektklassifikation:Objekttyp", rightFilterValue="Tuer")\n\nWhen user asks to see clash results:\n1. list_clash_runs() to see available handles\n2. list_clash_runs(handle) to show them in the UI\n\n## Rules\n- Reply ONLY with data from tool calls. No guessing, no inventing counts.\n- Use the same language as the user (German or English).\n- If 0 results, try alternatives before saying "keine gefunden".\n- Raw element IDs must NEVER appear in your replies — use handles and counts only.\n- If the request is outside your tool capabilities, say so in one sentence.';
+
+// ==================================================================
+// STATE
+// ==================================================================
+var conversationHistory = [];
+var isProcessing = false;
+var apiConnected = false;
+var healthInterval = null;
+
+var _elementSets = {};
+var _clashRuns = {};
+
+function createElementSet(handle, domain, ids, provenance, sourceModel) {
+    return {
+        handle: handle, domain: domain, ids: ids, count: ids.length,
+        sourceModel: sourceModel || null, provenance: provenance,
+        createdAt: new Date().toISOString(),
+        summary: function() {
+            return { handle: this.handle, count: this.count, sourceModel: this.sourceModel,
+                     domain: this.domain, provenance: this.provenance, createdAt: this.createdAt };
+        }
+    };
+}
+
+function createClashRun(handle, modelId, runId, left, right, clashCount, status) {
+    return {
+        handle: handle, modelId: modelId, runId: runId,
+        left: left, right: right, clashCount: clashCount, status: status,
+        createdAt: new Date().toISOString(),
+        summary: function() {
+            return { handle: this.handle, left: this.left, right: this.right,
+                     clashCount: this.clashCount, status: this.status, createdAt: this.createdAt };
+        }
+    };
+}
+
+// ==================================================================
+// DEBUG SYSTEM
+// ==================================================================
+var debugEntries = [];
+var debugFilter = 'all';
+var debugOpen = false;
+var debugErrorCount = 0;
+
+function debugLog(category, label, data) {
+    var ts = new Date().toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit', second: '2-digit', fractionalSecondDigits: 3 });
+    var entry = { time: ts, category: category, label: label, data: data };
+    debugEntries.push(entry);
+    console.log('[' + category.toUpperCase() + '] ' + label, data !== undefined ? data : '');
+    if (category === 'error') {
+        debugErrorCount++;
+        var btn = document.getElementById('debugToggleBtn');
+        if (btn) btn.classList.add('has-errors');
+    }
+    renderDebugEntry(entry);
+}
+
+function renderDebugEntry(entry) {
+    if (debugFilter !== 'all') {
+        var show = false;
+        if (debugFilter === 'llm' && (entry.category === 'send' || entry.category === 'recv')) show = true;
+        if (debugFilter === 'tools' && (entry.category === 'tool-call' || entry.category === 'tool-result')) show = true;
+        if (debugFilter === 'mcp' && entry.category === 'mcp') show = true;
+        if (debugFilter === 'errors' && entry.category === 'error') show = true;
+        if (!show) return;
+    }
+    var body = document.getElementById('debugBody');
+    if (!body) return;
+    var div = document.createElement('div');
+    div.className = 'debug-entry de-' + entry.category;
+    var html = '<span class="de-time">' + entry.time + '</span> <span class="de-label">[' + entry.category.toUpperCase() + ']</span> ' + escapeHtml(entry.label);
+    if (entry.data !== undefined && entry.data !== null) {
+        var dataStr;
+        if (typeof entry.data === 'string') dataStr = entry.data;
+        else { try { dataStr = JSON.stringify(entry.data, null, 2); } catch(e) { dataStr = String(entry.data); } }
+        if (dataStr.length > 5000) dataStr = dataStr.substring(0, 5000) + '\n... [truncated]';
+        html += '\n<div class="de-json">' + escapeHtml(dataStr) + '</div>';
+    }
+    div.innerHTML = html;
+    body.appendChild(div);
+    body.scrollTop = body.scrollHeight;
+}
+
+function rerenderDebugLog() {
+    var body = document.getElementById('debugBody');
+    if (body) body.innerHTML = '';
+    for (var i = 0; i < debugEntries.length; i++) renderDebugEntry(debugEntries[i]);
+}
+
+function switchDebugTab(tab) {
+    debugFilter = tab;
+    document.querySelectorAll('.debug-tab').forEach(function(el) { el.classList.remove('active'); });
+    var id = { all: 'dtAll', llm: 'dtLlm', tools: 'dtTools', mcp: 'dtMcp', errors: 'dtErrors' }[tab];
+    if (id) document.getElementById(id).classList.add('active');
+    rerenderDebugLog();
+}
+
+function toggleDebug() {
+    debugOpen = !debugOpen;
+    document.getElementById('debugPanel').classList.toggle('open', debugOpen);
+    if (debugOpen) {
+        debugErrorCount = 0;
+        document.getElementById('debugToggleBtn').classList.remove('has-errors');
+    }
+}
+
+function clearDebugLog() {
+    debugEntries = [];
+    var body = document.getElementById('debugBody');
+    if (body) body.innerHTML = '';
+}
+
+function copyDebugLog() {
+    var text = debugEntries.map(function(e) {
+        var line = e.time + ' [' + e.category.toUpperCase() + '] ' + e.label;
+        if (e.data !== undefined) {
+            try { line += '\n' + JSON.stringify(e.data, null, 2); } catch(ex) { line += '\n' + String(e.data); }
+        }
+        return line;
+    }).join('\n\n');
+    if (navigator.clipboard) navigator.clipboard.writeText(text);
+}
+
+// ==================================================================
+// UTILITIES
+// ==================================================================
+function escapeHtml(s) {
+    return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+function hasVdcApp() {
+    return typeof vdcApp !== 'undefined';
+}
+
+function toArray(val) {
+    if (val === null || val === undefined) return [];
+    if (Array.isArray(val)) return val;
+    try {
+        var fromResult = Array.from(val);
+        if (fromResult.length > 0 || (typeof val.length === 'number' && val.length === 0)) return fromResult;
+    } catch(e) {}
+    try {
+        var sliced = Array.prototype.slice.call(val);
+        if (sliced.length > 0) return sliced;
+    } catch(e) {}
+    if (typeof val.length === 'number') {
+        var arr = [];
+        for (var i = 0; i < val.length; i++) { try { arr.push(val[i]); } catch(e) { break; } }
+        if (arr.length > 0) return arr;
+    }
+    if (typeof val === 'string' && val.length > 0) return val.split(';').filter(function(v) { return v.length > 0; });
+    if (typeof val === 'object') {
+        var keys = Object.keys(val);
+        var numKeys = keys.filter(function(k) { return /^\d+$/.test(k); });
+        if (numKeys.length > 0) {
+            numKeys.sort(function(a,b) { return parseInt(a) - parseInt(b); });
+            return numKeys.map(function(k) { return val[k]; });
+        }
+    }
+    return [val];
+}
+
+function s(val) {
+    if (val === undefined || val === null) return "";
+    return String(val);
+}
+
+function renderMarkdown(text) {
+    var html = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    html = html.replace(/```(\w*)\n([\s\S]*?)```/g, function(m, lang, code) {
+        return '<pre><code>' + code.trim() + '</code></pre>';
+    });
+    html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
+    html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+    html = html.replace(/\*(.+?)\*/g, '<em>$1</em>');
+    html = html.replace(/^[-*] (.+)$/gm, '<li>$1</li>');
+    html = html.replace(/(<li>.*<\/li>\n?)+/g, '<ul>$&</ul>');
+    html = html.replace(/^\d+\. (.+)$/gm, '<li>$1</li>');
+    html = html.replace(/\n\n/g, '</p><p>');
+    html = html.replace(/([^>])\n([^<])/g, '$1<br>$2');
+    if (!html.startsWith('<')) html = '<p>' + html + '</p>';
+    return html;
+}
+
+// ==================================================================
+// SETTINGS
+// ==================================================================
+function loadSettings() {
+    try {
+        var saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+            var obj = JSON.parse(saved);
+            if (obj.apiKey) CONFIG.apiKey = obj.apiKey;
+            if (obj.model) CONFIG.model = obj.model;
+            if (obj.baseUrl) CONFIG.baseUrl = obj.baseUrl;
+            if (obj.maxIterations) CONFIG.maxIterations = parseInt(obj.maxIterations) || 10;
+        }
+    } catch(e) {}
+    if (!CONFIG.apiKey) { CONFIG.apiKey = _dk(_DE); }
+}
+
+function saveSettings() {
+    CONFIG.apiKey = document.getElementById('apiKeyInput').value.trim();
+    CONFIG.model = document.getElementById('modelSelect').value;
+    CONFIG.baseUrl = document.getElementById('baseUrlInput').value.trim();
+    CONFIG.maxIterations = parseInt(document.getElementById('maxIterInput').value) || 10;
+    try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(CONFIG));
+    } catch(e) {}
+    document.getElementById('modelLabel').textContent = CONFIG.model;
+    document.querySelector('.footer span:last-child').textContent = 'VDC Agent · ' + CONFIG.model;
+    checkApiHealth();
+}
+
+function updateSettingsUI() {
+    document.getElementById('apiKeyInput').value = CONFIG.apiKey;
+    document.getElementById('modelSelect').value = CONFIG.model;
+    document.getElementById('baseUrlInput').value = CONFIG.baseUrl;
+    document.getElementById('maxIterInput').value = CONFIG.maxIterations;
+    document.getElementById('modelLabel').textContent = CONFIG.model;
+}
+
+function toggleSettings() {
+    document.getElementById('settingsOverlay').classList.toggle('open');
+    document.getElementById('settingsPanel').classList.toggle('open');
+}
+
+function toggleKeyVisibility() {
+    var input = document.getElementById('apiKeyInput');
+    input.type = input.type === 'password' ? 'text' : 'password';
+}
+
+// ==================================================================
+// UI RENDERING
+// ==================================================================
+function setStatus(text, showSpinner) {
+    var el = document.getElementById('statusLine');
+    if (showSpinner) {
+        el.innerHTML = '<div class="spinner"></div> ' + escapeHtml(text);
+    } else {
+        el.textContent = text;
+    }
+}
+
+function addMessage(role, content) {
+    var chatArea = document.getElementById('chatArea');
+    var div = document.createElement('div');
+    div.className = 'msg msg-' + role;
+    var time = new Date().toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+
+    if (role === 'assistant') {
+        div.innerHTML = renderMarkdown(content) + '<div class="msg-time">' + time + '</div>';
+    } else if (role === 'error') {
+        div.innerHTML = renderMarkdown(content);
+    } else {
+        div.textContent = content;
+        var timeEl = document.createElement('div');
+        timeEl.className = 'msg-time';
+        timeEl.textContent = time;
+        div.appendChild(timeEl);
+    }
+    chatArea.appendChild(div);
+    chatArea.scrollTop = chatArea.scrollHeight;
+}
+
+function addThinkingBlock(text) {
+    var chatArea = document.getElementById('chatArea');
+    var details = document.createElement('details');
+    details.className = 'thinking-block';
+
+    var summary = document.createElement('summary');
+    summary.textContent = 'Reasoning';
+    details.appendChild(summary);
+
+    var body = document.createElement('div');
+    body.className = 'thinking-block-body';
+    body.textContent = text;
+    details.appendChild(body);
+
+    chatArea.appendChild(details);
+    chatArea.scrollTop = chatArea.scrollHeight;
+}
+
+var toolCardCounter = 0;
+
+function addToolCard(toolName, args) {
+    var chatArea = document.getElementById('chatArea');
+    var cardId = 'tc-' + (++toolCardCounter);
+
+    var details = document.createElement('details');
+    details.className = 'tool-card';
+    details.id = cardId;
+    details.open = true;
+
+    var summary = document.createElement('summary');
+    summary.innerHTML = '<span class="tool-icon">⚙</span> <span class="tool-name">' + escapeHtml(toolName) + '</span> <span class="tool-badge calling" id="' + cardId + '-badge">calling…</span>';
+    details.appendChild(summary);
+
+    var argsSection = document.createElement('div');
+    argsSection.className = 'tool-section';
+    var argsLabel = document.createElement('div');
+    argsLabel.className = 'tool-section-label';
+    argsLabel.textContent = 'Arguments';
+    argsSection.appendChild(argsLabel);
+    var argsJson = document.createElement('div');
+    argsJson.className = 'tool-json';
+    try { argsJson.textContent = JSON.stringify(args, null, 2); } catch(e) { argsJson.textContent = String(args); }
+    argsSection.appendChild(argsJson);
+    details.appendChild(argsSection);
+
+    var resultSection = document.createElement('div');
+    resultSection.className = 'tool-section';
+    resultSection.id = cardId + '-result';
+    resultSection.style.display = 'none';
+    details.appendChild(resultSection);
+
+    chatArea.appendChild(details);
+    chatArea.scrollTop = chatArea.scrollHeight;
+    return cardId;
+}
+
+function updateToolCard(cardId, result, success) {
+    var badge = document.getElementById(cardId + '-badge');
+    if (badge) {
+        badge.className = 'tool-badge ' + (success ? 'done' : 'error');
+        badge.textContent = success ? 'done' : 'error';
+    }
+
+    var resultSection = document.getElementById(cardId + '-result');
+    if (resultSection) {
+        resultSection.style.display = '';
+        var label = document.createElement('div');
+        label.className = 'tool-section-label';
+        label.textContent = 'Result';
+        resultSection.appendChild(label);
+        var json = document.createElement('div');
+        json.className = 'tool-json';
+        var resultStr = '';
+        try { resultStr = JSON.stringify(result, null, 2); } catch(e) { resultStr = String(result); }
+        if (resultStr.length > 3000) resultStr = resultStr.substring(0, 3000) + '\n... [truncated]';
+        json.textContent = resultStr;
+        resultSection.appendChild(json);
+    }
+
+    setTimeout(function() {
+        var card = document.getElementById(cardId);
+        if (card) card.open = false;
+    }, 2000);
+}
+
+function showThinking() {
+    var chatArea = document.getElementById('chatArea');
+    var div = document.createElement('div');
+    div.className = 'thinking-dots';
+    div.id = 'thinkingIndicator';
+    div.innerHTML = '<span></span><span></span><span></span>';
+    chatArea.appendChild(div);
+    chatArea.scrollTop = chatArea.scrollHeight;
+}
+
+function hideThinking() {
+    var el = document.getElementById('thinkingIndicator');
+    if (el) el.remove();
+}
+
+function showWelcome() {
+    addMessage('assistant', 'Hallo! Ich bin der **VDC Agent** fuer den VDC Manager.\n\nIch kann Objekte im BIM-Modell zaehlen und nach ADB-Klassifikation filtern.\n\n**Probieren Sie es aus:**\n- *\"Wie viele Widerlagerwand gibt es?\"*\n- *\"Zaehle alle Geometrie-Objekte\"*\n- *\"Wie viele Elemente haben Baustoff Stahlbeton?\"*\n- *\"How many Pfosten are in the project?\"*');
+}
+
+function clearChat() {
+    conversationHistory = [];
+    _elementSets = {};
+    _clashRuns = {};
+    document.getElementById('chatArea').innerHTML = '';
+    setStatus('Bereit');
+    showWelcome();
+}
+
+// ==================================================================
+// TOOL DEFINITION & EXECUTOR
+// ==================================================================
+var tools = [
+{
+    type: 'function',
+    function: {
+        name: 'count_objects',
+        description: 'Count all objects in the VDC Manager project. Returns the total number of elements in the specified domain. Use "geometry" for 3D model objects, "structures" for structural hierarchy, "documentation" for documents, or "all" for everything.',
+        parameters: {
+            type: 'object',
+            properties: {
+                domain: {
+                    type: 'string',
+                    enum: ['geometry', 'structures', 'documentation', 'all'],
+                    description: 'Which domain to count objects in.'
+                }
+            },
+            required: ['domain']
+        }
+    }
+},
+{
+    type: 'function',
+    function: {
+        name: 'filter_by_property',
+        description: 'Filter BIM elements by a property value and return the matching count. Use this to answer questions like "how many Widerlagerwand?" or "how many steel elements?". Property names follow the format "GroupName:PropertyName", e.g. "Objektklassifikation:Objekttyp".',
+        parameters: {
+            type: 'object',
+            properties: {
+                property_name: {
+                    type: 'string',
+                    description: 'Property path in format "GroupName:PropertyName", e.g. "Objektklassifikation:Objekttyp", "Objektklassifikation:Objektklasse", "Objektklassifikation:Objektgruppe", "Baustoff:Baustoff".'
+                },
+                datatype: {
+                    type: 'string',
+                    description: 'Property datatype. Use "xs:string" for text properties (default).',
+                    enum: ['xs:string', 'xs:int', 'xs:double', 'xs:boolean']
+                },
+                pattern: {
+                    type: 'string',
+                    description: 'Value to match. Supports * as wildcard, e.g. "Widerlagerwand", "*wand*", "Stahl".'
+                },
+                domain: {
+                    type: 'string',
+                    enum: ['geometry', 'structures', 'documentation'],
+                    description: 'Domain to search in. Default "geometry".'
+                },
+                source_model: {
+                    type: 'string',
+                    description: 'Optional: model name/filename to restrict results to. Use list_models() to discover names. Omit to search all models.'
+                }
+            },
+            required: ['property_name', 'datatype', 'pattern']
+        }
+    }
+},
+{
+    type: 'function',
+    function: {
+        name: 'list_models',
+        description: 'List all loaded IFC/BIM models with their filenames and metadata. Use this to discover model names before filtering by model.',
+        parameters: {
+            type: 'object',
+            properties: {
+                domain: {
+                    type: 'string',
+                    enum: ['geometry', 'structures', 'documentation', 'all'],
+                    description: 'Domain to list models for. Default "geometry".'
+                }
+            },
+            required: []
+        }
+    }
+},
+{
+    type: 'function',
+    function: {
+        name: 'select_by_handle',
+        description: 'Select all elements in a stored set in the VDC Manager 3D view. No zoom applied.',
+        parameters: {
+            type: 'object',
+            properties: {
+                handle: {
+                    type: 'string',
+                    description: 'Name of a stored element set, e.g. "Rohr". Call list_element_sets first if unsure.'
+                }
+            },
+            required: ['handle']
+        }
+    }
+},
+{
+    type: 'function',
+    function: {
+        name: 'list_element_sets',
+        description: 'List all stored element set handles with their counts. Use this before select_by_handle to confirm a handle exists.',
+        parameters: { type: 'object', properties: {}, required: [] }
+    }
+},
+{
+    type: 'function',
+    function: {
+        name: 'run_clash_detection',
+        description: 'Create and run a clash detection (Kollisionspruefung) between two sets of BIM elements. Creates a CD model, configures filters, runs the check, and returns the clash count. If no models are specified, all models in the project are checked. For multiple models on one side, separate filenames with a space (space = OR).',
+        parameters: {
+            type: 'object',
+            properties: {
+                leftModels: { type: 'string', description: 'IFC filename(s) for the left side. Space-separated for multiple, e.g. "model1.ifc model2.ifc". Leave empty to include all models.' },
+                rightModels: { type: 'string', description: 'IFC filename(s) for the right side. Same format. If empty and leftModels is set, uses leftModels. If both empty, all models.' },
+                leftFilterProperty: { type: 'string', description: 'Optional property filter for left side, e.g. "Objektklassifikation:Objekttyp".' },
+                leftFilterValue: { type: 'string', description: 'Value for the left filter, e.g. "Fenster".' },
+                rightFilterProperty: { type: 'string', description: 'Optional property filter for right side.' },
+                rightFilterValue: { type: 'string', description: 'Value for the right filter, e.g. "Tuer".' },
+                name: { type: 'string', description: 'Custom name for the Pruefung. Auto-generated if empty.' },
+                allowTouches: { type: 'boolean', description: 'Whether touching geometry counts as clash. Default true.' },
+                checkInclusions: { type: 'boolean', description: 'Whether to check for inclusions. Default false.' }
+            },
+            required: []
+        }
+    }
+},
+{
+    type: 'function',
+    function: {
+        name: 'list_clash_runs',
+        description: 'List all clash detection runs or show results for a specific run in the VDC Manager UI.',
+        parameters: {
+            type: 'object',
+            properties: {
+                handle: { type: 'string', description: 'If empty, lists all runs. If set, shows clashes in VDC Manager UI.' }
+            },
+            required: []
+        }
+    }
+}
+];
+
+async function executeTool(toolName, args) {
+    if (!hasVdcApp()) {
+        return { error: 'vdcApp nicht verfuegbar. Diese Seite muss im VDC Manager geoeffnet werden.' };
+    }
+
+    if (toolName === 'count_objects') {
+        var domain = args.domain || 'geometry';
+
+        if (domain === 'all') {
+            var counts = {};
+            var total = 0;
+            var domains = ['geometry', 'structures', 'documentation'];
+            for (var i = 0; i < domains.length; i++) {
+                var elems = toArray(await vdcApp.getAllElements(domains[i]));
+                counts[domains[i]] = elems.length;
+                total += elems.length;
+            }
+            return { domain: 'all', counts: counts, total: total };
+        }
+
+        var elements = toArray(await vdcApp.getAllElements(domain));
+        return { domain: domain, count: elements.length };
+    }
+
+    if (toolName === 'filter_by_property') {
+        var propName = args.property_name || args.propertyName;
+        var datatype = args.datatype || 'xs:string';
+        var pattern = args.pattern;
+        var filterDomain = args.domain || 'geometry';
+
+        var allElems = toArray(await vdcApp.getAllElements(filterDomain));
+        var filtered = toArray(await vdcApp.filterByProperty(
+            allElems, propName, datatype, pattern, true, filterDomain
+        ));
+
+        var sourceModel = args.source_model || args.sourceModel || '';
+        if (sourceModel && filtered.length > 0) {
+            var modelMatchCache = {};
+            var modelFiltered = [];
+            for (var i = 0; i < filtered.length; i++) {
+                var mId = await vdcApp.getModelByElement(filtered[i], filterDomain);
+                if (!(mId in modelMatchCache)) {
+                    var meta = await vdcApp.getModelMetaData(mId);
+                    var metaStr = '';
+                    try { metaStr = JSON.stringify(meta).toLowerCase(); } catch(e) { metaStr = String(meta).toLowerCase(); }
+                    modelMatchCache[mId] = metaStr.indexOf(sourceModel.toLowerCase()) !== -1;
+                }
+                if (modelMatchCache[mId]) modelFiltered.push(filtered[i]);
+            }
+            filtered = modelFiltered;
+        }
+
+        var handle = sourceModel ? (pattern + '@' + sourceModel) : pattern;
+        _elementSets[handle] = createElementSet(handle, filterDomain, filtered,
+            { property_name: propName, datatype: datatype, pattern: pattern, source_model: sourceModel || null },
+            sourceModel);
+        var modelInfo = sourceModel ? (" from model '" + sourceModel + "'") : '';
+        return {
+            handle: handle,
+            count: filtered.length,
+            domain: filterDomain,
+            source_model: sourceModel || null,
+            provenance: { property_name: propName, pattern: pattern, source_model: sourceModel || null },
+            message: filtered.length + " elements" + modelInfo + " stored under handle '" + handle + "'."
+        };
+    }
+
+    if (toolName === 'list_models') {
+        var dom = args.domain || 'geometry';
+        var modelIds = toArray(await vdcApp.getModelListByDomain(dom));
+        var models = [];
+        for (var i = 0; i < modelIds.length; i++) {
+            var meta = await vdcApp.getModelMetaData(modelIds[i]);
+            var plain = {};
+            try { plain = JSON.parse(JSON.stringify(meta)); } catch(e) {}
+            plain.modelId = modelIds[i];
+            models.push(plain);
+        }
+        return { domain: dom, models: models, count: models.length };
+    }
+
+    if (toolName === 'select_by_handle') {
+        var handle = args.handle;
+        if (!_elementSets[handle]) {
+            return { error: "Handle '" + handle + "' not found. Call list_element_sets() to see available handles." };
+        }
+        var es = _elementSets[handle];
+        vdcApp.clearSelection(true, es.domain);
+        vdcApp.selectElements(es.ids.join(';'), true, es.domain);
+        return { success: true, handle: handle, count: es.count };
+    }
+
+    if (toolName === 'list_element_sets') {
+        var keys = Object.keys(_elementSets);
+        if (keys.length === 0) return { sets: [], message: "No element sets stored yet." };
+        return { sets: keys.map(function(k) { return _elementSets[k].summary(); }) };
+    }
+
+    if (toolName === 'select_elements') {
+        var ids = args.ids || [];
+        var domain = args.domain || 'geometry';
+
+        vdcApp.clearSelection(true, domain);
+
+        var idString = Array.isArray(ids) ? ids.join(';') : ids;
+        vdcApp.selectElements(idString, true, domain);
+
+        return { success: true, selected: ids.length };
+    }
+
+    if (toolName === 'run_clash_detection') {
+        var leftModels = args.leftModels || '';
+        var rightModels = args.rightModels || '';
+        var leftFilterProp = args.leftFilterProperty || '';
+        var leftFilterVal = args.leftFilterValue || '';
+        var rightFilterProp = args.rightFilterProperty || '';
+        var rightFilterVal = args.rightFilterValue || '';
+        var cdName = args.name || ('MCP_' + new Date().toISOString().replace(/[T:]/g, '-').substring(0, 16));
+        var allowTouches = args.allowTouches !== undefined ? args.allowTouches : true;
+        var checkInclusions = args.checkInclusions !== undefined ? args.checkInclusions : false;
+
+        var modelID = s(await vdcApp.createModel(cdName, false, 'cd'));
+        if (!modelID) return { error: 'Failed to create CD model' };
+
+        var rootNode = s(await vdcApp.getRootNodeByModel(modelID));
+        if (!rootNode) return { error: 'Failed to get root node for CD model' };
+
+        var containerID = s(await vdcApp.createObjectFromXml(rootNode, '<container name="MCP"/>'));
+        if (!containerID) return { error: 'Failed to create container' };
+
+        var leftDesc = leftFilterVal || leftModels || 'alle Modelle';
+        var rightDesc = rightFilterVal || rightModels || 'alle Modelle';
+        var runName = leftDesc + ' vs ' + rightDesc;
+        var cdRunXml = '<cdRun name="' + runName + '" active="true" cmt="' + runName + '"/>';
+        var clashRunID = s(await vdcApp.createObjectFromXml(containerID, cdRunXml));
+        if (!clashRunID) return { error: 'Failed to create cdRun element' };
+
+        var leftFilters = [];
+        if (leftModels) {
+            leftFilters.push({ propertyTypeKey: 'ImportFileName##xs:string', pattern: leftModels });
+        }
+        if (leftFilterProp && leftFilterVal) {
+            leftFilters.push({ propertyTypeKey: leftFilterProp + '##xs:string', pattern: leftFilterVal });
+        }
+        if (leftFilters.length > 0) {
+            await vdcApp.setCheckFilterList(clashRunID, leftFilters, false);
+        }
+
+        var rightFilters = [];
+        if (rightModels) {
+            rightFilters.push({ propertyTypeKey: 'ImportFileName##xs:string', pattern: rightModels });
+        }
+        if (rightFilterProp && rightFilterVal) {
+            rightFilters.push({ propertyTypeKey: rightFilterProp + '##xs:string', pattern: rightFilterVal });
+        }
+        if (rightFilters.length > 0) {
+            await vdcApp.setCheckFilterList(clashRunID, rightFilters, true);
+        }
+
+        var settings = {
+            clashes: {
+                checkEnabled: true,
+                calculateCuttingLines: true,
+                allowTouches: allowTouches,
+                checkInclusions: checkInclusions,
+                considerOnlyInclusions: 'None'
+            },
+            contacts: { checkEnabled: false },
+            equality: { compareBoundingBox: false },
+            distances: { check: 'None' }
+        };
+        await vdcApp.setClashRunSettings(clashRunID, settings);
+
+        var runResult = await vdcApp.runCheck(clashRunID);
+        var success = (runResult === 1 || runResult === true);
+
+        var clashCount = 0;
+        var clashElements = toArray(await vdcApp.getContainedElements(clashRunID, 1));
+        clashCount = clashElements.length;
+
+        var clashHandle = leftDesc + '_vs_' + rightDesc;
+        var clashStatus = success ? 'completed' : 'failed';
+        _clashRuns[clashHandle] = createClashRun(clashHandle, modelID, clashRunID, leftDesc, rightDesc, clashCount, clashStatus);
+
+        return {
+            handle: clashHandle,
+            left: leftDesc,
+            right: rightDesc,
+            clash_count: clashCount,
+            status: clashStatus,
+            message: "Clash detection completed: " + clashCount + " clashes found between '" + leftDesc + "' and '" + rightDesc + "'."
+        };
+    }
+
+    if (toolName === 'list_clash_runs') {
+        var crHandle = args.handle || '';
+        if (!crHandle) {
+            var crKeys = Object.keys(_clashRuns);
+            if (crKeys.length === 0) return { runs: [], message: "No clash runs stored yet." };
+            return { runs: crKeys.map(function(k) { return _clashRuns[k].summary(); }) };
+        }
+        if (!_clashRuns[crHandle]) {
+            return { error: "Handle '" + crHandle + "' not found. Call list_clash_runs() to see available handles." };
+        }
+        var cr = _clashRuns[crHandle];
+        var crElements = toArray(await vdcApp.getContainedElements(cr.runId, 1));
+        if (crElements.length > 0) {
+            await vdcApp.showClashList(crElements.join(';'));
+        }
+        return {
+            handle: crHandle, left: cr.left, right: cr.right,
+            clash_count: cr.clashCount, status: cr.status, shown_in_ui: true,
+            message: "Showing " + cr.clashCount + " clashes for '" + crHandle + "' in VDC Manager."
+        };
+    }
+
+    if (toolName === 'show_clashes') {
+        var clashRunId = args.clashRunId;
+        var clashElements = toArray(await vdcApp.getContainedElements(clashRunId, 1));
+        if (clashElements.length > 0) {
+            var idStr = clashElements.join(';');
+            await vdcApp.showClashList(idStr);
+        }
+        return { success: true, shown: clashElements.length };
+    }
+
+    return { error: 'Unknown tool: ' + toolName };
+}
+
+// ==================================================================
+// MCP WEBSOCKET BRIDGE CLIENT
+// ==================================================================
+var mcpWs = null;
+var mcpConnected = false;
+var mcpReconnectTimer = null;
+var MCP_WS_URL = 'ws://localhost:9877';
+var MCP_RECONNECT_DELAY = 3000;
+
+function setMcpStatus(connected) {
+    mcpConnected = connected;
+    var el = document.getElementById('mcpStatus');
+    var label = document.getElementById('mcpLabel');
+    if (connected) {
+        el.className = 'mcp-status connected';
+        label.textContent = 'MCP';
+    } else {
+        el.className = 'mcp-status';
+        label.textContent = 'MCP';
+    }
+}
+
+function mcpConnect() {
+    if (mcpWs && (mcpWs.readyState === WebSocket.CONNECTING || mcpWs.readyState === WebSocket.OPEN)) {
+        return;
+    }
+
+    try {
+        mcpWs = new WebSocket(MCP_WS_URL);
+    } catch (e) {
+        debugLog('mcp', 'WebSocket creation failed', e.message);
+        mcpScheduleReconnect();
+        return;
+    }
+
+    mcpWs.onopen = function() {
+        setMcpStatus(true);
+        debugLog('mcp', 'Connected to MCP bridge at ' + MCP_WS_URL);
+        if (mcpReconnectTimer) {
+            clearTimeout(mcpReconnectTimer);
+            mcpReconnectTimer = null;
+        }
+    };
+
+    mcpWs.onclose = function() {
+        setMcpStatus(false);
+        debugLog('mcp', 'Disconnected from MCP bridge');
+        mcpScheduleReconnect();
+    };
+
+    mcpWs.onerror = function(ev) {
+        debugLog('mcp', 'WebSocket error');
+    };
+
+    mcpWs.onmessage = function(ev) {
+        var msg;
+        try {
+            msg = JSON.parse(ev.data);
+        } catch (e) {
+            debugLog('error', 'MCP: invalid JSON received', ev.data);
+            return;
+        }
+
+        debugLog('mcp', 'Received tool call: ' + (msg.method || '?'), msg);
+
+        var id = msg.id;
+        var method = msg.method;
+        var params = msg.params || {};
+
+        executeTool(method, params).then(function(result) {
+            var response = JSON.stringify({ id: id, result: result });
+            debugLog('mcp', 'Sending result for ' + method, result);
+            if (mcpWs && mcpWs.readyState === WebSocket.OPEN) {
+                mcpWs.send(response);
+            }
+        }).catch(function(err) {
+            var response = JSON.stringify({ id: id, error: err.message || String(err) });
+            debugLog('error', 'MCP tool error: ' + method, err.message);
+            if (mcpWs && mcpWs.readyState === WebSocket.OPEN) {
+                mcpWs.send(response);
+            }
+        });
+    };
+}
+
+function mcpScheduleReconnect() {
+    if (mcpReconnectTimer) return;
+    mcpReconnectTimer = setTimeout(function() {
+        mcpReconnectTimer = null;
+        debugLog('mcp', 'Reconnecting to MCP bridge...');
+        mcpConnect();
+    }, MCP_RECONNECT_DELAY);
+}
+
+// ==================================================================
+// CONVERSATION COMPACTION
+// ==================================================================
+function compactHistory(messages) {
+    var KEEP_RECENT = 8;
+    if (messages.length <= KEEP_RECENT) return messages;
+
+    var compacted = [];
+    for (var i = 0; i < messages.length; i++) {
+        var msg = messages[i];
+        var isRecent = (i >= messages.length - KEEP_RECENT);
+
+        if (msg.role === 'tool' && !isRecent) {
+            var parsed;
+            try { parsed = JSON.parse(msg.content); } catch(e) { parsed = null; }
+            var summary = '';
+            if (parsed && parsed.handle) {
+                summary = '[Compacted: ' + parsed.handle + ', ' + (parsed.count || parsed.clash_count || '?') + ' elements]';
+            } else if (parsed) {
+                summary = '[Compacted: ' + JSON.stringify(parsed).substring(0, 80) + '...]';
+            } else {
+                summary = '[Compacted tool result]';
+            }
+            compacted.push({ role: 'tool', tool_call_id: msg.tool_call_id, content: summary });
+        } else {
+            compacted.push(msg);
+        }
+    }
+    return compacted;
+}
+
+// ==================================================================
+// LLM COMMUNICATION
+// ==================================================================
+async function callLLM(messages) {
+    if (!CONFIG.apiKey) {
+        throw new Error('Kein API Key konfiguriert. Bitte in den Einstellungen eingeben.');
+    }
+
+    var t0 = performance.now();
+    var url = CONFIG.baseUrl + '/chat/completions';
+    var body = {
+        model: CONFIG.model,
+        messages: [{ role: 'system', content: SYSTEM_PROMPT }].concat(compactHistory(messages)),
+        tools: tools
+    };
+
+    debugLog('send', 'API request -> ' + CONFIG.model, { url: url, body: body });
+
+    var resp;
+    try {
+        resp = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + CONFIG.apiKey
+            },
+            body: JSON.stringify(body)
+        });
+    } catch(e) {
+        setApiStatus(false);
+        throw new Error('Netzwerkfehler: ' + e.message);
+    }
+
+    if (!resp.ok) {
+        var errBody = '';
+        try { errBody = await resp.text(); } catch(e) {}
+        debugLog('error', 'API error ' + resp.status, errBody);
+        setApiStatus(false);
+        throw new Error('API Fehler ' + resp.status + ': ' + errBody.substring(0, 300));
+    }
+
+    var data = await resp.json();
+    var elapsed = Math.round(performance.now() - t0);
+    debugLog('recv', 'API response (' + elapsed + 'ms)', data);
+    setApiStatus(true);
+
+    return data;
+}
+
+// ==================================================================
+// AGENT LOOP
+// ==================================================================
+async function handleUserMessage(userText) {
+    conversationHistory.push({ role: 'user', content: userText });
+    addMessage('user', userText);
+    debugLog('info', 'User message', userText);
+
+    isProcessing = true;
+    document.getElementById('sendBtn').disabled = true;
+
+    try {
+        for (var iter = 0; iter < CONFIG.maxIterations; iter++) {
+            setStatus('LLM denkt nach... (Iteration ' + (iter + 1) + ')', true);
+            showThinking();
+
+            var response;
+            try {
+                response = await callLLM(conversationHistory);
+            } catch(err) {
+                hideThinking();
+                setStatus('Fehler');
+                addMessage('error', '**Fehler:** ' + err.message);
+                if (!CONFIG.apiKey) toggleSettings();
+                return;
+            }
+
+            hideThinking();
+
+            var choice = response.choices && response.choices[0];
+            if (!choice) {
+                addMessage('error', '**Fehler:** Keine Antwort vom LLM erhalten.');
+                setStatus('Bereit');
+                return;
+            }
+
+            var msg = choice.message;
+
+            if (msg.reasoning_content) {
+                addThinkingBlock(msg.reasoning_content);
+                debugLog('info', 'Reasoning content', msg.reasoning_content);
+            }
+
+            if (!msg.tool_calls || msg.tool_calls.length === 0) {
+                var finalMsg = { role: 'assistant', content: msg.content || '' };
+                if (msg.reasoning_content) finalMsg.reasoning_content = msg.reasoning_content;
+                conversationHistory.push(finalMsg);
+                if (msg.content) addMessage('assistant', msg.content);
+                setStatus('Bereit');
+                return;
+            }
+
+            var historyMsg = { role: 'assistant', content: msg.content || null, tool_calls: msg.tool_calls };
+            if (msg.reasoning_content) historyMsg.reasoning_content = msg.reasoning_content;
+            conversationHistory.push(historyMsg);
+
+            if (msg.content) {
+                addMessage('assistant', msg.content);
+            }
+
+            for (var t = 0; t < msg.tool_calls.length; t++) {
+                var tc = msg.tool_calls[t];
+                var toolName = tc.function.name;
+                var toolArgs = {};
+                try { toolArgs = JSON.parse(tc.function.arguments || '{}'); } catch(e) {}
+
+                debugLog('tool-call', 'Executing: ' + toolName, toolArgs);
+                setStatus('Tool ausfuehren: ' + toolName + '...', true);
+                var cardId = addToolCard(toolName, toolArgs);
+
+                var result;
+                try {
+                    result = await executeTool(toolName, toolArgs);
+                    updateToolCard(cardId, result, true);
+                    debugLog('tool-result', toolName + ' returned', result);
+                } catch(e) {
+                    result = { error: e.message || String(e) };
+                    updateToolCard(cardId, result, false);
+                    debugLog('error', toolName + ' failed', e.message);
+                }
+
+                conversationHistory.push({
+                    role: 'tool',
+                    tool_call_id: tc.id,
+                    content: JSON.stringify(result)
+                });
+            }
+        }
+
+        addMessage('assistant', '**Hinweis:** Maximale Anzahl an Iterationen (' + CONFIG.maxIterations + ') erreicht.');
+        setStatus('Bereit');
+
+    } finally {
+        isProcessing = false;
+        document.getElementById('sendBtn').disabled = false;
+    }
+}
+
+// ==================================================================
+// HEALTH CHECK / STATUS DOT
+// ==================================================================
+function setApiStatus(connected) {
+    apiConnected = connected;
+    var dot = document.getElementById('statusDot');
+    var label = document.getElementById('statusLabel');
+    dot.classList.toggle('connected', connected);
+    label.textContent = connected ? 'API verbunden' : 'API offline';
+}
+
+async function checkApiHealth() {
+    if (!CONFIG.apiKey) {
+        setApiStatus(false);
+        document.getElementById('statusLabel').textContent = 'Kein API Key';
+        return;
+    }
+    try {
+        var controller = new AbortController();
+        var timeoutId = setTimeout(function() { controller.abort(); }, 5000);
+        var resp = await fetch(CONFIG.baseUrl + '/models', {
+            method: 'GET',
+            headers: { 'Authorization': 'Bearer ' + CONFIG.apiKey },
+            signal: controller.signal
+        });
+        clearTimeout(timeoutId);
+        setApiStatus(resp.ok);
+        if (resp.ok) debugLog('info', 'Health check OK');
+        else debugLog('error', 'Health check failed: ' + resp.status);
+    } catch(e) {
+        setApiStatus(false);
+        debugLog('error', 'Health check error', e.message);
+    }
+}
+
+// ==================================================================
+// SEND MESSAGE
+// ==================================================================
+async function sendMessage() {
+    var input = document.getElementById('chatInput');
+    var text = input.value.trim();
+    if (!text || isProcessing) return;
+    input.value = '';
+    input.style.height = 'auto';
+    await handleUserMessage(text);
+}
+
+// ==================================================================
+// INITIALIZATION
+// ==================================================================
+(function init() {
+    loadSettings();
+    updateSettingsUI();
+    showWelcome();
+
+    debugLog('info', 'VDC Agent initialized', {
+        model: CONFIG.model,
+        baseUrl: CONFIG.baseUrl,
+        vdcApp: hasVdcApp() ? 'available' : 'NOT available'
+    });
+
+    checkApiHealth();
+    healthInterval = setInterval(checkApiHealth, 60000);
+
+    // Start MCP WebSocket bridge client
+    mcpConnect();
+
+    document.getElementById('chatInput').addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            sendMessage();
+        }
+    });
+
+    document.getElementById('chatInput').addEventListener('input', function() {
+        this.style.height = 'auto';
+        this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+    });
+
+    // Animated network background
+    var canvas = document.getElementById('bannerCanvas');
+    if (canvas) {
+        var ctx = canvas.getContext('2d');
+        var banner = canvas.parentElement;
+        var W, H;
+        function resizeCanvas() { W = canvas.width = banner.offsetWidth; H = canvas.height = banner.offsetHeight; }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+        var NODE_COUNT = 30, CONNECT_DIST = 80, nodes = [];
+        for (var n = 0; n < NODE_COUNT; n++) {
+            nodes.push({ x: Math.random()*W, y: Math.random()*H, vx: (Math.random()-0.5)*0.4, vy: (Math.random()-0.5)*0.4, r: Math.random()*1.2+0.6, pulse: Math.random()*Math.PI*2 });
+        }
+        function drawBanner(t) {
+            ctx.clearRect(0,0,W,H);
+            for (var i=0;i<nodes.length;i++) { var nd=nodes[i]; nd.x+=nd.vx; nd.y+=nd.vy; nd.pulse+=0.02; if(nd.x<0){nd.x=0;nd.vx*=-1;} if(nd.x>W){nd.x=W;nd.vx*=-1;} if(nd.y<0){nd.y=0;nd.vy*=-1;} if(nd.y>H){nd.y=H;nd.vy*=-1;} }
+            for (var i=0;i<nodes.length;i++) for (var j=i+1;j<nodes.length;j++) { var dx=nodes[i].x-nodes[j].x,dy=nodes[i].y-nodes[j].y,dist=Math.sqrt(dx*dx+dy*dy); if(dist<CONNECT_DIST){var a=(1-dist/CONNECT_DIST)*0.18;ctx.beginPath();ctx.moveTo(nodes[i].x,nodes[i].y);ctx.lineTo(nodes[j].x,nodes[j].y);ctx.strokeStyle='rgba(255,255,255,'+a+')';ctx.lineWidth=0.6;ctx.stroke();} }
+            for (var i=0;i<nodes.length;i++) { var nd=nodes[i],glow=0.25+Math.sin(nd.pulse)*0.15; ctx.beginPath();ctx.arc(nd.x,nd.y,nd.r,0,Math.PI*2);ctx.fillStyle='rgba(255,255,255,'+glow+')';ctx.fill(); }
+            requestAnimationFrame(drawBanner);
+        }
+        requestAnimationFrame(drawBanner);
+    }
+})();
+</script>
+</body>
+</html>

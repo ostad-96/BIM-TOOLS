@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<title>VDC · Agent</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+    font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+    background: #ffffff; color: #1a1a1a;
+    font-size: 13px; line-height: 1.6;
+    height: 100vh; display: flex; flex-direction: column; overflow: hidden;
+}
+
+/* Banner */
+.banner {
+    position: relative; height: 60px;
+    background: #003B4D; overflow: hidden; flex-shrink: 0;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.banner canvas { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0.5; }
+.banner-content {
+    position: relative; z-index: 1; height: 100%;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 18px; gap: 12px;
+}
+.banner-brand { display: flex; align-items: center; gap: 10px; color: #fff; text-decoration: none; }
+.banner-brand img { width: 30px; height: 30px; object-fit: cover; }
+.back-btn {
+    background: rgba(255,255,255,0.10); border: 1px solid rgba(255,255,255,0.18);
+    color: rgba(255,255,255,0.85);
+    width: 34px; height: 34px; border-radius: 7px;
+    cursor: pointer; font-size: 16px;
+    display: flex; align-items: center; justify-content: center;
+    text-decoration: none;
+    transition: all .15s;
+    flex-shrink: 0;
+}
+.back-btn:hover { background: rgba(255,255,255,0.20); border-color: rgba(255,255,255,0.30); color: #fff; }
+.banner-left { display: flex; align-items: center; gap: 14px; }
+.banner-title { font-size: 14px; font-weight: 600; color: #fff; letter-spacing: -0.005em; }
+.banner-subtitle { font-size: 10.5px; color: rgba(255,255,255,0.65); font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; margin-top: 1px; }
+.banner-actions { display: flex; align-items: center; gap: 8px; }
+
+.mcp-status {
+    display: flex; align-items: center; gap: 4px;
+    font-size: 10px; font-weight: 500;
+    padding: 2px 8px; border-radius: 10px;
+    color: #065f46; background: #d1fae5; border: 1px solid #a7f3d0;
+}
+.mcp-status-dot { width: 6px; height: 6px; border-radius: 50%; background: #22c55e; }
+
+.status-indicator { display: flex; align-items: center; gap: 5px; margin-right: 4px; }
+.status-dot { width: 8px; height: 8px; border-radius: 50%; background: #22c55e; position: relative; }
+.status-dot::after { content: ''; position: absolute; inset: -3px; border-radius: 50%; border: 2px solid #22c55e; opacity: 0; animation: ring 2s ease-out infinite; }
+@keyframes ring { 0%{opacity:.6; transform: scale(.8);} 100%{opacity:0; transform: scale(1.6);} }
+#statusLabel { font-size: 11px; color: rgba(255,255,255,0.75); white-space: nowrap; }
+
+.header-btn {
+    background: rgba(255,255,255,0.10); border: 1px solid rgba(255,255,255,0.18);
+    color: rgba(255,255,255,0.85);
+    width: 32px; height: 32px; border-radius: 7px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    text-decoration: none;
+    transition: all 0.15s;
+}
+.header-btn:hover { background: rgba(255,255,255,0.20); color: #fff; }
+.header-btn svg { width: 16px; height: 16px; }
+
+/* Status line */
+.status-line {
+    padding: 4px 20px; font-size: 11px; color: #6b7280;
+    background: #f8f9fb; border-bottom: 1px solid #e5e7eb;
+    flex-shrink: 0; min-height: 24px;
+    display: flex; align-items: center; gap: 6px;
+}
+
+/* Chat */
+#chatArea {
+    flex: 1; overflow-y: auto; padding: 16px 20px;
+    display: flex; flex-direction: column; gap: 10px;
+}
+.msg {
+    max-width: 85%; padding: 10px 14px; border-radius: 12px;
+    font-size: 13px; line-height: 1.6; position: relative;
+    word-wrap: break-word;
+}
+.msg-user { align-self: flex-end; background: #4a6a7a; color: #fff; border-bottom-right-radius: 4px; }
+.msg-assistant { align-self: flex-start; background: #f0f2f5; color: #1a1a1a; border-bottom-left-radius: 4px; }
+.msg-assistant p { margin: 0 0 6px 0; }
+.msg-assistant p:last-child { margin-bottom: 0; }
+.msg-assistant strong { font-weight: 600; }
+.msg-assistant em { font-style: italic; }
+.msg-assistant code { background: #e5e7eb; padding: 1px 5px; border-radius: 3px; font-family: 'Consolas', monospace; font-size: 12px; }
+.msg-assistant ul { margin: 4px 0 4px 18px; }
+.msg-time { font-size: 10px; opacity: 0.5; margin-top: 4px; text-align: right; font-family: 'Consolas', monospace; }
+
+/* Thinking */
+.thinking-block {
+    align-self: flex-start; max-width: 85%;
+    border-left: 3px solid #6366f1;
+    background: #f8f7ff;
+    border-radius: 0 8px 8px 0; margin: 2px 0;
+    font-size: 12px; padding: 8px 12px;
+    color: #6366f1;
+    font-weight: 500;
+}
+.thinking-block-body {
+    margin-top: 6px; padding-top: 6px; border-top: 1px solid #ede9fe;
+    font-style: italic; color: #6b7280; line-height: 1.6; font-weight: 400;
+}
+
+/* Tool card */
+.tool-card {
+    align-self: flex-start; max-width: 85%;
+    border: 1px solid #e5e7eb; border-radius: 8px;
+    background: #fafafa; margin: 2px 0; font-size: 12px;
+}
+.tool-card .head { padding: 8px 12px; display: flex; align-items: center; gap: 6px; font-weight: 500; color: #374151; }
+.tool-card .head::before { content: '▶'; font-size: 9px; color: #9ca3af; }
+.tool-name { font-family: 'Consolas', monospace; font-size: 12px; }
+.tool-badge { font-size: 9px; font-weight: 700; padding: 1px 6px; border-radius: 3px; letter-spacing: 0.3px; margin-left: auto; text-transform: uppercase; }
+.tool-badge.done { background: #d1fae5; color: #065f46; }
+.tool-badge.calling { background: #fef3c7; color: #92400e; }
+.tool-section { padding: 8px 12px; border-top: 1px solid #e5e7eb; }
+.tool-section-label { font-size: 10px; font-weight: 600; text-transform: uppercase; color: #9ca3af; margin-bottom: 4px; letter-spacing: 0.5px; }
+.tool-json {
+    font-family: 'Consolas', monospace; font-size: 11px;
+    white-space: pre-wrap; color: #374151;
+    background: #f0f2f5; padding: 6px 8px; border-radius: 4px;
+}
+
+/* Thinking dots */
+.thinking-dots { align-self: flex-start; display: flex; gap: 4px; padding: 12px 16px; }
+.thinking-dots span { width: 6px; height: 6px; border-radius: 50%; background: #6366f1; animation: bounce 1.2s ease-in-out infinite; }
+.thinking-dots span:nth-child(2) { animation-delay: 0.2s; }
+.thinking-dots span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes bounce { 0%,80%,100%{transform: translateY(0); opacity: .4;} 40%{transform: translateY(-6px); opacity:1;} }
+
+/* Input bar */
+.input-bar {
+    display: flex; align-items: flex-end; gap: 8px;
+    padding: 12px 20px; background: #fff;
+    border-top: 1px solid #e5e7eb;
+    flex-shrink: 0;
+}
+#chatInput {
+    flex: 1; padding: 10px 14px;
+    border: 1px solid #e5e7eb; border-radius: 8px;
+    font-size: 13px; font-family: inherit;
+    outline: none; resize: none;
+    min-height: 40px; max-height: 120px; line-height: 1.5;
+    background: #f8f9fb;
+}
+#chatInput:focus { border-color: #4a6a7a; }
+.send-btn {
+    background: #4a6a7a; border: none; color: #fff;
+    width: 40px; height: 40px; border-radius: 8px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+}
+.send-btn:hover { background: #3d5a68; }
+.send-btn svg { width: 18px; height: 18px; }
+
+/* Footer */
+.footer {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 6px 20px; font-size: 10px; color: #9ca3af;
+    border-top: 1px solid #e5e7eb;
+    font-family: 'Consolas', monospace;
+}
+</style>
+</head>
+<body>
+
+<div class="banner">
+    <canvas id="bannerCanvas"></canvas>
+    <div class="banner-content">
+        <div class="banner-left">
+            <a class="back-btn" href="../ui_kits/bim-tools/index.html" title="Zurück zum Hub" aria-label="Zurück">←</a>
+            <a class="banner-brand" href="../ui_kits/bim-tools/index.html">
+                <img src="../assets/emch-berger-logo.gif" alt="Emch+Berger">
+                <div>
+                    <div class="banner-title">VDC Agent</div>
+                    <div class="banner-subtitle">BIM Tools · KI-Assistent</div>
+                </div>
+            </a>
+        </div>
+        <div class="banner-actions">
+            <div class="mcp-status"><div class="mcp-status-dot"></div>MCP verbunden</div>
+            <div class="status-indicator">
+                <div class="status-dot"></div>
+                <div id="statusLabel">Bereit</div>
+            </div>
+            <a href="#" class="header-btn" title="Einstellungen">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="status-line">VDC Modell · A-14 BRG-Nord — Aktiv</div>
+
+<div id="chatArea">
+
+    <div class="msg msg-assistant">
+        <p>Hallo! Ich bin der <strong>VDC Agent</strong> für den VDC Manager.</p>
+        <p>Ich kann Objekte im BIM-Modell zählen und nach ADB-Klassifikation filtern.</p>
+        <p><strong>Probieren Sie es aus:</strong></p>
+        <ul>
+            <li><em>"Wie viele Stützen gibt es im Untergeschoss?"</em></li>
+            <li><em>"Liste alle Lüftungskanäle mit fehlendem Brandschutz."</em></li>
+            <li><em>"Zähle Elemente nach Klassifikationsschlüssel C04."</em></li>
+        </ul>
+        <div class="msg-time">10:14</div>
+    </div>
+
+    <div class="msg msg-user">
+        Wie viele Stützen gibt es im Untergeschoss?
+        <div class="msg-time">10:16</div>
+    </div>
+
+    <div class="thinking-block">
+        ▼ Nachdenken (3.2 s)
+        <div class="thinking-block-body">
+            Der Benutzer möchte alle Stützen im Untergeschoss zählen. Ich werde zuerst die ADB-Klassifikation für "Stütze" abrufen und dann auf die Geschossebene UG filtern …
+        </div>
+    </div>
+
+    <details class="tool-card" open>
+        <summary class="head">
+            <span class="tool-name">count_elements_by_class</span>
+            <span class="tool-badge done">Done</span>
+        </summary>
+        <div class="tool-section">
+            <div class="tool-section-label">Argumente</div>
+            <div class="tool-json">{
+  "classification": "C03 · Tragwerk",
+  "subclass": "Stütze",
+  "filter": { "geschoss": "UG" }
+}</div>
+        </div>
+        <div class="tool-section">
+            <div class="tool-section-label">Ergebnis</div>
+            <div class="tool-json">{ "count": 47, "modell": "ARC-01", "matched_class_ids": [128, 144, 152] }</div>
+        </div>
+    </details>
+
+    <div class="msg msg-assistant">
+        <p>Im Untergeschoss wurden <strong>47 Stützen</strong> gefunden — verteilt über drei ADB-Klassen (C03.Stütze.Stahlbeton, C03.Stütze.Stahl, C03.Stütze.Holz).</p>
+        <p>Soll ich die Verteilung nach Material aufschlüsseln oder eine Liste mit Element-IDs zurückgeben?</p>
+        <div class="msg-time">10:16</div>
+    </div>
+
+    <div class="msg msg-user">
+        Aufschlüsseln nach Material bitte.
+        <div class="msg-time">10:17</div>
+    </div>
+
+    <div class="thinking-dots"><span></span><span></span><span></span></div>
+
+</div>
+
+<div class="input-bar">
+    <textarea id="chatInput" placeholder="Fragen Sie etwas über das Modell …"></textarea>
+    <button class="send-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+    </button>
+</div>
+
+<div class="footer">
+    <span>Claude Sonnet 4.5 · 4 Tools · MCP v0.4</span>
+    <span>1 247 / 200 000 Tokens</span>
+</div>
+
+<script>
+// Soft particle canvas (banner)
+(function () {
+    var c = document.getElementById('bannerCanvas');
+    var ctx = c.getContext('2d');
+    function resize() { c.width = c.offsetWidth; c.height = c.offsetHeight; }
+    resize(); window.addEventListener('resize', resize);
+    var nodes = [];
+    for (var i = 0; i < 18; i++) nodes.push({ x: Math.random()*900, y: Math.random()*60, vx: (Math.random()-0.5)*0.15, vy: (Math.random()-0.5)*0.15 });
+    function draw() {
+        ctx.clearRect(0, 0, c.width, c.height);
+        for (var i = 0; i < nodes.length; i++) {
+            var n = nodes[i]; n.x += n.vx; n.y += n.vy;
+            if (n.x < 0 || n.x > c.width) n.vx *= -1;
+            if (n.y < 0 || n.y > c.height) n.vy *= -1;
+            for (var j = i + 1; j < nodes.length; j++) {
+                var m = nodes[j], d = Math.hypot(n.x - m.x, n.y - m.y);
+                if (d < 120) { ctx.beginPath(); ctx.moveTo(n.x, n.y); ctx.lineTo(m.x, m.y); ctx.strokeStyle = 'rgba(255,255,255,' + (0.18 * (1 - d / 120)) + ')'; ctx.stroke(); }
+            }
+            ctx.beginPath(); ctx.arc(n.x, n.y, 1, 0, Math.PI*2); ctx.fillStyle = 'rgba(255,255,255,0.35)'; ctx.fill();
+        }
+        requestAnimationFrame(draw);
+    }
+    draw();
+})();
+</script>
+
+</body>
+</html>

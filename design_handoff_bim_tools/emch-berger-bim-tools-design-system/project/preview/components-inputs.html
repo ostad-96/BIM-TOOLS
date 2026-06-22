@@ -1,0 +1,42 @@
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="_card.css"><style>
+.card { padding: 22px 26px; }
+.h { font-family: var(--f-display); font-weight: 600; font-size: 13px; margin-bottom: 14px; }
+.row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 12px; }
+.field { display: flex; flex-direction: column; gap: 6px; }
+.fl { font-size: 12px; font-weight: 500; color: #364046; }
+.input { width: 100%; padding: 9px 12px; min-height: 38px; background: #fff; border: 1px solid #e6e3dc; border-radius: 8px; font-family: 'Inter', sans-serif; font-size: 13.5px; color: #0e1719; box-sizing: border-box; }
+.input.focused { border-color: #003B4D; box-shadow: 0 0 0 4px rgba(0,59,77,0.10); outline: 0; }
+.input::placeholder { color: #8a939a; }
+.search { position: relative; }
+.search svg { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); width: 15px; height: 15px; color: #8a939a; }
+.search .input { padding-left: 34px; }
+.hint { font-size: 11.5px; color: #8a939a; }
+</style></head><body>
+<div class="card">
+    <div class="h">Inputs &amp; selects</div>
+    <div class="row">
+        <div class="field">
+            <label class="fl">Benutzername</label>
+            <input class="input" placeholder="z. B. ahuber" value="">
+        </div>
+        <div class="field">
+            <label class="fl">Passwort · focused</label>
+            <input class="input focused" type="password" value="••••••••">
+        </div>
+    </div>
+    <div class="row">
+        <div class="field">
+            <label class="fl">Suchen</label>
+            <div class="search">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/></svg>
+                <input class="input" placeholder="Suchen nach Code oder Titel …">
+            </div>
+        </div>
+        <div class="field">
+            <label class="fl">Vorlage</label>
+            <select class="input"><option>BIM-Koordination</option><option>Planungsbesprechung</option></select>
+        </div>
+    </div>
+    <div class="hint">Mindestens 8 Zeichen · Gross- und Kleinbuchstaben · 1 Ziffer · 1 Sonderzeichen</div>
+</div>
+</body></html>

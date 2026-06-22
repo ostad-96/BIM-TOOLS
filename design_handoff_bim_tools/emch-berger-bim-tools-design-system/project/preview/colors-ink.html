@@ -1,0 +1,31 @@
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="_card.css"><style>
+.h { display: flex; align-items: baseline; gap: 12px; margin-bottom: 14px; }
+.h .ti { font-family: var(--f-display); font-weight: 600; font-size: 13px; }
+.h .sub { font-size: 11.5px; color: var(--c-ink-4); }
+.row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+.sw .chip { height: 64px; border-radius: 9px; box-shadow: inset 0 0 0 1px rgba(14,23,25,0.06); display: flex; align-items: flex-end; padding: 8px; color: rgba(255,255,255,0.92); font-size: 10.5px; font-family: var(--f-mono); }
+.sw { display: flex; flex-direction: column; gap: 6px; }
+.name { font-size: 11px; font-weight: 600; color: var(--c-ink); }
+.tag { font-size: 10px; color: var(--c-ink-4); }
+.specimen { background: #fafaf7; padding: 10px 12px; margin-top: 6px; border: 1px solid #e6e3dc; border-radius: 8px; }
+.s1 { color: #0e1719; font-size: 14px; font-weight: 500; }
+.s2 { color: #364046; font-size: 13px; margin-top: 2px; }
+.s3 { color: #5d676e; font-size: 12px; margin-top: 2px; }
+.s4 { color: #8a939a; font-size: 11px; margin-top: 2px; }
+</style></head><body>
+<div class="card">
+    <div class="h"><span class="ti">Ink — text scale</span><span class="sub">Four steps, near-black with teal undertone</span></div>
+    <div class="row">
+        <div class="sw"><div class="chip" style="background:#0e1719">0E1719</div><div class="name">ink</div><div class="tag">primary</div></div>
+        <div class="sw"><div class="chip" style="background:#364046">364046</div><div class="name">ink-2</div><div class="tag">labels</div></div>
+        <div class="sw"><div class="chip" style="background:#5d676e">5D676E</div><div class="name">ink-3</div><div class="tag">descriptions</div></div>
+        <div class="sw"><div class="chip" style="background:#8a939a">8A939A</div><div class="name">ink-4</div><div class="tag">muted / disabled</div></div>
+    </div>
+    <div class="specimen">
+        <div class="s1">Besprechungsserie · BIM-Koordination Brücke Nord</div>
+        <div class="s2">Wiederkehrend, alle 14 Tage, Mittwoch 09:00</div>
+        <div class="s3">Wiederkehrende Besprechungen mit chronologischen Aktualisierungen pro Diskussionspunkt.</div>
+        <div class="s4">Zuletzt aktualisiert: 13. Mai 2026 · 09:42</div>
+    </div>
+</div>
+</body></html>

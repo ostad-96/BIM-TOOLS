@@ -8,96 +8,82 @@
 <link rel="stylesheet" href="shared/css/acc-base.css">
 <link rel="stylesheet" href="shared/css/acc-components.css">
 <link rel="stylesheet" href="shared/css/acc-corporate.css">
-<style>
-html, body { background: var(--c-brand); }
-</style>
 </head>
 <body class="corp">
 
-<div class="auth-stage">
-    <canvas id="c"></canvas>
+<div class="login-stage">
 
-    <div class="auth-shell" id="authShell" style="display:none">
+    <div class="login-shell" id="authShell" style="display:none">
 
-        <!-- ═══ Brand aside ═══ -->
-        <aside class="auth-aside">
-            <div class="brand">
-                <div class="mark">BT</div>
-                <div>
-                    <div>BIM Tools</div>
-                    <div style="font-size:10.5px; font-weight:500; opacity:0.7; letter-spacing:0.06em; text-transform:uppercase;">Bauprojekt-Koordination</div>
+        <!-- ═══ Login card ═══ -->
+        <div id="loginCard">
+            <div class="login-brand">
+                <div class="login-brand-mk"><img src="shared/assets/emch-berger-logo.gif" alt="Emch+Berger"></div>
+                <div class="login-brand-nm">BIM Tools<span class="login-brand-sub">Bauprojekt-Koordination</span></div>
+            </div>
+
+            <div id="loginError" class="login-err"></div>
+
+            <div class="login-f-row">
+                <div class="fl">
+                    <input class="input" id="username" type="text" placeholder=" " autocomplete="username" autofocus>
+                    <label class="lbl" for="username">Benutzername</label>
                 </div>
             </div>
 
-            <div style="position:relative; z-index:1;">
-                <div class="headline">Ein Ort für jede Besprechung, Kollision und Entscheidung.</div>
-                <p class="lede">Sitzungsprotokolle, Issuemanagement und BIM-Werkzeuge — koordiniert in einer Oberfläche, geteilt mit dem ganzen Team.</p>
+            <div class="login-f-row">
+                <div class="fl">
+                    <input class="input" id="password" type="password" placeholder=" " autocomplete="current-password">
+                    <label class="lbl" for="password">Passwort</label>
+                </div>
             </div>
 
-            <div class="meta-row">
-                <div><span class="k">Plattform</span>Version 1.0</div>
-                <div><span class="k">Verfügbarkeit</span>Web · Tablet · Mobil</div>
-            </div>
-        </aside>
+            <button class="login-btn" id="loginBtn" onclick="doLogin()">
+                Anmelden
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/></svg>
+            </button>
 
-        <!-- ═══ Form pane ═══ -->
-        <section class="auth-form">
-            <!-- Login card -->
-            <div id="loginCard">
-                <div class="auth-eyebrow">Anmelden</div>
-                <h1 class="auth-title">Willkommen zurück</h1>
-                <p class="auth-sub">Melden Sie sich mit Ihrem Konto an, um fortzufahren.</p>
+            <a href="#" class="login-forgot" onclick="return false;">Passwort vergessen?</a>
+        </div>
 
-                <div id="loginError" class="auth-err"></div>
+        <!-- ═══ First-login setup (kept as-is, not redesigned) ═══ -->
+        <div id="setupCard" style="display:none">
+            <div class="auth-eyebrow">Erstanmeldung</div>
+            <h1 class="auth-title">Passwort festlegen</h1>
+            <p class="auth-sub">
+                Willkommen, <strong id="setupDisplayName" style="color:var(--c-ink);"></strong>.
+                Bitte erstellen Sie Ihr persönliches Passwort.
+            </p>
 
-                <div class="field">
-                    <label class="field-label" for="username">Benutzername</label>
-                    <input type="text" id="username" class="input" placeholder="z. B. ahuber" autocomplete="username" autofocus>
-                </div>
+            <div id="setupError" class="login-err"></div>
 
-                <div class="field" id="passwordField">
-                    <label class="field-label" for="password">Passwort</label>
-                    <input type="password" id="password" class="input" placeholder="••••••••" autocomplete="current-password">
-                </div>
-
-                <button class="btn btn-primary btn-lg" id="loginBtn" onclick="doLogin()" style="width:100%; margin-top:6px;">Anmelden</button>
-
-                <p class="auth-footnote">&copy; 2026 BIM Tools · Bauprojekt-Koordination</p>
+            <div class="field">
+                <label class="field-label" for="setupPw1">Neues Passwort</label>
+                <input type="password" id="setupPw1" class="input" placeholder="Neues Passwort" autocomplete="new-password" oninput="updateStrength()">
             </div>
 
-            <!-- First-login setup -->
-            <div id="setupCard" style="display:none">
-                <div class="auth-eyebrow">Erstanmeldung</div>
-                <h1 class="auth-title">Passwort festlegen</h1>
-                <p class="auth-sub">
-                    Willkommen, <strong id="setupDisplayName" style="color:var(--c-ink);"></strong>.
-                    Bitte erstellen Sie Ihr persönliches Passwort.
-                </p>
+            <div class="auth-strength"><div class="auth-strength-bar" id="strengthBar"></div></div>
 
-                <div id="setupError" class="auth-err"></div>
-
-                <div class="field">
-                    <label class="field-label" for="setupPw1">Neues Passwort</label>
-                    <input type="password" id="setupPw1" class="input" placeholder="Neues Passwort" autocomplete="new-password" oninput="updateStrength()">
-                </div>
-
-                <div class="auth-strength"><div class="auth-strength-bar" id="strengthBar"></div></div>
-
-                <div class="field">
-                    <label class="field-label" for="setupPw2">Passwort best&auml;tigen</label>
-                    <input type="password" id="setupPw2" class="input" placeholder="Passwort wiederholen" autocomplete="new-password">
-                </div>
-
-                <p class="field-hint" style="margin: -6px 0 16px;">
-                    Mindestens 8 Zeichen · Gross- und Kleinbuchstaben · 1 Ziffer · 1 Sonderzeichen
-                </p>
-
-                <button class="btn btn-primary btn-lg" id="setupBtn" onclick="doSetupPassword()" style="width:100%;">Passwort festlegen</button>
-
-                <p class="auth-footnote">&copy; 2026 BIM Tools · Bauprojekt-Koordination</p>
+            <div class="field">
+                <label class="field-label" for="setupPw2">Passwort best&auml;tigen</label>
+                <input type="password" id="setupPw2" class="input" placeholder="Passwort wiederholen" autocomplete="new-password">
             </div>
-        </section>
+
+            <p class="field-hint" style="margin: -6px 0 16px;">
+                Mindestens 8 Zeichen · Gross- und Kleinbuchstaben · 1 Ziffer · 1 Sonderzeichen
+            </p>
+
+            <button class="btn btn-primary btn-lg" id="setupBtn" onclick="doSetupPassword()" style="width:100%;">Passwort festlegen</button>
+
+            <p class="auth-footnote">&copy; 2026 BIM Tools · Bauprojekt-Koordination</p>
+        </div>
+
     </div>
+
+    <div class="login-foot">
+        EMCH+BERGER<span class="login-foot-sep">&middot;</span>BIM TOOLS<span class="login-foot-sep">&middot;</span>v1.0
+    </div>
+
 </div>
 
 <script src="shared/js/acc-utils.js"></script>
@@ -108,43 +94,6 @@ html, body { background: var(--c-brand); }
 <script src="shared/js/acc-auth.js"></script>
 <script src="shared/js/acc-ui.js"></script>
 <script>
-// ── Background canvas (subtle particle field) ──
-var canvas = document.getElementById('c');
-var ctx = canvas.getContext('2d');
-var W, H;
-function resize() { W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; }
-resize(); window.addEventListener('resize', resize);
-
-var nodes = [];
-for (var i = 0; i < 60; i++) {
-    nodes.push({
-        x: Math.random()*2000, y: Math.random()*1200,
-        vx: (Math.random()-0.5)*0.25, vy: (Math.random()-0.5)*0.25,
-        r: Math.random()*1.4+0.4, pulse: Math.random()*Math.PI*2
-    });
-}
-function draw(t) {
-    ctx.clearRect(0,0,W,H);
-    for (var i = 0; i < nodes.length; i++) {
-        var n = nodes[i];
-        n.x += n.vx; n.y += n.vy;
-        if (n.x < 0 || n.x > W) n.vx *= -1;
-        if (n.y < 0 || n.y > H) n.vy *= -1;
-        for (var j = i+1; j < nodes.length; j++) {
-            var m = nodes[j], dx = n.x-m.x, dy = n.y-m.y, dist = Math.sqrt(dx*dx+dy*dy);
-            if (dist < 130) {
-                ctx.beginPath(); ctx.moveTo(n.x,n.y); ctx.lineTo(m.x,m.y);
-                ctx.strokeStyle='rgba(255,255,255,'+(0.10*(1-dist/130))+')'; ctx.stroke();
-            }
-        }
-        var pr = n.r + Math.sin(t/1200+n.pulse)*0.35;
-        ctx.beginPath(); ctx.arc(n.x,n.y,pr,0,Math.PI*2);
-        ctx.fillStyle='rgba(255,255,255,0.25)'; ctx.fill();
-    }
-    requestAnimationFrame(draw);
-}
-draw(0);
-
 // ── Auth init ──
 var _setupUserId = null;
 
@@ -155,7 +104,7 @@ BIM.StorageManager.init(db).then(function() {
     return BIM.Auth.checkAlreadyLoggedIn('index.html');
 }).then(function(redirected) {
     if (!redirected) {
-        document.getElementById('authShell').style.display = 'grid';
+        document.getElementById('authShell').style.display = '';
     }
 });
 
@@ -167,7 +116,7 @@ function doLogin() {
     if (!user) { showError('loginError', 'Bitte Benutzername eingeben.'); return; }
 
     btn.disabled = true;
-    btn.textContent = 'Wird geprüft …';
+    btn.innerHTML = 'Wird gepr&uuml;ft &hellip;';
     document.getElementById('loginError').classList.remove('show');
 
     BIM.Auth.login(user, pass).then(function(result) {
@@ -183,7 +132,7 @@ function doLogin() {
     }).catch(function(err) {
         showError('loginError', err.message || 'Anmeldung fehlgeschlagen.');
         btn.disabled = false;
-        btn.textContent = 'Anmelden';
+        btn.innerHTML = 'Anmelden <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/></svg>';
     });
 }
 
@@ -232,6 +181,15 @@ function showError(id, msg) {
     void el.offsetWidth;
     el.classList.add('show');
 }
+
+// Toggle armed state on shell when username has content
+(function() {
+    var usr = document.getElementById('username');
+    var shell = document.getElementById('authShell');
+    function sync() { shell.classList.toggle('login-armed', usr.value.trim().length > 0); }
+    usr.addEventListener('input', sync);
+    usr.addEventListener('change', sync);
+})();
 
 document.getElementById('password').addEventListener('keydown', function(e) { if (e.key === 'Enter') doLogin(); });
 document.getElementById('username').addEventListener('keydown', function(e) {
