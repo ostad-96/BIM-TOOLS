@@ -402,7 +402,7 @@ body.exiting .page-transition .slide {
             </div>
             <div class="setup-row">
                 <span class="setup-label">Sicherheitsabzug (m):</span>
-                <input type="number" id="safetyMargin" value="0.10" min="0" max="2" step="0.01"
+                <input type="number" id="safetyMargin" value="0" min="0" max="2" step="0.01"
                        style="width:100px; padding:6px 10px; font-size:12px; border:1px solid #e5e7eb; border-radius:6px; font-family:inherit;">
             </div>
         </div>
@@ -989,7 +989,8 @@ async function runCalculation() {
         await sleep(50);
 
         var spacing = parseFloat(document.getElementById("gridSpacing").value) || 0.1;
-        var safetyMargin = parseFloat(document.getElementById("safetyMargin").value) || 0.10;
+        var safetyMargin = parseFloat(document.getElementById("safetyMargin").value);
+        if (isNaN(safetyMargin) || safetyMargin < 0) safetyMargin = 0;  // default 0, never negative
         log("Einstellungen: spacing=" + spacing + " safetyMargin=" + safetyMargin, "info");
 
         log("STEP 1: Bounding Boxes berechnen...", "info");
